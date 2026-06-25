@@ -1,11 +1,20 @@
 "use client";
 
+import ColorBends from "@/components/ColorBends";
+import OrbitImages from "@/components/OrbitImages";
 import FloatingLines from "@/components/FloatingLines";
 import Link from "next/link";
 import Image from "next/image";
 import porsheGradient from "@/public/porshe-gradient.png";
 import { motion } from "motion/react";
 export default function HomePage() {
+  const images = [
+    porsheGradient.src,
+    porsheGradient.src,
+    porsheGradient.src,
+    porsheGradient.src,
+  ];
+
   return (
     <div className="overflow-x-hidden">
       <section className="relative min-h-screen overflow-hidden bg-radial-[at_50%_40%] from-[#ffe44c] via-[#fcd202] to-[#9e880d]">
@@ -38,7 +47,7 @@ export default function HomePage() {
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className="group relative text-sm font-medium tracking-wide text-neutral-900/80 transition-colors hover:text-neutral-900"
+                  className="group relative text-l font-medium tracking-wide text-neutral-900/80 transition-colors hover:text-neutral-900"
                 >
                   {item.label}
                   <span className="absolute -bottom-1.5 left-0 h-0.5 w-0 bg-neutral-900 transition-all duration-300 group-hover:w-full" />
@@ -118,6 +127,31 @@ export default function HomePage() {
         >
           Dywanik!
         </motion.span>
+      </section>
+      <section className="relative min-h-screen overflow-hidden bg-white">
+        <motion.div
+          initial={{ y: -700, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="absolute top-1/3 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 w-full"
+        >
+          <OrbitImages
+            images={images}
+            shape="ellipse"
+            radiusX={440}
+            radiusY={200}
+            rotation={-180}
+            duration={30}
+            itemSize={600}
+            responsive={true}
+            radius={80}
+            direction="normal"
+            fill
+            showPath={false}
+            paused={false}
+          />
+        </motion.div>
       </section>
     </div>
   );
