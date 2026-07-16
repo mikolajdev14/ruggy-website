@@ -1,4 +1,4 @@
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { fulfillCheckout } from "@/lib/fulfill-checkout";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -19,6 +19,18 @@ export async function POST(request: Request) {
     );
     return NextResponse.json(
       { error: "Webhook secret is not configured" },
+      { status: 500 },
+    );
+  }
+
+  let stripe;
+
+  try {
+    stripe = getStripe();
+  } catch (error) {
+    console.error("Nieprawidłowy STRIPE_SECRET_KEY:", error);
+    return NextResponse.json(
+      { error: "Stripe is not configured" },
       { status: 500 },
     );
   }

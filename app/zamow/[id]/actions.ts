@@ -2,7 +2,7 @@
 
 import { getPolandDateKey, isValidDateKey } from "@/lib/booking-date";
 import { bookingSchema } from "@/schema/booking";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { consumeReferenceImageUploadLimit } from "@/lib/upload-rate-limit";
 
@@ -149,6 +149,7 @@ export async function createCheckoutSession(input: unknown) {
     };
   }
 
+  const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: booking.customerEmail,

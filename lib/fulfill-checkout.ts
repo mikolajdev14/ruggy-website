@@ -2,7 +2,7 @@ import "server-only";
 
 import { isValidDateKey } from "@/lib/booking-date";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 
 export type FulfillmentResult =
   | { success: true }
@@ -32,7 +32,7 @@ export async function fulfillCheckout(
   let session;
 
   try {
-    session = await stripe.checkout.sessions.retrieve(sessionId);
+    session = await getStripe().checkout.sessions.retrieve(sessionId);
   } catch (error) {
     console.error("Nie udało się pobrać sesji Stripe:", error);
     return {
