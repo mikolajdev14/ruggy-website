@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import porshe from "@/public/porshe-gradient.png";
+import rugDog from "@/public/ruggy/rug-dog.webp";
+import rugVinyl from "@/public/ruggy/rug-vinyl.webp";
 
 interface RugProps {
   id: number | string;
@@ -10,35 +11,37 @@ interface RugProps {
 }
 
 export const RugCard = (props: RugProps) => {
+  const image = Number(props.id) % 2 === 0 ? rugVinyl : rugDog;
+
   return (
     <Link
       href={`/zamow/${props.id}`}
-      className="group overflow-hidden rounded-lg border border-neutral-200 bg-white transition-colors hover:border-neutral-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+      className="group block h-full overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] shadow-[5px_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)]"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--ruggy-blue-soft)]">
         <Image
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          src={porshe}
+          src={image}
           alt={props.name}
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
-        <div className="absolute left-3 top-3 rounded-md bg-neutral-950 px-2.5 py-1 text-xs font-semibold text-[#ffe44c]">
+        <div className="absolute start-4 top-4 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
           {props.leadDays} dni realizacji
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="p-6">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
+          <h2 className="text-xl font-black tracking-tight text-[var(--ruggy-ink)]">
             {props.name}
           </h2>
-          <span className="mt-1 text-sm font-medium text-neutral-500 transition-colors group-hover:text-neutral-950">
-            Wybierz
+          <span className="mt-1 text-sm font-black text-[var(--ruggy-blue)] transition-transform group-hover:translate-x-1">
+            Wybierz →
           </span>
         </div>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-600">
+        <p className="mt-3 line-clamp-3 text-base leading-7 text-[var(--ruggy-body)]">
           {props.description}
         </p>
       </div>

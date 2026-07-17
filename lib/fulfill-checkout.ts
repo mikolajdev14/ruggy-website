@@ -52,14 +52,15 @@ export async function fulfillCheckout(
 
   const metadata = session.metadata ?? {};
   const rugTypeId = Number(metadata.rugTypeId);
-  const rugSizeId = Number(metadata.pickedSize);
+  const isCustomSize = metadata.pickedSize === "custom";
+  const rugSizeId = isCustomSize ? null : Number(metadata.pickedSize);
   const bookingDate = metadata.pickupDate?.slice(0, 10);
   const customerEmail =
     session.customer_details?.email ?? session.customer_email;
 
   if (
     !Number.isInteger(rugTypeId) ||
-    !Number.isInteger(rugSizeId) ||
+    (!isCustomSize && !Number.isInteger(rugSizeId)) ||
     !metadata.rugTypeName ||
     !metadata.rugSizeLabel ||
     !metadata.customerName ||

@@ -12,8 +12,8 @@ type DatePickerProps = {
 
 const css = `
   .order-calendar {
-    --rdp-accent-color: #171717;
-    --rdp-today-color: #171717;
+    --rdp-accent-color: var(--ruggy-blue);
+    --rdp-today-color: var(--ruggy-blue);
     margin: 0;
   }
 
@@ -35,7 +35,7 @@ const css = `
   }
 
   .order-calendar .rdp-weekday {
-    color: #737373;
+    color: var(--ruggy-muted);
     font-size: 0.75rem;
     font-weight: 600;
   }
@@ -45,14 +45,14 @@ const css = `
   }
 
   .order-calendar .rdp-selected .rdp-day_button {
-    background: #171717;
-    border-color: #171717;
-    color: #ffe44c;
+    background: var(--ruggy-blue);
+    border-color: var(--ruggy-blue);
+    color: white;
   }
 
   .order-calendar .my-disabled .rdp-day_button,
   .order-calendar .rdp-disabled .rdp-day_button {
-    color: #b3b3b3;
+    color: var(--ruggy-border-strong);
     text-decoration: line-through;
   }
 `;

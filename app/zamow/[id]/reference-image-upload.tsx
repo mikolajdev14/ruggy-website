@@ -66,7 +66,7 @@ export const ReferenceImageUpload = ({
           name="referenceImage"
           accept="image/jpeg,image/png,image/webp"
           onChange={handleChange}
-          className="block w-full text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-950 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#ffe44c] file:transition-colors hover:file:bg-neutral-800"
+          className="block w-full text-sm text-neutral-600 file:me-3 file:rounded-full file:border-0 file:bg-[var(--ruggy-blue)] file:px-4 file:py-2 file:text-xs file:font-black file:text-white file:transition-opacity hover:file:opacity-85"
         />
 
         {file ? (

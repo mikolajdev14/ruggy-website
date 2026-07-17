@@ -1,6 +1,7 @@
 "use server";
 
 import { getPolandDateKey, isValidDateKey } from "@/lib/booking-date";
+import { calculateCustomRugPriceCents } from "@/lib/custom-rug-price";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -138,16 +139,52 @@ export async function createCheckoutSession(input: unknown) {
     return { success: false, message: "Nie znaleziono typu dywanu." };
   }
 
-  const size = rugType.rug_sizes?.find(
-    (rugSize) => Number(rugSize.id) === booking.pickedSize,
-  );
+  const isCustomType = rugType.name.trim().toLocaleLowerCase() === "inne";
+  const hasCustomDimensions =
+    booking.customWidthCm != null && booking.customHeightCm != null;
 
-  if (!size) {
+  if (!isCustomType && hasCustomDimensions) {
+    return {
+      success: false,
+      message: "Własne wymiary są dostępne dla typu Inne.",
+    };
+  }
+
+  const isCustomSize =
+    isCustomType &&
+    booking.pickedSize == null &&
+    booking.customWidthCm != null &&
+    booking.customHeightCm != null;
+  const customPriceCents = isCustomSize
+    ? calculateCustomRugPriceCents(
+        booking.customWidthCm,
+        booking.customHeightCm,
+      )
+    : null;
+  const size = booking.pickedSize
+    ? rugType.rug_sizes?.find(
+        (rugSize) => Number(rugSize.id) === booking.pickedSize,
+      )
+    : null;
+
+  if (!isCustomSize && !size) {
     return {
       success: false,
       message: "Wybrany rozmiar nie należy do tego wariantu dywanu.",
     };
   }
+
+  if (isCustomSize && customPriceCents == null) {
+    return {
+      success: false,
+      message: "Wymiary własnego dywanu są poza dozwolonym zakresem.",
+    };
+  }
+
+  const sizeLabel = isCustomSize
+    ? `Własny rozmiar ${booking.customWidthCm} × ${booking.customHeightCm} cm`
+    : size!.label;
+  const priceCents = isCustomSize ? customPriceCents! : Number(size!.price_cents);
 
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
@@ -159,9 +196,9 @@ export async function createCheckoutSession(input: unknown) {
       {
         price_data: {
           currency: "pln",
-          unit_amount: Number(size.price_cents),
+          unit_amount: priceCents,
           product_data: {
-            name: `${rugType.name} - ${size.label}`,
+            name: `${rugType.name} · ${sizeLabel}`,
           },
         },
         quantity: 1,
@@ -170,8 +207,10 @@ export async function createCheckoutSession(input: unknown) {
     metadata: {
       rugTypeId: booking.rugTypeId,
       rugTypeName: rugType.name,
-      pickedSize: String(booking.pickedSize),
-      rugSizeLabel: size.label,
+      pickedSize: isCustomSize ? "custom" : String(booking.pickedSize),
+      rugSizeLabel: sizeLabel,
+      customWidthCm: isCustomSize ? String(booking.customWidthCm) : "",
+      customHeightCm: isCustomSize ? String(booking.customHeightCm) : "",
       pickupDate: booking.pickupDate,
       customerName: booking.customerName,
       customerPhone: booking.customerPhone ?? "",

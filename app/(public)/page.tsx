@@ -1,326 +1,447 @@
 "use client";
 
-import { ArrowRight, Camera, Check, PackageCheck, Ruler, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  AtSign,
+  Camera,
+  Heart,
+  PackageCheck,
+  Palette,
+  Ruler,
+  Scissors,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import heroImage from "@/public/porshe z tlem.png";
-import rugCutout from "@/public/porshe-gradient.png";
+import heroWorkshop from "@/public/ruggy/hero-workshop.webp";
+import rugDog from "@/public/ruggy/rug-dog.webp";
+import rugVinyl from "@/public/ruggy/rug-vinyl.webp";
+
+const benefits = [
+  {
+    icon: Heart,
+    title: "Prezent, którego nie da się powtórzyć",
+    description: "Twój pomysł zamieniamy w miękki obiekt z własnym charakterem.",
+  },
+  {
+    icon: Palette,
+    title: "Projekt w Twoim stylu",
+    description: "Kolor, forma i detal powstają wokół tego, co naprawdę lubisz.",
+  },
+  {
+    icon: Scissors,
+    title: "Ręczna robota od początku do końca",
+    description: "Każdy fragment przechodzi przez prawdziwą pracownię, nie taśmę produkcyjną.",
+  },
+];
 
 const steps = [
   {
     number: "01",
-    icon: Ruler,
-    title: "Wybierasz wariant",
-    description: "Wskaż typ dywanu, rozmiar i dogodny termin realizacji.",
+    icon: Camera,
+    title: "Pokaż nam pomysł",
+    description: "Wyślij zdjęcie, szkic albo opisz motyw, który chodzi Ci po głowie.",
   },
   {
     number: "02",
-    icon: Camera,
-    title: "Dodajesz inspirację",
-    description: "Możesz przesłać zdjęcie przedmiotu, który mam odwzorować.",
+    icon: Ruler,
+    title: "Wybierz wariant",
+    description: "Dobierz rozmiar, termin i sposób dostawy w prostym formularzu.",
   },
   {
     number: "03",
+    icon: Scissors,
+    title: "Wchodzimy do pracowni",
+    description: "Tuftujemy, docinamy i wykańczamy każdy detal ręcznie.",
+  },
+  {
+    number: "04",
     icon: PackageCheck,
-    title: "Opłacasz zamówienie",
-    description: "Wybierasz dostawę przez InPost lub kuriera i płacisz online.",
+    title: "Ruggy rusza w drogę",
+    description: "Gotowy dywan wysyłamy do paczkomatu albo prosto pod Twoje drzwi.",
   },
 ];
 
-const benefits = [
-  "Projekt na podstawie Twojego pomysłu",
-  "Ręczne wykonanie z dbałością o szczegóły",
-  "Dostawa do paczkomatu InPost albo kurierem",
+const gallery = [
+  {
+    image: rugDog,
+    alt: "Kremowy ręcznie tuftowany dywan w kształcie pieska z niebieskim uchem",
+    label: "Twój pupil",
+    className: "sm:rotate-[-1.5deg]",
+  },
+  {
+    image: rugVinyl,
+    alt: "Okrągły ręcznie tuftowany dywan inspirowany płytą winylową",
+    label: "Twój klimat",
+    className: "sm:translate-y-8 sm:rotate-[1.5deg]",
+  },
+  {
+    image: heroWorkshop,
+    alt: "Niebieski dywan o nieregularnym kształcie podczas ręcznego wykańczania",
+    label: "Twój pomysł",
+    className: "sm:rotate-[-0.75deg]",
+  },
 ];
+
+const faqs = [
+  {
+    question: "Ile kosztuje zrobienie dywanu?",
+    answer:
+      "Cena zależy od wybranego wariantu, rozmiaru i złożoności wzoru. Dokładną kwotę zobaczysz podczas składania zamówienia.",
+  },
+  {
+    question: "Co jeśli nie mam gotowego projektu?",
+    answer:
+      "Wystarczy inspiracja, zdjęcie albo krótki opis. Pomożemy przełożyć pomysł na formę, która dobrze zadziała jako dywan.",
+  },
+  {
+    question: "Czy mogę zamówić dowolny kształt?",
+    answer:
+      "Tak. Lubimy nieregularne formy, ale ostateczny kształt zależy od możliwości wykonania konkretnego wzoru.",
+  },
+  {
+    question: "Jak długo trwa realizacja?",
+    answer:
+      "Aktualny czas wykonania jest podany przy każdym wariancie. Termin wybierasz przed opłaceniem zamówienia.",
+  },
+];
+
+const focusClass =
+  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]";
+const focusLightClass =
+  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
 
 export default function HomePage() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <div className="overflow-x-hidden bg-neutral-50 text-neutral-950">
-      <motion.header
-        initial={reducedMotion ? false : { opacity: 0, y: -12 }}
-        animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="border-b border-neutral-200 bg-neutral-50"
+    <div className="overflow-x-hidden bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+      <a
+        href="#main-content"
+        className="sr-only z-50 rounded-full bg-[var(--ruggy-ink)] px-5 py-3 text-white focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
       >
-        <nav className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
-          <Link
-            href="/"
-            className="font-lobster text-3xl text-neutral-950 transition-opacity hover:opacity-70"
-          >
-            Carpetiem
+        Przejdź do treści
+      </a>
+
+      <div className="ruggy-thread-bg border-b border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-4 py-2.5 text-center text-xs font-bold uppercase tracking-[0.16em] sm:text-sm">
+        Darmowa wycena pomysłu <span aria-hidden="true">✦</span> Ręczna robota w Polsce
+      </div>
+
+      <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] backdrop-blur">
+        <nav
+          aria-label="Główna nawigacja"
+          className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:px-10"
+        >
+          <Link href="/" className={`ruggy-wordmark text-4xl ${focusClass}`}>
+            ruggy<span className="text-[var(--ruggy-blue)]">.</span>
           </Link>
 
-          <div className="hidden items-center gap-8 text-sm font-medium text-neutral-600 md:flex">
-            <Link className="transition-colors hover:text-neutral-950" href="#jak-to-dziala">
+          <div className="hidden items-center gap-8 text-sm font-bold md:flex">
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#dlaczego">
+              Dlaczego Ruggy
+            </Link>
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#jak-to-dziala">
               Jak to działa
             </Link>
-            <Link className="transition-colors hover:text-neutral-950" href="#inspiracja">
-              Inspiracja
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#faq">
+              FAQ
             </Link>
           </div>
 
           <Link
             href="/zamow"
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-[#ffe44c] transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-ink)] px-5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 ${focusClass}`}
           >
-            Zamów dywan
-            <ArrowRight size={16} aria-hidden="true" />
+            Wyceń dywan
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </Link>
         </nav>
-      </motion.header>
+      </header>
 
-      <main>
-        <section className="bg-neutral-950 text-white">
-          <div className="mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-10 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:px-10 lg:py-16">
+      <main id="main-content">
+        <section className="relative isolate overflow-hidden pb-16 pt-10 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
+          <div className="ruggy-blob ruggy-blob-blue absolute -end-20 top-12 -z-10 size-72 sm:size-96" aria-hidden="true" />
+          <div className="ruggy-blob ruggy-blob-yellow absolute -start-24 bottom-2 -z-10 size-56" aria-hidden="true" />
+
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:px-10">
             <motion.div
-              initial={reducedMotion ? false : { opacity: 0, x: 36, scale: 0.97 }}
-              animate={reducedMotion ? undefined : { opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.18, ease: "easeOut" }}
-              className="order-1 lg:order-2"
+              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+              animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, ease: "easeOut" }}
+              className="max-w-2xl"
             >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#d8a900] ring-1 ring-white/10">
-                <Image
-                  src={heroImage}
-                  alt="Ręcznie wykonany dywan przedstawiający sportowy samochód"
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 55vw, 100vw"
-                  className="object-cover"
-                />
-                <motion.div
-                  initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                  animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.8, ease: "easeOut" }}
-                  className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-md bg-neutral-950/90 px-3 py-2 text-xs font-medium text-white backdrop-blur-sm"
+              <div className="mb-6 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border-2 border-[var(--ruggy-ink)] bg-white px-4 py-2 text-sm font-bold shadow-[4px_4px_0_var(--ruggy-ink)]">
+                <Sparkles className="size-4 text-[var(--ruggy-coral)]" aria-hidden="true" />
+                Dywan dokładnie taki jak chcesz
+              </div>
+
+              <h1 className="max-w-3xl text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
+                Zróbmy dywan,
+                <span className="mt-1 block text-[var(--ruggy-blue)]">który brzmi</span>
+                <span className="ruggy-underline relative inline-block">jak Ty.</span>
+              </h1>
+
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
+                Wujek Dywaniarz zamienia Twoje zdjęcia, historie i dziwne pomysły
+                w ręcznie tuftowane dywany. Bez gotowców. Bez nudy.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/zamow"
+                  className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--ruggy-blue)] px-7 text-base font-black text-white shadow-[0_8px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_12px_0_var(--ruggy-ink)] ${focusClass}`}
                 >
-                  <Sparkles size={14} className="text-[#ffe44c]" aria-hidden="true" />
-                  Wykonane ręcznie
-                </motion.div>
+                  Pokaż nam swój pomysł
+                  <ArrowRight className="size-5" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="#realizacje"
+                  className={`inline-flex min-h-14 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-7 text-base font-black transition-colors hover:bg-[var(--ruggy-yellow)] ${focusClass}`}
+                >
+                  Zobacz realizacje
+                </Link>
+              </div>
+
+              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-bold text-[var(--ruggy-body)]">
+                <span className="flex items-center gap-2">
+                  <span className="flex -space-x-2" aria-hidden="true">
+                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-blue)]" />
+                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-coral)]" />
+                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-yellow)]" />
+                  </span>
+                  Ponad 10 tys. osób śledzi Ruggy
+                </span>
+                <span className="flex items-center gap-1 text-[var(--ruggy-ink)]">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="size-4 fill-[var(--ruggy-yellow)]" aria-hidden="true" />
+                  ))}
+                  <span className="sr-only">Pięć gwiazdek</span>
+                </span>
               </div>
             </motion.div>
 
             <motion.div
-              initial={reducedMotion ? false : { opacity: 0, x: -28 }}
-              animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.08, ease: "easeOut" }}
-              className="order-2 max-w-xl lg:order-1"
+              initial={reducedMotion ? false : { opacity: 0, x: 32, rotate: 1 }}
+              animate={reducedMotion ? undefined : { opacity: 1, x: 0, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.12, ease: "easeOut" }}
+              className="relative"
             >
-              <p className="text-sm font-medium uppercase tracking-[0.16em] text-[#ffe44c]">
-                Dywany na zamówienie
-              </p>
-              <h1 className="mt-5 max-w-lg text-5xl font-semibold tracking-tight text-white sm:text-6xl">
-                Twój pomysł. Mój warsztat.
-              </h1>
-              <p className="mt-6 max-w-lg text-base leading-7 text-neutral-300 sm:text-lg">
-                Tworzę ręcznie dywany inspirowane tym, co jest dla Ciebie ważne.
-                Prześlij zdjęcie, wybierz wariant i zamów swój unikalny projekt
-                online.
-              </p>
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.42, ease: "easeOut" }}
-                className="mt-8 flex flex-col gap-3 sm:flex-row"
-              >
-                <motion.div whileHover={reducedMotion ? undefined : { y: -2 }} transition={{ duration: 0.18 }}>
-                  <Link
-                    href="/zamow"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#ffe44c] px-5 text-sm font-bold text-neutral-950 transition-colors hover:bg-[#f5d62c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffe44c]"
-                  >
-                    Wybierz swój dywan
-                    <ArrowRight size={17} aria-hidden="true" />
-                  </Link>
-                </motion.div>
-                <Link
-                  href="#jak-to-dziala"
-                  className="inline-flex h-12 items-center justify-center rounded-md border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white/60 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Zobacz, jak to działa
-                </Link>
-              </motion.div>
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0 }}
-                animate={reducedMotion ? undefined : { opacity: 1 }}
-                transition={{ duration: 0.55, delay: 0.58 }}
-                className="mt-10 grid max-w-lg grid-cols-3 border-t border-white/15 pt-5"
-              >
-                <div className="pr-3">
-                  <p className="text-lg font-semibold text-white">1:1</p>
-                  <p className="mt-1 text-xs leading-5 text-neutral-400">Twój projekt</p>
-                </div>
-                <div className="border-l border-white/15 px-3">
-                  <p className="text-lg font-semibold text-white">Online</p>
-                  <p className="mt-1 text-xs leading-5 text-neutral-400">Proste zamówienie</p>
-                </div>
-                <div className="border-l border-white/15 pl-3">
-                  <p className="text-lg font-semibold text-white">InPost</p>
-                  <p className="mt-1 text-xs leading-5 text-neutral-400">Wygodna dostawa</p>
-                </div>
-              </motion.div>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-2 shadow-[12px_14px_0_var(--ruggy-ink)] sm:p-3">
+                <Image
+                  src={heroWorkshop}
+                  alt="Ręczne wykańczanie niebieskiego dywanu Ruggy w pracowni"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 56vw, 100vw"
+                  className="rounded-[2rem] object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -start-3 rotate-[-5deg] rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-5 py-3 text-sm font-black shadow-[5px_5px_0_var(--ruggy-ink)] sm:start-8 sm:text-base">
+                <span className="block text-xs font-bold uppercase tracking-widest">Aktualnie</span>
+                Tuftujemy marzenia
+              </div>
+              <div className="absolute -end-3 -top-6 flex size-24 rotate-[8deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
+                Jeden jedyny egzemplarz
+              </div>
             </motion.div>
           </div>
         </section>
 
-        <section id="jak-to-dziala" className="scroll-mt-16 bg-[#ffe44c]">
-          <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10">
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="max-w-2xl"
-            >
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-neutral-700">
-                Prosty proces
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-                Od inspiracji do gotowego dywanu.
-              </h2>
-              <p className="mt-4 text-base leading-7 text-neutral-800">
-                Wszystkie najważniejsze informacje podajesz w jednym formularzu,
-                a rezerwacja realizacji następuje po bezpiecznej płatności online.
-              </p>
-            </motion.div>
+        <section id="dlaczego" className="scroll-mt-24 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)]">
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">Więcej niż dekoracja</p>
+              <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Kawałek Ciebie, tylko bardziej miękki.</h2>
+            </div>
 
-            <div className="mt-12 grid gap-0 border-t border-neutral-950/20 md:grid-cols-3">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-
+            <ul className="mt-12 grid gap-5 lg:grid-cols-3">
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon;
                 return (
-                  <motion.article
-                    key={step.number}
-                    initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+                  <motion.li
+                    key={benefit.title}
+                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                     whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.25 }}
-                    transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
-                    className="border-b border-neutral-950/20 py-7 md:border-b-0 md:border-r md:px-7 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.5, delay: index * 0.08 }}
+                    className="rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
                   >
-                    <div className="flex items-center justify-between">
-                      <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
-                      <span className="font-syne text-xs text-neutral-700">{step.number}</span>
-                    </div>
-                    <h3 className="mt-8 text-xl font-semibold text-neutral-950">{step.title}</h3>
-                    <p className="mt-3 max-w-xs text-sm leading-6 text-neutral-800">
-                      {step.description}
-                    </p>
-                  </motion.article>
+                    <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)]">
+                      <Icon className="size-6" aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-7 text-2xl font-black tracking-tight">{benefit.title}</h3>
+                    <p className="mt-3 text-base leading-7 text-[var(--ruggy-body)]">{benefit.description}</p>
+                  </motion.li>
                 );
               })}
+            </ul>
+          </div>
+        </section>
+
+        <section id="realizacje" className="scroll-mt-24 bg-[var(--ruggy-ink)] text-white">
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-yellow)]">Pomysł nie zna kształtu</p>
+                <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Galeria rzeczy, które nie chciały być zwykłe.</h2>
+              </div>
+              <a
+                href="https://www.instagram.com/ruggy.pl/"
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full border-2 border-white px-5 font-bold transition-colors hover:bg-white hover:text-[var(--ruggy-ink)] ${focusLightClass}`}
+              >
+                <AtSign className="size-5" aria-hidden="true" />
+                @ruggy.pl
+              </a>
+            </div>
+
+            <ul className="mt-12 grid gap-7 sm:grid-cols-3 sm:gap-5">
+              {gallery.map((item, index) => (
+                <motion.li
+                  key={item.label}
+                  initial={reducedMotion ? false : { opacity: 0, y: 28 }}
+                  whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.55, delay: index * 0.1 }}
+                  className={item.className}
+                >
+                  <figure className="overflow-hidden rounded-[2rem] border-2 border-white/80 bg-[var(--ruggy-canvas)] p-2 text-[var(--ruggy-ink)]">
+                    <div className="relative aspect-square overflow-hidden rounded-[1.5rem]">
+                      <Image
+                        src={item.image}
+                        alt={item.alt}
+                        fill
+                        sizes="(min-width: 640px) 33vw, 100vw"
+                        className="object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                    <figcaption className="flex items-center justify-between gap-3 px-3 py-3 text-base font-black">
+                      {item.label}
+                      <span className="text-[var(--ruggy-blue)]" aria-hidden="true">✦</span>
+                    </figcaption>
+                  </figure>
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section id="jak-to-dziala" className="scroll-mt-24 bg-[var(--ruggy-canvas)]">
+          <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-10">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">Cztery kroki</p>
+              <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Od hej, mam pomysł do hej, mam dywan.</h2>
+              <p className="mt-5 max-w-md text-lg leading-8 text-[var(--ruggy-body)]">
+                Formularz zajmie chwilę. Ręczne wykonanie trochę dłużej. Warto.
+              </p>
+              <Link
+                href="/zamow"
+                className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ruggy-blue)] px-6 font-black text-white transition-transform hover:-translate-y-0.5 ${focusClass}`}
+              >
+                Zacznij od pomysłu
+                <ArrowRight className="size-5" aria-hidden="true" />
+              </Link>
+            </div>
+
+            <ol className="space-y-4">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <motion.li
+                    key={step.number}
+                    initial={reducedMotion ? false : { opacity: 0, x: 24 }}
+                    whileInView={reducedMotion ? undefined : { opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ duration: 0.5, delay: index * 0.07 }}
+                    className="group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
+                  >
+                    <span className="text-5xl font-black tracking-[-0.07em] text-[var(--ruggy-blue-soft-strong)] group-hover:text-[var(--ruggy-yellow)] sm:text-7xl">{step.number}</span>
+                    <div>
+                      <h3 className="text-2xl font-black tracking-tight">{step.title}</h3>
+                      <p className="mt-2 max-w-xl text-base leading-7 text-[var(--ruggy-body)]">{step.description}</p>
+                    </div>
+                    <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
+                      <Icon className="size-6" aria-hidden="true" />
+                    </span>
+                  </motion.li>
+                );
+              })}
+            </ol>
+          </div>
+        </section>
+
+        <section id="faq" className="scroll-mt-24 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)]">
+          <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:px-10">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em]">Zanim zapytasz na DM</p>
+              <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Pytania mają miękkie lądowanie.</h2>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq) => (
+                <details key={faq.question} className="group rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] open:shadow-[5px_5px_0_var(--ruggy-ink)]">
+                  <summary className={`flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-lg font-black [&::-webkit-details-marker]:hidden ${focusClass}`}>
+                    {faq.question}
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-ink)] text-white transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                  </summary>
+                  <p className="max-w-2xl px-5 pb-5 text-base leading-7 text-[var(--ruggy-body)]">{faq.answer}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="inspiracja" className="scroll-mt-16 bg-neutral-50">
-          <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:px-10">
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, x: -24 }}
-              whileInView={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+        <section className="bg-[var(--ruggy-blue-soft)] px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.98 }}
+            whileInView={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            className="ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20"
+          >
+            <span className="flex size-14 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
+              <Sparkles className="size-7" aria-hidden="true" />
+            </span>
+            <h2 className="mt-7 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Masz zdjęcie, pomysł albo bardzo konkretną fazę?</h2>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">Super. To dokładnie tyle, ile potrzebujemy, żeby zacząć.</p>
+            <Link
+              href="/zamow"
+              className={`mt-8 inline-flex min-h-14 items-center gap-3 rounded-full bg-[var(--ruggy-yellow)] px-7 text-base font-black text-[var(--ruggy-ink)] transition-transform hover:-translate-y-1 ${focusClass}`}
             >
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-neutral-500">
-                Zaczyna się od Ciebie
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-                Wybierz temat, który chcesz mieć zawsze pod nogami.
-              </h2>
-              <p className="mt-5 text-base leading-7 text-neutral-600">
-                Samochód, zwierzak, logo, ulubiony symbol albo prezent dla kogoś
-                bliskiego. Zdjęcie referencyjne pomaga uchwycić to, co ma być
-                najważniejsze w projekcie.
-              </p>
-
-              <ul className="mt-7 space-y-4">
-                {benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-3 text-sm leading-6 text-neutral-700">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-[#ffe44c]">
-                      <Check size={13} strokeWidth={3} aria-hidden="true" />
-                    </span>
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/zamow"
-                className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950"
-              >
-                Przejdź do zamówienia
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, x: 24, scale: 0.98 }}
-              whileInView={reducedMotion ? undefined : { opacity: 1, x: 0, scale: 1 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="relative overflow-hidden rounded-lg bg-neutral-950 p-5 sm:p-8"
-            >
-              <div className="flex min-h-[280px] items-center justify-center sm:min-h-[380px]">
-                <Image
-                  src={rugCutout}
-                  alt="Przykład dywanu wykonanego na zamówienie"
-                  sizes="(min-width: 1024px) 48vw, 100vw"
-                  className="h-auto w-full object-contain"
-                />
-              </div>
-              <div className="flex items-center justify-between border-t border-white/15 pt-4 text-xs text-neutral-400">
-                <span>Przykład realizacji</span>
-                <span className="text-[#ffe44c]">Carpetiem</span>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="bg-neutral-950 text-white">
-          <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:px-10">
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="max-w-2xl"
-            >
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#ffe44c]">
-                Zróbmy coś Twojego
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Gotowy na własny projekt?
-              </h2>
-              <p className="mt-4 text-base leading-7 text-neutral-300">
-                Wybierz dostępny wariant, określ szczegóły i opłać zamówienie.
-                Resztą zajmę się w pracowni.
-              </p>
-            </motion.div>
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
-              whileHover={reducedMotion ? undefined : { y: -2 }}
-            >
-              <Link
-                href="/zamow"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#ffe44c] px-5 text-sm font-bold text-neutral-950 transition-colors hover:bg-[#f5d62c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffe44c]"
-              >
-                Zamów swój dywan
-                <ArrowRight size={17} aria-hidden="true" />
-              </Link>
-            </motion.div>
-          </div>
+              Wyceń swój dywan
+              <ArrowRight className="size-5" aria-hidden="true" />
+            </Link>
+          </motion.div>
         </section>
       </main>
 
-      <footer className="bg-neutral-950 px-5 pb-8 text-neutral-400 sm:px-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 border-t border-white/15 pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-lobster text-xl text-white">Carpetiem</span>
-          <span>Dywany tworzone z pomysłu.</span>
+      <footer className="bg-[var(--ruggy-ink)] px-5 py-10 text-white sm:px-8 lg:px-10">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 border-b border-white/20 pb-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+          <div>
+            <Link href="/" className={`ruggy-wordmark text-5xl ${focusLightClass}`}>
+              ruggy<span className="text-[var(--ruggy-yellow)]">.</span>
+            </Link>
+            <p className="mt-4 max-w-sm text-base leading-7 text-white/70">Personalizowane dywany z pomysłu, ręki i dużej ilości włóczki.</p>
+          </div>
+          <nav aria-label="Stopka" className="flex flex-col items-start gap-3 text-sm font-bold">
+            <Link href="#dlaczego" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dlaczego Ruggy</Link>
+            <Link href="#jak-to-dziala" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Jak to działa</Link>
+            <Link href="#faq" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>FAQ</Link>
+          </nav>
+          <div className="flex flex-col items-start gap-3 text-sm font-bold">
+            <a href="https://www.instagram.com/ruggy.pl/" target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>
+              <AtSign className="size-5" aria-hidden="true" />
+              Instagram
+            </a>
+            <span className="text-white/50">Ruggy, Polska</span>
+          </div>
+        </div>
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <span>© 2026 Ruggy. Wszystkie prawa zastrzeżone.</span>
+          <span>Stworzone ręcznie. Tak jak dywany.</span>
         </div>
       </footer>
     </div>

@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { formatLocalDateKey } from "@/lib/booking-date";
+import {
+  calculateCustomRugPriceCents,
+  formatPriceCents,
+} from "@/lib/custom-rug-price";
 import { bookingSchema } from "@/schema/booking";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +28,8 @@ export type DeliveryMethod = "parcel_locker" | "courier";
 export type Booking = {
   rugTypeId: string;
   pickedSize: number | null;
+  customWidthCm: number | null;
+  customHeightCm: number | null;
   pickupDate: Date | null;
   customerName: string;
   customerEmail: string;
@@ -54,6 +60,8 @@ export default function ProductPage({
   const [booking, setBooking] = useState<Booking>({
     rugTypeId: id,
     pickedSize: null,
+    customWidthCm: null,
+    customHeightCm: null,
     pickupDate: null,
     customerName: "",
     customerEmail: "",
@@ -172,12 +180,22 @@ export default function ProductPage({
         ? "Kurier"
         : "Nie wybrano";
 
+  const customPriceCents = calculateCustomRugPriceCents(
+    booking.customWidthCm,
+    booking.customHeightCm,
+  );
+  const selectedSize = booking.pickedSize
+    ? "Gotowy rozmiar"
+    : customPriceCents
+      ? `${booking.customWidthCm} × ${booking.customHeightCm} cm · ${formatPriceCents(customPriceCents)}`
+      : "Nie wybrano";
+
   return (
-    <main className="min-h-screen bg-neutral-50 text-neutral-950">
-      <header className="border-b border-neutral-200 bg-neutral-50">
+    <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+      <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)]">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
-          <Link href="/" className="font-lobster text-2xl text-neutral-950">
-            Carpetiem
+          <Link href="/" className="ruggy-wordmark text-4xl text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]">
+            ruggy<span className="text-[var(--ruggy-blue)]">.</span>
           </Link>
           <Link
             href="/zamow"
@@ -189,30 +207,30 @@ export default function ProductPage({
         </div>
       </header>
 
-      <section className="bg-neutral-950 text-white">
+      <section className="ruggy-thread-bg bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-ink)]">
         <div className="mx-auto flex w-full max-w-7xl flex-col justify-between gap-5 px-5 py-7 sm:px-8 sm:py-9 lg:flex-row lg:items-end lg:px-10">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ffe44c]">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ruggy-blue)]">
               Zamówienie
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
               Skonfiguruj swój dywan
             </h1>
-            <p className="mt-3 text-sm leading-6 text-neutral-300">
+            <p className="mt-3 text-base leading-7 text-[var(--ruggy-body)]">
               {rugType?.description ||
                 "Wybierz szczegóły projektu, termin oraz sposób dostawy."}
             </p>
           </div>
 
-          <div className="border-l border-white/20 pl-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+          <div className="border-s-2 border-[var(--ruggy-ink)] ps-4">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--ruggy-muted)]">
               Wybrany wariant
             </p>
-            <p className="mt-1 text-base font-semibold text-white">
+            <p className="mt-1 text-base font-black text-[var(--ruggy-ink)]">
               {rugType?.name || `Wariant #${id}`}
             </p>
             {rugType?.lead_time_days ? (
-              <p className="mt-0.5 text-xs text-neutral-400">
+              <p className="mt-0.5 text-xs text-[var(--ruggy-muted)]">
                 Około {rugType.lead_time_days} dni realizacji
               </p>
             ) : null}
@@ -264,7 +282,7 @@ export default function ProductPage({
                   <span>
                     Rozmiar:{" "}
                     <strong className="text-neutral-800">
-                      {booking.pickedSize ? "Wybrany" : "Nie wybrano"}
+                      {selectedSize}
                     </strong>
                   </span>
                   <span>
@@ -288,7 +306,7 @@ export default function ProductPage({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-neutral-950 px-6 text-sm font-semibold text-[#ffe44c] transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 disabled:cursor-wait disabled:opacity-70"
+              className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-blue)] px-6 text-sm font-black text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)] disabled:cursor-wait disabled:opacity-70"
             >
               <CreditCard size={17} aria-hidden="true" />
               {isSubmitting ? "Przygotowywanie..." : "Zapłać i zarezerwuj"}
@@ -314,7 +332,7 @@ function FormPanel({
   return (
     <section className="rounded-lg border border-neutral-200 bg-white p-5 sm:p-6">
       <div className="mb-6 flex items-center gap-3 border-b border-neutral-200 pb-4">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#ffe44c] text-xs font-bold text-neutral-950">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-xs font-black text-[var(--ruggy-ink)]">
           {number}
         </span>
         <div>

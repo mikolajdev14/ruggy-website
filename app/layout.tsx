@@ -28,8 +28,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Carpetiem | Dywany na zamówienie",
-  description: "Ręcznie wykonane dywany tworzone na podstawie Twojego pomysłu.",
+  title: "Ruggy | Personalizowane dywany",
+  description:
+    "Ręcznie tuftowane dywany tworzone na podstawie Twojego pomysłu. Zaprojektuj z Ruggy coś naprawdę swojego.",
 };
 
 export default function RootLayout({
@@ -51,7 +52,7 @@ export default function RootLayout({
         lobster.variable,
       )}
     >
-      <body className="min-h-full font-syne flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );
 }
