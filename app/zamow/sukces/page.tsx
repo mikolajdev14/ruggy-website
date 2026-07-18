@@ -46,20 +46,20 @@ export default async function SuccessPage({
 
         <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] sm:text-4xl">
           {result.success
-            ? "Zamówienie zostało przyjęte"
+            ? "Dziękujemy za zamówienie!"
             : isPending
               ? "Płatność jest przetwarzana"
               : "Nie udało się zapisać zamówienia"}
         </h1>
         <p className="mt-4 text-base leading-7 text-[var(--ruggy-body)]">
           {result.success
-            ? "Płatność została potwierdzona, a zamówienie zapisane. Szczegóły realizacji są już dostępne w panelu administracyjnym."
+            ? "Twój pomysł jest już po naszej stronie. Odezwę się, jeśli będę potrzebował dodatkowych informacji. Do zobaczenia w pracowni!"
             : isPending
               ? "Stripe nie potwierdził jeszcze płatności. Zamówienie zostanie zapisane automatycznie po otrzymaniu potwierdzenia."
               : "Płatność mogła zostać przyjęta, ale zapis zamówienia wymaga sprawdzenia. Zachowaj identyfikator sesji widoczny poniżej."}
         </p>
 
-        {sessionId ? (
+        {sessionId && !result.success ? (
           <p className="mt-5 break-all rounded-xl bg-[var(--ruggy-blue-soft)] px-4 py-3 font-mono text-xs text-[var(--ruggy-body)]">
             {sessionId}
           </p>
@@ -72,12 +72,14 @@ export default async function SuccessPage({
           >
             Wróć na stronę główną
           </Link>
-          <Link
-            href="/zamow"
-            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-6 text-sm font-black transition-colors hover:bg-[var(--ruggy-yellow)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
-          >
-            Zobacz warianty
-          </Link>
+          {!result.success ? (
+            <Link
+              href="/zamow"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-6 text-sm font-black transition-colors hover:bg-[var(--ruggy-yellow)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
+            >
+              Zobacz warianty
+            </Link>
+          ) : null}
         </div>
       </section>
     </main>

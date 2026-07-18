@@ -6,6 +6,7 @@ import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { consumeReferenceImageUploadLimit } from "@/lib/upload-rate-limit";
+import { headers } from "next/headers";
 
 const REFERENCE_IMAGES_BUCKET = "booking-reference-images";
 const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -186,12 +187,38 @@ export async function createCheckoutSession(input: unknown) {
     : size!.label;
   const priceCents = isCustomSize ? customPriceCents! : Number(size!.price_cents);
 
+  const requestOrigin = (await headers()).get("origin");
+  const checkoutOriginSource =
+    requestOrigin ?? process.env.NEXT_PUBLIC_APP_URL;
+
+  if (!checkoutOriginSource) {
+    return {
+      success: false,
+      message: "Nie udało się ustalić adresu powrotu po płatności.",
+    };
+  }
+
+  let checkoutOrigin: string;
+
+  try {
+    checkoutOrigin = new URL(checkoutOriginSource).origin;
+  } catch {
+    return {
+      success: false,
+      message: "Adres powrotu po płatności jest nieprawidłowy.",
+    };
+  }
+
+  const successUrl = new URL("/zamow/sukces", checkoutOrigin);
+  successUrl.search = "?session_id={CHECKOUT_SESSION_ID}";
+  const cancelUrl = new URL("/zamow/anulowano", checkoutOrigin);
+
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: booking.customerEmail,
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/zamow/sukces?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/zamow/anulowano`,
+    success_url: successUrl.toString(),
+    cancel_url: cancelUrl.toString(),
     line_items: [
       {
         price_data: {

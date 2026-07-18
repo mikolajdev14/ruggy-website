@@ -69,10 +69,10 @@ const statusLabels: Record<string, string> = Object.fromEntries(
 );
 
 const statusClasses: Record<string, string> = {
-  paid: "bg-[#fff2cf] text-[#8a6411]",
-  in_progress: "bg-[#e6f4f8] text-[#24748a]",
-  completed: "bg-[#e4f4eb] text-[#287653]",
-  cancelled: "bg-[#f5f5f5] text-[#525252]",
+  paid: "bg-[#fff1bf] text-[#8a6411]",
+  in_progress: "bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]",
+  completed: "bg-[#e1f1e8] text-[var(--ruggy-success)]",
+  cancelled: "bg-[#ece9e2] text-[var(--ruggy-muted)]",
 };
 
 const formatDate = (value: string | null) => {
@@ -344,8 +344,8 @@ export default function AdminDashboardClient({
     <>
       <style>{`
         .admin-calendar {
-          --rdp-accent-color: #0a0a0a;
-          --rdp-today-color: #0a0a0a;
+          --rdp-accent-color: var(--ruggy-blue);
+          --rdp-today-color: var(--ruggy-blue);
           width: 100%;
         }
         .admin-calendar .rdp-months,
@@ -355,12 +355,12 @@ export default function AdminDashboardClient({
           max-width: 100%;
         }
         .admin-calendar .rdp-caption_label {
-          color: #0a0a0a;
+          color: var(--ruggy-ink);
           font-size: 0.9rem;
           font-weight: 700;
         }
         .admin-calendar .rdp-weekday {
-          color: #737373;
+          color: var(--ruggy-muted);
           font-size: 0.68rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -368,41 +368,41 @@ export default function AdminDashboardClient({
         .admin-calendar .rdp-day_button {
           width: 2.25rem;
           height: 2.25rem;
-          border-radius: 0.375rem;
+          border-radius: 0.75rem;
           font-size: 0.8rem;
         }
         .admin-calendar .rdp-today:not(.blocked) .rdp-day_button {
-          background: #ffe44c;
+          background: var(--ruggy-yellow);
         }
         .admin-calendar .blocked .rdp-day_button {
-          background: #0a0a0a;
+          background: var(--ruggy-ink);
           color: white;
         }
         .admin-calendar .booked .rdp-day_button {
-          box-shadow: inset 0 0 0 2px #e0bd00;
+          box-shadow: inset 0 0 0 2px var(--ruggy-yellow);
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-5">
+      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         <section id="overview" className="scroll-mt-28">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ruggy-blue)]">
                 Pulpit
               </p>
-              <h1 className="mt-1 text-2xl font-semibold text-[#0a0a0a] sm:text-3xl">
+              <h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[var(--ruggy-ink)] sm:text-4xl">
                 Przegląd studia
               </h1>
-              <p className="mt-1 text-sm text-[#737373]">
+              <p className="mt-2 text-sm leading-6 text-[var(--ruggy-body)]">
                 Aktualny stan zamówień i terminów.
               </p>
             </div>
-            <p className="text-xs font-medium text-[#737373]">
+            <p className="text-xs font-semibold text-[var(--ruggy-muted)]">
               Dane aktualne teraz
             </p>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Wszystkie zamówienia"
               value={String(stats.total)}
@@ -431,15 +431,15 @@ export default function AdminDashboardClient({
 
         <section
           id="orders"
-          className="scroll-mt-28 overflow-hidden rounded-lg border border-[#e5e5e5] bg-white"
+          className="scroll-mt-28 overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] shadow-[5px_5px_0_var(--ruggy-border)]"
         >
-          <div className="border-b border-[#e5e5e5] px-4 py-4 sm:px-5">
+          <div className="border-b-2 border-[var(--ruggy-border)] px-4 py-5 sm:px-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-[#0a0a0a]">
+                <h2 className="text-xl font-black tracking-tight text-[var(--ruggy-ink)]">
                   Historia zamówień
                 </h2>
-                <p className="mt-0.5 text-xs text-[#737373]">
+                <p className="mt-1 text-xs text-[var(--ruggy-muted)]">
                   {filteredBookings.length} z {bookings.length} rekordów
                 </p>
               </div>
@@ -447,7 +447,7 @@ export default function AdminDashboardClient({
               <label className="relative block w-full xl:w-72">
                 <Search
                   size={16}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#a3a3a3]"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ruggy-muted)]"
                   aria-hidden="true"
                 />
                 <span className="sr-only">Szukaj zamówień</span>
@@ -455,12 +455,12 @@ export default function AdminDashboardClient({
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Szukaj klienta, e-maila lub ID"
-                  className="h-10 w-full rounded-md border border-[#d4d4d4] bg-[#fafafa] pl-9 pr-3 text-sm text-[#0a0a0a] outline-none transition-colors placeholder:text-[#a3a3a3] focus:border-neutral-950 focus:ring-2 focus:ring-neutral-950/10"
+                  className="h-11 w-full rounded-xl border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] pl-9 pr-3 text-sm text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] focus:border-[var(--ruggy-blue)] focus:ring-2 focus:ring-[var(--ruggy-blue)]/15"
                 />
               </label>
             </div>
 
-            <div className="mt-4 flex gap-1 overflow-x-auto border-b border-[#e5e5e5]">
+            <div className="mt-5 flex gap-1 overflow-x-auto border-b-2 border-[var(--ruggy-border)]">
               <FilterTab
                 active={statusFilter === "all"}
                 label="Wszystkie"
@@ -482,7 +482,7 @@ export default function AdminDashboardClient({
           {filteredBookings.length ? (
             <>
               <div className="hidden xl:block">
-                <div className="grid min-w-[900px] grid-cols-[72px_minmax(220px,1.5fr)_120px_140px_120px_110px_28px] items-center gap-3 border-b border-[#e5e5e5] bg-[#fafafa] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#737373]">
+                <div className="grid min-w-[900px] grid-cols-[72px_minmax(220px,1.5fr)_120px_140px_120px_110px_28px] items-center gap-3 border-b-2 border-[var(--ruggy-border)] bg-[var(--ruggy-blue-soft)] px-5 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--ruggy-muted)]">
                   <span>ID</span>
                   <span>Klient i projekt</span>
                   <span>Termin</span>
@@ -491,47 +491,47 @@ export default function AdminDashboardClient({
                   <span className="text-right">Kwota</span>
                   <span />
                 </div>
-                <div className="max-h-[520px] min-w-[900px] divide-y divide-[#e5e5e5] overflow-y-auto">
+                <div className="max-h-[520px] min-w-[900px] divide-y divide-[var(--ruggy-border)] overflow-y-auto">
                   {filteredBookings.map((booking) => (
                     <button
                       key={booking.id}
                       type="button"
                       onClick={() => setSelectedBookingId(booking.id)}
-                      className="grid w-full grid-cols-[72px_minmax(220px,1.5fr)_120px_140px_120px_110px_28px] items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[#fffde7] focus-visible:bg-[#fffde7] focus-visible:outline-none"
+                      className="grid w-full grid-cols-[72px_minmax(220px,1.5fr)_120px_140px_120px_110px_28px] items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[#fff8d9] focus-visible:bg-[#fff8d9] focus-visible:outline-none"
                     >
-                      <span className="text-xs font-semibold text-[#525252]">
+                      <span className="text-xs font-black text-[var(--ruggy-blue)]">
                         #{booking.id}
                       </span>
                       <span className="flex min-w-0 items-center gap-3">
                         <BookingAvatar booking={booking} />
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-[#0a0a0a]">
+                          <span className="block truncate text-sm font-black text-[var(--ruggy-ink)]">
                             {booking.customerName || "Klient bez nazwy"}
                           </span>
-                          <span className="mt-0.5 block truncate text-xs text-[#737373]">
+                          <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
                             {booking.rugTypeName || "Dywan"} ·{" "}
                             {booking.rugSizeLabel || "brak rozmiaru"}
                           </span>
                         </span>
                       </span>
-                      <span className="text-xs font-medium text-[#525252]">
+                      <span className="text-xs font-semibold text-[var(--ruggy-body)]">
                         {formatShortDate(booking.bookingDate)}
                       </span>
-                      <span className="flex items-center gap-2 text-xs text-[#525252]">
+                      <span className="flex items-center gap-2 text-xs text-[var(--ruggy-body)]">
                         <Truck
                           size={14}
-                          className="text-[#a3a3a3]"
+                          className="text-[var(--ruggy-muted)]"
                           aria-hidden="true"
                         />
                         {getDeliveryLabel(booking.deliveryMethod)}
                       </span>
                       <StatusBadge status={booking.status} />
-                      <span className="text-right text-sm font-semibold text-[#0a0a0a]">
+                      <span className="text-right text-sm font-black text-[var(--ruggy-ink)]">
                         {formatPrice(booking.priceCents)}
                       </span>
                       <ChevronRight
                         size={16}
-                        className="text-[#a3a3a3]"
+                        className="text-[var(--ruggy-muted)]"
                         aria-hidden="true"
                       />
                     </button>
@@ -539,34 +539,34 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
-              <div className="divide-y divide-[#e5e5e5] xl:hidden">
+              <div className="divide-y divide-[var(--ruggy-border)] xl:hidden">
                 {filteredBookings.map((booking) => (
                   <button
                     key={booking.id}
                     type="button"
                     onClick={() => setSelectedBookingId(booking.id)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[#fffde7]"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[#fff8d9]"
                   >
                     <BookingAvatar booking={booking} />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="truncate text-sm font-semibold text-[#0a0a0a]">
+                        <span className="truncate text-sm font-black text-[var(--ruggy-ink)]">
                           {booking.customerName || "Klient bez nazwy"}
                         </span>
                         <StatusBadge status={booking.status} />
                       </span>
-                      <span className="mt-1 block truncate text-xs text-[#737373]">
+                      <span className="mt-1 block truncate text-xs text-[var(--ruggy-muted)]">
                         #{booking.id} · {booking.rugTypeName || "Dywan"} ·{" "}
                         {formatShortDate(booking.bookingDate)}
                       </span>
                     </span>
                     <span className="shrink-0 text-right">
-                      <span className="block text-xs font-semibold text-[#0a0a0a]">
+                      <span className="block text-xs font-black text-[var(--ruggy-ink)]">
                         {formatPrice(booking.priceCents)}
                       </span>
                       <ChevronRight
                         size={16}
-                        className="ml-auto mt-1 text-[#a3a3a3]"
+                        className="ml-auto mt-1 text-[var(--ruggy-muted)]"
                         aria-hidden="true"
                       />
                     </span>
@@ -585,35 +585,35 @@ export default function AdminDashboardClient({
 
         <section
           id="calendar"
-          className="scroll-mt-28 overflow-hidden rounded-lg border border-[#e5e5e5] bg-white"
+          className="scroll-mt-28 overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] shadow-[5px_5px_0_var(--ruggy-border)]"
         >
-          <div className="flex flex-col justify-between gap-3 border-b border-[#e5e5e5] px-4 py-4 sm:flex-row sm:items-end sm:px-5">
+          <div className="flex flex-col justify-between gap-3 border-b-2 border-[var(--ruggy-border)] px-4 py-5 sm:flex-row sm:items-end sm:px-6">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-[#0a0a0a]">
+              <h2 className="flex items-center gap-2 text-xl font-black text-[var(--ruggy-ink)]">
                 <CalendarDays
                   size={19}
-                  className="text-neutral-950"
+                  className="text-[var(--ruggy-blue)]"
                   aria-hidden="true"
                 />
                 Kalendarz realizacji
               </h2>
-              <p className="mt-1 text-xs text-[#737373]">
+              <p className="mt-1 text-xs text-[var(--ruggy-muted)]">
                 Plan zamówień i dni wolnych
               </p>
             </div>
-            <div className="flex flex-wrap gap-4 text-xs text-[#525252]">
+            <div className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--ruggy-body)]">
               <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-[#e0bd00]" /> Zamówienie
+                <span className="size-2 rounded-full bg-[var(--ruggy-yellow)]" /> Zamówienie
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-[#0a0a0a]" /> Dzień
+                <span className="size-2 rounded-full bg-[var(--ruggy-ink)]" /> Dzień
                 wolny
               </span>
             </div>
           </div>
 
           <div className="grid xl:grid-cols-[minmax(430px,1fr)_380px]">
-            <div className="p-3 sm:p-5 xl:border-r xl:border-[#e5e5e5]">
+            <div className="p-3 sm:p-6 xl:border-r-2 xl:border-[var(--ruggy-border)]">
               <DayPicker
                 className="admin-calendar"
                 mode="multiple"
@@ -632,63 +632,63 @@ export default function AdminDashboardClient({
             <div
               onMouseEnter={clearCalendarHoverTimeout}
               onMouseLeave={handleCalendarMouseLeave}
-              className="border-t border-[#e5e5e5] bg-[#fafafa] xl:border-t-0"
+              className="border-t-2 border-[var(--ruggy-border)] bg-[var(--ruggy-blue-soft)] xl:border-t-0"
             >
-              <div className="border-b border-[#e5e5e5] p-4 sm:p-5">
+              <div className="border-b-2 border-[var(--ruggy-border)] p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#737373]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ruggy-blue)]">
                       Wybrany dzień
                     </p>
-                    <h3 className="mt-1 text-base font-semibold text-[#0a0a0a]">
+                    <h3 className="mt-1 text-base font-black text-[var(--ruggy-ink)]">
                       {formatDate(activeCalendarDate)}
                     </h3>
                   </div>
-                  <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-[#525252] shadow-sm ring-1 ring-[#e5e5e5]">
+                  <span className="rounded-full bg-[var(--ruggy-yellow)] px-2.5 py-1 text-xs font-black text-[var(--ruggy-ink)]">
                     {calendarBookings.length}
                   </span>
                 </div>
 
                 {calendarBookings.length ? (
-                  <div className="mt-4 divide-y divide-[#e5e5e5] overflow-hidden rounded-md border border-[#e5e5e5] bg-white">
+                  <div className="mt-4 divide-y divide-[var(--ruggy-border)] overflow-hidden rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)]">
                     {calendarBookings.map((booking) => (
                       <button
                         key={booking.id}
                         type="button"
                         onClick={() => setSelectedBookingId(booking.id)}
-                        className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[#fffde7]"
+                        className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[#fff8d9]"
                       >
                         <BookingAvatar booking={booking} small />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-[#0a0a0a]">
+                          <span className="block truncate text-sm font-black text-[var(--ruggy-ink)]">
                             {booking.customerName || "Klient bez nazwy"}
                           </span>
-                          <span className="mt-0.5 block truncate text-xs text-[#737373]">
+                          <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
                             #{booking.id} · {booking.rugTypeName || "Dywan"}
                           </span>
                         </span>
                         <StatusBadge status={booking.status} />
                         <ChevronRight
                           size={15}
-                          className="shrink-0 text-[#a3a3a3]"
+                          className="shrink-0 text-[var(--ruggy-muted)]"
                           aria-hidden="true"
                         />
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-4 rounded-md border border-dashed border-[#d4d4d4] bg-white px-3 py-4 text-center text-sm text-[#737373]">
+                  <p className="mt-4 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-3 py-4 text-center text-sm text-[var(--ruggy-muted)]">
                     Brak zamówień w tym dniu
                   </p>
                 )}
               </div>
 
-              <div className="p-4 sm:p-5">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-[#0a0a0a]">
+                  <p className="text-sm font-black text-[var(--ruggy-ink)]">
                     Dni wolne
                   </p>
-                  <span className="text-xs font-medium text-[#737373]">
+                  <span className="text-xs font-semibold text-[var(--ruggy-muted)]">
                     {blockedDates.length}
                   </span>
                 </div>
@@ -697,9 +697,9 @@ export default function AdminDashboardClient({
                     {blockedDates.map((date) => (
                       <div
                         key={date}
-                        className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 ring-1 ring-[#e5e5e5]"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-3 py-2"
                       >
-                        <span className="text-xs font-medium text-[#525252]">
+                        <span className="text-xs font-semibold text-[var(--ruggy-body)]">
                           {formatDate(date)}
                         </span>
                         <button
@@ -708,7 +708,7 @@ export default function AdminDashboardClient({
                           onClick={() =>
                             handleToggleBlockedDate(parseDateKey(date))
                           }
-                          className="rounded px-1.5 py-1 text-[11px] font-semibold text-neutral-950 hover:bg-[#ffe44c] disabled:opacity-50"
+                          className="rounded-full px-2 py-1 text-[11px] font-black text-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)] disabled:opacity-50"
                         >
                           Odblokuj
                         </button>
@@ -716,7 +716,7 @@ export default function AdminDashboardClient({
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-[#737373]">
+                  <p className="mt-3 text-sm text-[var(--ruggy-muted)]">
                     Brak zablokowanych terminów.
                   </p>
                 )}
@@ -736,7 +736,7 @@ export default function AdminDashboardClient({
       ) : null}
 
       {actionMessage ? (
-        <div className="fixed bottom-4 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-md bg-[#0a0a0a] px-4 py-3 text-center text-sm font-medium text-white shadow-xl">
+        <div className="fixed bottom-4 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-ink)] px-4 py-3 text-center text-sm font-semibold text-white shadow-[4px_4px_0_var(--ruggy-yellow)]">
           {actionMessage}
         </div>
       ) : null}
@@ -756,18 +756,18 @@ function StatCard({
   tone?: "neutral" | "rose" | "green" | "yellow";
 }) {
   const toneClass = {
-    neutral: "bg-[#f5f5f5] text-[#525252]",
-    rose: "bg-[#ffe44c] text-neutral-950",
-    green: "bg-[#e4f4eb] text-[#287653]",
-    yellow: "bg-neutral-950 text-[#ffe44c]",
+    neutral: "bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]",
+    rose: "bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]",
+    green: "bg-[#e1f1e8] text-[var(--ruggy-success)]",
+    yellow: "bg-[var(--ruggy-ink)] text-[var(--ruggy-yellow)]",
   }[tone];
 
   return (
-    <div className="rounded-lg border border-[#e5e5e5] bg-white p-4">
+    <div className="rounded-[1.5rem] border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] p-4 shadow-[3px_3px_0_var(--ruggy-border)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-medium text-[#737373]">{label}</p>
-          <p className="mt-2 text-2xl font-semibold text-[#0a0a0a]">{value}</p>
+          <p className="text-xs font-semibold text-[var(--ruggy-muted)]">{label}</p>
+          <p className="mt-2 text-2xl font-black tracking-tight text-[var(--ruggy-ink)]">{value}</p>
         </div>
         <span
           className={`flex size-9 items-center justify-center rounded-md ${toneClass}`}
@@ -795,17 +795,17 @@ function FilterTab({
       type="button"
       onClick={onClick}
       className={`relative flex h-9 shrink-0 items-center gap-1.5 px-3 text-xs font-semibold transition-colors ${
-        active ? "text-neutral-950" : "text-[#737373] hover:text-[#0a0a0a]"
+        active ? "text-[var(--ruggy-ink)]" : "text-[var(--ruggy-muted)] hover:text-[var(--ruggy-ink)]"
       }`}
     >
       {label}
       <span
-        className={`rounded-full px-1.5 py-0.5 text-[10px] ${active ? "bg-[#ffe44c]" : "bg-[#f5f5f5]"}`}
+        className={`rounded-full px-1.5 py-0.5 text-[10px] font-black ${active ? "bg-[var(--ruggy-yellow)]" : "bg-[var(--ruggy-blue-soft)]"}`}
       >
         {count}
       </span>
       {active ? (
-        <span className="absolute inset-x-2 bottom-0 h-0.5 bg-[#ffe44c]" />
+        <span className="absolute inset-x-2 bottom-0 h-1 rounded-full bg-[var(--ruggy-yellow)]" />
       ) : null}
     </button>
   );
@@ -820,7 +820,7 @@ function BookingAvatar({
 }) {
   return (
     <span
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f5f5f5] font-semibold text-[#737373] ${small ? "size-8 text-[10px]" : "size-9 text-xs"}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-blue-soft)] font-black text-[var(--ruggy-blue)] ${small ? "size-8 text-[10px]" : "size-9 text-xs"}`}
     >
       {booking.referenceImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -839,7 +839,7 @@ function BookingAvatar({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-semibold ${statusClasses[status] ?? "bg-[#f5f5f5] text-[#525252]"}`}
+      className={`inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black ${statusClasses[status] ?? "bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-muted)]"}`}
     >
       <span className="size-1.5 rounded-full bg-current opacity-70" />
       {getStatusLabel(status)}
@@ -858,11 +858,11 @@ function EmptyState({
 }) {
   return (
     <div className="flex min-h-56 flex-col items-center justify-center px-6 text-center">
-      <span className="flex size-10 items-center justify-center rounded-full bg-[#f5f5f5] text-[#737373]">
+      <span className="flex size-10 items-center justify-center rounded-full bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
         <Icon size={19} aria-hidden="true" />
       </span>
-      <p className="mt-3 text-sm font-semibold text-[#0a0a0a]">{title}</p>
-      <p className="mt-1 max-w-sm text-sm text-[#737373]">{description}</p>
+      <p className="mt-3 text-sm font-black text-[var(--ruggy-ink)]">{title}</p>
+      <p className="mt-1 max-w-sm text-sm text-[var(--ruggy-muted)]">{description}</p>
     </div>
   );
 }
@@ -880,7 +880,7 @@ function BookingDrawer({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#0a0a0a]/25 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 bg-[var(--ruggy-ink)]/25 backdrop-blur-[2px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -889,19 +889,19 @@ function BookingDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-drawer-title"
-        className="ml-auto flex h-full w-full max-w-[540px] flex-col border-l border-[#e5e5e5] bg-white shadow-2xl"
+        className="ml-auto flex h-full w-full max-w-[540px] flex-col border-l-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-canvas)] shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-[#e5e5e5] px-4 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 border-b-2 border-[var(--ruggy-border)] px-4 py-5 sm:px-6">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#737373]">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ruggy-blue)]">
                 Zamówienie #{booking.id}
               </p>
               <StatusBadge status={booking.status} />
             </div>
             <h2
               id="booking-drawer-title"
-              className="mt-1.5 truncate text-xl font-semibold text-[#0a0a0a]"
+              className="mt-1.5 truncate text-2xl font-black tracking-tight text-[var(--ruggy-ink)]"
             >
               {booking.customerName || "Klient bez nazwy"}
             </h2>
@@ -911,16 +911,16 @@ function BookingDrawer({
             onClick={onClose}
             title="Zamknij szczegóły"
             aria-label="Zamknij szczegóły"
-            className="flex size-9 shrink-0 items-center justify-center rounded-md border border-[#d4d4d4] text-[#525252] transition-colors hover:border-neutral-950 hover:text-neutral-950"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--ruggy-border)] text-[var(--ruggy-body)] transition-colors hover:border-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)] hover:text-[var(--ruggy-ink)]"
           >
             <X size={18} aria-hidden="true" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6">
-          <div className="sticky top-0 z-10 -mx-4 border-b border-[#e5e5e5] bg-white px-4 py-3 sm:-mx-6 sm:px-6">
+          <div className="sticky top-0 z-10 -mx-4 border-b-2 border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] px-4 py-3 sm:-mx-6 sm:px-6">
             <label className="flex items-center justify-between gap-4">
-              <span className="text-xs font-semibold text-[#525252]">
+              <span className="text-xs font-black text-[var(--ruggy-body)]">
                 Status realizacji
               </span>
               <select
@@ -938,7 +938,7 @@ function BookingDrawer({
                     event.target.value as BookingStatus,
                   )
                 }
-                className="h-9 min-w-40 rounded-md border border-[#d4d4d4] bg-[#fafafa] px-3 text-xs font-semibold text-[#0a0a0a] outline-none focus:border-neutral-950 focus:ring-2 focus:ring-neutral-950/10 disabled:opacity-50"
+                className="h-10 min-w-40 rounded-xl border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-3 text-xs font-black text-[var(--ruggy-ink)] outline-none focus:border-[var(--ruggy-blue)] focus:ring-2 focus:ring-[var(--ruggy-blue)]/15 disabled:opacity-50"
               >
                 {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -954,7 +954,7 @@ function BookingDrawer({
               href={booking.referenceImageUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-5 block overflow-hidden rounded-md bg-[#0a0a0a]"
+              className="mt-5 block overflow-hidden rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-ink)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -962,13 +962,13 @@ function BookingDrawer({
                 alt="Zdjęcie referencyjne klienta"
                 className="max-h-64 w-full object-contain"
               />
-              <span className="flex items-center gap-2 border-t border-white/10 px-3 py-2 text-xs font-medium text-white/75">
+              <span className="flex items-center gap-2 border-t border-white/10 px-3 py-2 text-xs font-semibold text-white/75">
                 <Camera size={14} aria-hidden="true" /> Otwórz zdjęcie
                 referencyjne
               </span>
             </a>
           ) : (
-            <div className="mt-5 flex items-center gap-3 rounded-md border border-dashed border-[#d4d4d4] bg-[#fafafa] px-4 py-3 text-sm text-[#737373]">
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-3 text-sm text-[var(--ruggy-muted)]">
               <Camera size={17} aria-hidden="true" />
               Brak zdjęcia referencyjnego
             </div>
@@ -1054,7 +1054,7 @@ function BookingDrawer({
           </DetailSection>
 
           <DetailSection title="Uwagi klienta">
-            <p className="whitespace-pre-wrap break-words text-sm leading-6 text-[#525252]">
+            <p className="whitespace-pre-wrap break-words text-sm leading-6 text-[var(--ruggy-body)]">
               {booking.notes || "Brak dodatkowych uwag."}
             </p>
           </DetailSection>
@@ -1104,8 +1104,8 @@ function DetailSection({
   children: ReactNode;
 }) {
   return (
-    <section className="mt-5 border-t border-[#e5e5e5] pt-5">
-      <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#737373]">
+    <section className="mt-5 border-t-2 border-[var(--ruggy-border)] pt-5">
+      <h3 className="mb-4 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ruggy-blue)]">
         {title}
       </h3>
       {children}
@@ -1128,9 +1128,9 @@ function DetailRow({
 }) {
   const content = (
     <>
-      <p className="text-[11px] font-medium text-[#737373]">{label}</p>
+      <p className="text-[11px] font-semibold text-[var(--ruggy-muted)]">{label}</p>
       <p
-        className={`mt-1 break-words text-sm font-semibold leading-5 text-[#262626] ${mono ? "font-mono text-[11px]" : ""}`}
+        className={`mt-1 break-words text-sm font-black leading-5 text-[var(--ruggy-ink)] ${mono ? "font-mono text-[11px]" : ""}`}
       >
         {value}
       </p>
@@ -1139,12 +1139,12 @@ function DetailRow({
 
   return (
     <div className="flex min-w-0 items-start gap-3">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[#f5f5f5] text-[#737373]">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
         <Icon size={15} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
         {href ? (
-          <a href={href} className="block hover:text-neutral-950">
+          <a href={href} className="block hover:text-[var(--ruggy-blue)]">
             {content}
           </a>
         ) : (

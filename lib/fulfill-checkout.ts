@@ -111,7 +111,14 @@ export async function fulfillCheckout(
   );
 
   if (error) {
-    console.error("Nie udało się zapisać zamówienia w Supabase:", error);
+    console.error(
+      "Nie udało się zapisać zamówienia w Supabase:",
+      JSON.stringify({
+        code: error.code,
+        message: error.message,
+        hint: error.hint,
+      }),
+    );
     return {
       success: false,
       reason: "database_error",

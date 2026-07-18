@@ -112,60 +112,60 @@ export default async function AdminDashboardPage() {
       .filter((date): date is string => Boolean(date)) ?? [];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a]">
+    <div className="ruggy-thread-bg min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
       <div className="min-h-screen lg:grid lg:grid-cols-[224px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-[#e5e5e5] bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
-          <div className="border-b border-[#e5e5e5] px-6 py-6">
-            <p className="ruggy-wordmark text-3xl text-neutral-950">ruggy.</p>
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#737373]">
+        <aside className="hidden border-r-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+          <div className="border-b-2 border-[var(--ruggy-border)] px-6 py-7">
+            <p className="ruggy-wordmark text-3xl text-[var(--ruggy-ink)]">ruggy<span className="text-[var(--ruggy-blue)]">.</span></p>
+            <p className="mt-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ruggy-blue)]">
               Studio dywanów
             </p>
           </div>
 
           <nav
-            className="flex-1 space-y-1 px-3 py-5"
+            className="flex-1 space-y-2 px-3 py-5"
             aria-label="Panel administracyjny"
           >
             <a
               href="#overview"
-              className="flex h-10 items-center gap-3 rounded-md bg-[#ffe44c] px-3 text-sm font-semibold text-neutral-950"
+              className="flex h-11 items-center gap-3 rounded-2xl bg-[var(--ruggy-yellow)] px-3 text-sm font-black text-[var(--ruggy-ink)] shadow-[3px_3px_0_var(--ruggy-ink)]"
             >
               <LayoutDashboard size={17} aria-hidden="true" />
               Pulpit
             </a>
             <a
               href="#orders"
-              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-[#525252] transition-colors hover:bg-[#fafafa] hover:text-[#0a0a0a]"
+              className="flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)]"
             >
               <PackageSearch size={17} aria-hidden="true" />
               Zamówienia
             </a>
             <a
               href="#calendar"
-              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-[#525252] transition-colors hover:bg-[#fafafa] hover:text-[#0a0a0a]"
+              className="flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)]"
             >
               <CalendarRange size={17} aria-hidden="true" />
               Kalendarz
             </a>
           </nav>
 
-          <div className="border-t border-[#e5e5e5] p-4">
+          <div className="border-t-2 border-[var(--ruggy-border)] p-4">
             <Link
               href="/"
-              className="flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium text-[#525252] hover:bg-[#fafafa] hover:text-[#0a0a0a]"
+              className="flex items-center justify-between rounded-xl px-2 py-2 text-sm font-semibold text-[var(--ruggy-body)] hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)]"
             >
               Przejdź do witryny
               <ExternalLink size={15} aria-hidden="true" />
             </Link>
-            <div className="mt-3 flex items-center gap-3 rounded-md bg-[#fafafa] p-2.5">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#0a0a0a] text-xs font-semibold text-white">
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-blue-soft)] p-2.5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-blue)] text-xs font-black text-white">
                 {user.email?.slice(0, 1).toUpperCase() || "A"}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#0a0a0a]">
+                <p className="text-xs font-black text-[var(--ruggy-ink)]">
                   Administrator
                 </p>
-                <p className="truncate text-[11px] text-[#737373]">
+                <p className="truncate text-[11px] text-[var(--ruggy-muted)]">
                   {user.email}
                 </p>
               </div>
@@ -175,25 +175,25 @@ export default async function AdminDashboardPage() {
         </aside>
 
         <div className="min-w-0">
-          <header className="sticky top-0 z-30 border-b border-[#e5e5e5] bg-white/95 backdrop-blur">
+          <header className="sticky top-0 z-30 border-b-2 border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)]/95 backdrop-blur">
             <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-3">
                 <div className="lg:hidden">
-                  <p className="ruggy-wordmark text-2xl text-neutral-950">
-                    ruggy.
+                  <p className="ruggy-wordmark text-2xl text-[var(--ruggy-ink)]">
+                    ruggy<span className="text-[var(--ruggy-blue)]">.</span>
                   </p>
                 </div>
                 <div className="hidden lg:block">
-                  <p className="text-sm font-semibold text-[#0a0a0a]">
+                  <p className="text-sm font-black text-[var(--ruggy-ink)]">
                     Panel administracyjny
                   </p>
-                  <p className="text-xs text-[#737373]">Zarządzanie studiem</p>
+                  <p className="text-xs text-[var(--ruggy-muted)]">Zarządzanie studiem</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="hidden items-center gap-2 text-xs font-medium text-[#525252] sm:flex">
-                  <span className="size-2 rounded-full bg-emerald-500" />
+                <span className="hidden items-center gap-2 text-xs font-semibold text-[var(--ruggy-body)] sm:flex">
+                  <span className="size-2 rounded-full bg-[var(--ruggy-success)]" />
                   System aktywny
                 </span>
                 <div className="lg:hidden">
@@ -203,33 +203,33 @@ export default async function AdminDashboardPage() {
             </div>
 
             <nav
-              className="flex gap-1 overflow-x-auto border-t border-[#e5e5e5] px-3 py-2 lg:hidden"
+              className="flex gap-1 overflow-x-auto border-t-2 border-[var(--ruggy-border)] px-3 py-2 lg:hidden"
               aria-label="Sekcje panelu"
             >
               <a
                 href="#overview"
-                className="whitespace-nowrap rounded-md bg-[#ffe44c] px-3 py-1.5 text-xs font-semibold text-neutral-950"
+                className="whitespace-nowrap rounded-full bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]"
               >
                 Pulpit
               </a>
               <a
                 href="#orders"
-                className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-[#525252]"
+                className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--ruggy-body)]"
               >
                 Zamówienia
               </a>
               <a
                 href="#calendar"
-                className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-[#525252]"
+                className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--ruggy-body)]"
               >
                 Kalendarz
               </a>
             </nav>
           </header>
 
-          <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+          <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
             {bookingsError || blockedError ? (
-              <div className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <div className="mb-5 rounded-2xl border-2 border-[var(--ruggy-coral)]/40 bg-[#fff0eb] px-4 py-3 text-sm font-semibold text-[var(--ruggy-error)]">
                 Nie udało się pobrać wszystkich danych panelu. Sprawdź
                 połączenie z Supabase.
               </div>

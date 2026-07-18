@@ -19,8 +19,8 @@ export default function LogoutButton({ compact = false }: { compact?: boolean })
       aria-label="Wyloguj się"
       className={
         compact
-          ? "flex size-8 shrink-0 items-center justify-center rounded-md text-[#737373] transition-colors hover:bg-white hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
-          : "inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#d4d4d4] bg-white px-3 text-sm font-semibold text-[#525252] transition-colors hover:border-neutral-950 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          ? "flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--ruggy-muted)] transition-colors hover:bg-[var(--ruggy-yellow)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-blue)]"
+          : "inline-flex h-10 items-center justify-center gap-2 rounded-full border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-4 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:border-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-blue)]"
       }
     >
       <LogOut size={16} aria-hidden="true" />
