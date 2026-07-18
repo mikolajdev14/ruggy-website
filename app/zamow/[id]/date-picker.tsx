@@ -76,8 +76,9 @@ export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
         <p className="text-sm font-semibold text-neutral-950">
           Termin realizacji
         </p>
-        <p className="mt-1 text-sm text-neutral-500">
-          Dni wcześniejsze oraz zajęte są wyszarzone i przekreślone.
+        <p className="mt-1 max-w-md text-xs leading-5 text-neutral-500">
+          To dzień, w którym zaczynamy pracę nad Twoim dywanem. Dni
+          wcześniejsze oraz zajęte są wyszarzone i przekreślone.
         </p>
       </div>
 

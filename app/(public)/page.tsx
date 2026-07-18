@@ -334,7 +334,26 @@ export default function HomePage() {
           <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-10">
             <div className="lg:sticky lg:top-28 lg:self-start">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">Cztery kroki</p>
-              <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Od hej, mam pomysł do hej, mam dywan.</h2>
+              <h2 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">
+                Od{" "}
+                <span className="relative inline-block whitespace-nowrap text-[var(--ruggy-blue)]">
+                  <span
+                    className="absolute inset-x-0 bottom-0 h-3 -rotate-2 rounded-full bg-[var(--ruggy-yellow)] sm:h-4"
+                    aria-hidden="true"
+                  />
+                  <span className="relative">„hej, mam pomysł”</span>
+                </span>
+                <span className="my-3 block text-[var(--ruggy-body)] sm:my-5">
+                  do
+                </span>
+                <span className="relative inline-block whitespace-nowrap text-[var(--ruggy-ink)]">
+                  <span
+                    className="absolute inset-x-0 bottom-0 h-3 rotate-1 rounded-full bg-[var(--ruggy-blue-soft-strong)] sm:h-4"
+                    aria-hidden="true"
+                  />
+                  <span className="relative">„hej, mam dywan”.</span>
+                </span>
+              </h2>
               <p className="mt-5 max-w-md text-lg leading-8 text-[var(--ruggy-body)]">
                 Formularz zajmie chwilę. Ręczne wykonanie trochę dłużej. Warto.
               </p>
