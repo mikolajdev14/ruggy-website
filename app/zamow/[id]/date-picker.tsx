@@ -1,4 +1,5 @@
 "use client";
+import { getMinimumBookingDateKey } from "@/lib/booking-date";
 import { useEffect, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -59,10 +60,9 @@ const css = `
 
 export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
   const [selected, setSelected] = useState<Date | undefined>();
-  const [today] = useState(() => {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    return date;
+  const [minimumBookingDate] = useState(() => {
+    const [year, month, day] = getMinimumBookingDateKey().split("-").map(Number);
+    return new Date(year, month - 1, day);
   });
 
   useEffect(() => {
@@ -77,15 +77,15 @@ export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
           Termin realizacji
         </p>
         <p className="mt-1 max-w-md text-xs leading-5 text-neutral-500">
-          To dzień, w którym zaczynamy pracę nad Twoim dywanem. Dni
-          wcześniejsze oraz zajęte są wyszarzone i przekreślone.
+          To dzień, w którym zaczynamy pracę nad Twoim dywanem. Najbliższe 5
+          dni oraz zajęte terminy są wyszarzone i przekreślone.
         </p>
       </div>
 
       <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 sm:p-4">
         <DayPicker
           className="order-calendar"
-          disabled={[{ before: today }, ...blockedDates]}
+          disabled={[{ before: minimumBookingDate }, ...blockedDates]}
           mode="single"
           onSelect={setSelected}
           selected={selected}

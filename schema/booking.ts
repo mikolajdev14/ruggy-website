@@ -18,23 +18,13 @@ export const bookingSchema = z.object({
   deliveryAddress: z.string().max(500).optional(),
   referenceImagePath: z.string().max(300).optional(),
 }).superRefine((booking, context) => {
-  const hasWidth = booking.customWidthCm != null;
   const hasHeight = booking.customHeightCm != null;
-  const hasCustomDimensions = hasWidth && hasHeight;
 
-  if (!booking.pickedSize && !hasCustomDimensions) {
+  if (!booking.pickedSize && !hasHeight) {
     context.addIssue({
       code: "custom",
-      path: ["pickedSize"],
-      message: "Wybierz gotowy rozmiar albo wpisz własne wymiary",
-    });
-  }
-
-  if (hasWidth !== hasHeight) {
-    context.addIssue({
-      code: "custom",
-      path: [hasWidth ? "customHeightCm" : "customWidthCm"],
-      message: "Podaj oba wymiary własnego dywanu",
+      path: ["customHeightCm"],
+      message: "Wybierz gotowy rozmiar albo podaj wysokość dywanu",
     });
   }
 

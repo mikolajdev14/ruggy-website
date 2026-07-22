@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ArrowRight,
   ArrowUpRight,
@@ -15,7 +13,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import type { Metadata } from "next";
+import { OrganizationJsonLd } from "@/components/organization-json-ld";
 import heroWorkshop from "@/public/ruggy/hero-workshop.webp";
 import rugDog from "@/public/ruggy/rug-dog.webp";
 import rugVinyl from "@/public/ruggy/rug-vinyl.webp";
@@ -114,11 +113,14 @@ const focusClass =
 const focusLightClass =
   "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
 
-export default function HomePage() {
-  const reducedMotion = useReducedMotion();
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
+export default function HomePage() {
   return (
     <div className="overflow-x-hidden bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+      <OrganizationJsonLd />
       <a
         href="#main-content"
         className="sr-only z-50 rounded-full bg-[var(--ruggy-ink)] px-5 py-3 text-white focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
@@ -140,14 +142,14 @@ export default function HomePage() {
           </Link>
 
           <div className="hidden items-center gap-8 text-sm font-bold md:flex">
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#dlaczego">
-              Dlaczego Ruggy
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/dywany-na-zamowienie">
+              Dywany na zamówienie
             </Link>
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#jak-to-dziala">
-              Jak to działa
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/realizacje">
+              Realizacje
             </Link>
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#faq">
-              FAQ
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/o-nas">
+              O nas
             </Link>
           </div>
 
@@ -167,21 +169,16 @@ export default function HomePage() {
           <div className="ruggy-blob ruggy-blob-yellow absolute -start-24 bottom-2 -z-10 size-56" aria-hidden="true" />
 
           <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:px-10">
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-              animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, ease: "easeOut" }}
-              className="max-w-2xl"
-            >
+            <div className="ruggy-enter-up max-w-2xl">
               <div className="mb-6 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border-2 border-[var(--ruggy-ink)] bg-white px-4 py-2 text-sm font-bold shadow-[4px_4px_0_var(--ruggy-ink)]">
                 <Sparkles className="size-4 text-[var(--ruggy-coral)]" aria-hidden="true" />
                 Dywan dokładnie taki jak chcesz
               </div>
 
               <h1 className="max-w-3xl text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
-                Zróbmy dywan,
-                <span className="mt-1 block text-[var(--ruggy-blue)]">który brzmi</span>
-                <span className="ruggy-underline relative inline-block">jak Ty.</span>
+                Ręcznie tuftowane
+                <span className="mt-1 block text-[var(--ruggy-blue)]">dywany</span>
+                <span className="ruggy-underline relative inline-block">na zamówienie.</span>
               </h1>
 
               <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
@@ -221,14 +218,9 @@ export default function HomePage() {
                   <span className="sr-only">Pięć gwiazdek</span>
                 </span>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, x: 32, rotate: 1 }}
-              animate={reducedMotion ? undefined : { opacity: 1, x: 0, rotate: 0 }}
-              transition={{ duration: 0.8, delay: 0.12, ease: "easeOut" }}
-              className="relative"
-            >
+            <div className="ruggy-enter-right relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-2 shadow-[12px_14px_0_var(--ruggy-ink)] sm:p-3">
                 <Image
                   src={heroWorkshop}
@@ -246,7 +238,7 @@ export default function HomePage() {
               <div className="absolute -end-3 -top-6 flex size-24 rotate-[8deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
                 Jeden jedyny egzemplarz
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -261,20 +253,17 @@ export default function HomePage() {
               {benefits.map((benefit, index) => {
                 const Icon = benefit.icon;
                 return (
-                  <motion.li
+                  <li
                     key={benefit.title}
-                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                    whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.5, delay: index * 0.08 }}
-                    className="rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
+                    className="ruggy-reveal-up rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
+                    style={{ animationDelay: `${index * 80}ms` }}
                   >
                     <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)]">
                       <Icon className="size-6" aria-hidden="true" />
                     </span>
                     <h3 className="mt-7 text-2xl font-black tracking-tight">{benefit.title}</h3>
                     <p className="mt-3 text-base leading-7 text-[var(--ruggy-body)]">{benefit.description}</p>
-                  </motion.li>
+                  </li>
                 );
               })}
             </ul>
@@ -301,13 +290,10 @@ export default function HomePage() {
 
             <ul className="mt-12 grid gap-7 sm:grid-cols-3 sm:gap-5">
               {gallery.map((item, index) => (
-                <motion.li
+                <li
                   key={item.label}
-                  initial={reducedMotion ? false : { opacity: 0, y: 28 }}
-                  whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.55, delay: index * 0.1 }}
-                  className={item.className}
+                  className={`ruggy-reveal-up ${item.className}`}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <figure className="overflow-hidden rounded-[2rem] border-2 border-white/80 bg-[var(--ruggy-canvas)] p-2 text-[var(--ruggy-ink)]">
                     <div className="relative aspect-square overflow-hidden rounded-[1.5rem]">
@@ -324,7 +310,7 @@ export default function HomePage() {
                       <span className="text-[var(--ruggy-blue)]" aria-hidden="true">✦</span>
                     </figcaption>
                   </figure>
-                </motion.li>
+                </li>
               ))}
             </ul>
           </div>
@@ -370,13 +356,10 @@ export default function HomePage() {
               {steps.map((step, index) => {
                 const Icon = step.icon;
                 return (
-                  <motion.li
+                  <li
                     key={step.number}
-                    initial={reducedMotion ? false : { opacity: 0, x: 24 }}
-                    whileInView={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.5, delay: index * 0.07 }}
-                    className="group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
+                    className="ruggy-reveal-right group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
+                    style={{ animationDelay: `${index * 70}ms` }}
                   >
                     <span className="text-5xl font-black tracking-[-0.07em] text-[var(--ruggy-blue-soft-strong)] group-hover:text-[var(--ruggy-yellow)] sm:text-7xl">{step.number}</span>
                     <div>
@@ -386,7 +369,7 @@ export default function HomePage() {
                     <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
                       <Icon className="size-6" aria-hidden="true" />
                     </span>
-                  </motion.li>
+                  </li>
                 );
               })}
             </ol>
@@ -415,12 +398,7 @@ export default function HomePage() {
         </section>
 
         <section className="bg-[var(--ruggy-blue-soft)] px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, scale: 0.98 }}
-            whileInView={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            className="ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20"
-          >
+          <div className="ruggy-reveal-scale ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20">
             <span className="flex size-14 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
               <Sparkles className="size-7" aria-hidden="true" />
             </span>
@@ -433,7 +411,7 @@ export default function HomePage() {
               Wyceń swój dywan
               <ArrowRight className="size-5" aria-hidden="true" />
             </Link>
-          </motion.div>
+          </div>
         </section>
       </main>
 
@@ -446,11 +424,13 @@ export default function HomePage() {
             <p className="mt-4 max-w-sm text-base leading-7 text-white/70">Personalizowane dywany z pomysłu, ręki i dużej ilości włóczki.</p>
           </div>
           <nav aria-label="Stopka" className="flex flex-col items-start gap-3 text-sm font-bold">
-            <Link href="#dlaczego" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dlaczego Ruggy</Link>
-            <Link href="#jak-to-dziala" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Jak to działa</Link>
-            <Link href="#faq" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>FAQ</Link>
+            <Link href="/dywany-na-zamowienie" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dywany na zamówienie</Link>
+            <Link href="/dywan-ze-zdjecia" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dywan ze zdjęcia</Link>
+            <Link href="/realizacje" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Realizacje</Link>
           </nav>
           <div className="flex flex-col items-start gap-3 text-sm font-bold">
+            <Link href="/o-nas" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>O nas</Link>
+            <Link href="/dostawa-i-platnosci" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dostawa i płatności</Link>
             <a href="https://www.instagram.com/ruggy.pl/" target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>
               <AtSign className="size-5" aria-hidden="true" />
               Instagram

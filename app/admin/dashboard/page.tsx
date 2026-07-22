@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientServer } from "@/lib/supabase/server";
+import { getPolandDateKey } from "@/lib/booking-date";
 import {
   CalendarRange,
   ExternalLink,
@@ -8,10 +9,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  AI_RUG_PREVIEWS_FOLDER,
+  getAiRugPreviewPath,
+  REFERENCE_IMAGES_BUCKET,
+} from "@/lib/rug-preview-storage";
 import LogoutButton from "./logout-btn";
 import AdminDashboardClient, { type AdminBooking } from "./dashboard-client";
 
-const REFERENCE_IMAGES_BUCKET = "booking-reference-images";
+export const maxDuration = 120;
 
 type BookingRow = {
   id: number | string;
@@ -51,6 +57,7 @@ export default async function AdminDashboardPage() {
   const [
     { data: bookingRows, error: bookingsError },
     { data: blockedRows, error: blockedError },
+    { data: aiPreviewFiles, error: aiPreviewsError },
   ] = await Promise.all([
     supabase
       .from("bookings")
@@ -59,7 +66,14 @@ export default async function AdminDashboardPage() {
       )
       .order("created_at", { ascending: false }),
     supabase.from("blocked_dates").select("date").order("date"),
+    supabase.storage
+      .from(REFERENCE_IMAGES_BUCKET)
+      .list(AI_RUG_PREVIEWS_FOLDER, { limit: 1000 }),
   ]);
+
+  const aiPreviewFileNames = new Set(
+    aiPreviewFiles?.map((file) => file.name) ?? [],
+  );
 
   const bookings =
     (bookingRows as BookingRow[] | null)?.map((booking) => ({
@@ -88,21 +102,33 @@ export default async function AdminDashboardPage() {
       deliveryAddress: booking.delivery_address,
       referenceImagePath: booking.reference_image_path,
       referenceImageUrl: null as string | null,
+      aiPreviewUrl: null as string | null,
     })) ?? [];
 
   await Promise.all(
     bookings.map(async (booking) => {
-      if (!booking.referenceImagePath) {
-        return;
-      }
-
-      const { data, error } = await supabase.storage
-        .from(REFERENCE_IMAGES_BUCKET)
-        .createSignedUrl(booking.referenceImagePath, 60 * 60);
-
-      if (!error && data?.signedUrl) {
-        booking.referenceImageUrl = data.signedUrl;
-      }
+      await Promise.all([
+        booking.referenceImagePath
+          ? supabase.storage
+              .from(REFERENCE_IMAGES_BUCKET)
+              .createSignedUrl(booking.referenceImagePath, 60 * 60)
+              .then(({ data, error }) => {
+                if (!error && data?.signedUrl) {
+                  booking.referenceImageUrl = data.signedUrl;
+                }
+              })
+          : Promise.resolve(),
+        aiPreviewFileNames.has(`${booking.id}.png`)
+          ? supabase.storage
+              .from(REFERENCE_IMAGES_BUCKET)
+              .createSignedUrl(getAiRugPreviewPath(booking.id), 60 * 60)
+              .then(({ data, error }) => {
+                if (!error && data?.signedUrl) {
+                  booking.aiPreviewUrl = data.signedUrl;
+                }
+              })
+          : Promise.resolve(),
+      ]);
     }),
   );
 
@@ -228,7 +254,7 @@ export default async function AdminDashboardPage() {
           </header>
 
           <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-            {bookingsError || blockedError ? (
+            {bookingsError || blockedError || aiPreviewsError ? (
               <div className="mb-5 rounded-2xl border-2 border-[var(--ruggy-coral)]/40 bg-[#fff0eb] px-4 py-3 text-sm font-semibold text-[var(--ruggy-error)]">
                 Nie udało się pobrać wszystkich danych panelu. Sprawdź
                 połączenie z Supabase.
@@ -238,6 +264,7 @@ export default async function AdminDashboardPage() {
             <AdminDashboardClient
               initialBookings={bookings as AdminBooking[]}
               initialBlockedDates={blockedDates}
+              todayDateKey={getPolandDateKey()}
             />
           </main>
         </div>

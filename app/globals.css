@@ -150,10 +150,6 @@
   }
 }
 
-.font-syne {
-  font-family: var(--font-syne-mono);
-}
-
 .font-lobster {
   font-family: var(--font-lobster);
 }
@@ -169,6 +165,82 @@
     radial-gradient(circle at 10% 20%, color-mix(in srgb, currentColor 10%, transparent) 0 0.08rem, transparent 0.1rem),
     radial-gradient(circle at 82% 68%, color-mix(in srgb, currentColor 8%, transparent) 0 0.07rem, transparent 0.09rem);
   background-size: 1.5rem 1.5rem, 1.25rem 1.25rem;
+}
+
+@keyframes ruggy-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+@keyframes ruggy-enter-right {
+  from {
+    opacity: 0;
+    transform: translateX(2rem) rotate(1deg);
+  }
+}
+
+@keyframes ruggy-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.75rem);
+  }
+}
+
+@keyframes ruggy-reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+
+@keyframes ruggy-reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+.ruggy-enter-up {
+  animation: ruggy-enter-up 650ms ease-out both;
+}
+
+.ruggy-enter-right {
+  animation: ruggy-enter-right 800ms 120ms ease-out both;
+}
+
+@supports (animation-timeline: view()) {
+  .ruggy-reveal-up,
+  .ruggy-reveal-right,
+  .ruggy-reveal-scale {
+    animation-range: entry 5% cover 28%;
+    animation-timeline: view();
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+
+  .ruggy-reveal-up {
+    animation-name: ruggy-reveal-up;
+  }
+
+  .ruggy-reveal-right {
+    animation-name: ruggy-reveal-right;
+  }
+
+  .ruggy-reveal-scale {
+    animation-name: ruggy-reveal-scale;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruggy-enter-up,
+  .ruggy-enter-right,
+  .ruggy-reveal-up,
+  .ruggy-reveal-right,
+  .ruggy-reveal-scale {
+    animation: none;
+  }
 }
 
 .ruggy-blob {

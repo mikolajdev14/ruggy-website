@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Syne_Mono, Lobster } from "next/font/google";
+import { Inter, Lobster } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { absoluteUrl, siteConfig } from "@/lib/site-config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
-const syneMono = Syne_Mono({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-syne-mono",
-});
 
 const lobster = Lobster({
   subsets: ["latin"],
@@ -17,20 +11,47 @@ const lobster = Lobster({
   variable: "--font-lobster",
 });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Ruggy | Personalizowane dywany",
-  description:
-    "Ręcznie tuftowane dywany tworzone na podstawie Twojego pomysłu. Zaprojektuj z Ruggy coś naprawdę swojego.",
+  metadataBase: new URL(siteConfig.url),
+  applicationName: siteConfig.name,
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [
+      {
+        url: absoluteUrl("/opengraph-image"),
+        width: 1200,
+        height: 630,
+        alt: "Ruggy, ręcznie tuftowane dywany na zamówienie",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [absoluteUrl("/opengraph-image")],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -41,16 +62,7 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      className={cn(
-        "h-full",
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable,
-        syneMono.variable,
-        lobster.variable,
-      )}
+      className={`h-full font-sans antialiased ${inter.variable} ${lobster.variable}`}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>

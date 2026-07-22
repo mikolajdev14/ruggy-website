@@ -181,13 +181,16 @@ export default function ProductPage({
         : "Nie wybrano";
 
   const customPriceCents = calculateCustomRugPriceCents(
-    booking.customWidthCm,
     booking.customHeightCm,
   );
   const selectedSize = booking.pickedSize
     ? "Gotowy rozmiar"
     : customPriceCents
-      ? `${booking.customWidthCm} × ${booking.customHeightCm} cm · ${formatPriceCents(customPriceCents)}`
+      ? `${
+          booking.customWidthCm != null
+            ? `${booking.customWidthCm} × ${booking.customHeightCm} cm`
+            : `wysokość ${booking.customHeightCm} cm`
+        } · ${formatPriceCents(customPriceCents)}`
       : "Nie wybrano";
 
   return (
@@ -242,31 +245,58 @@ export default function ProductPage({
         onSubmit={handleSubmit}
         className="mx-auto w-full max-w-7xl px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8"
       >
-        <div className="grid items-start gap-5 xl:grid-cols-2">
-          <FormPanel number="1" title="Projekt i termin" description="Wybierz rozmiar oraz dzień realizacji">
-            <div className="grid gap-7">
+        <div className="grid gap-5">
+          <FormPanel
+            number="1"
+            title="Projekt i termin"
+            description="Wybierz rozmiar oraz dzień realizacji"
+          >
+            <div className="grid items-start gap-8 lg:grid-cols-2">
               <SizePicker id={id} booking={booking} setBooking={setBooking} />
               <DatePicker blockedDates={blockedDays} setBooking={setBooking} />
             </div>
           </FormPanel>
 
-          <div className="grid gap-5">
-            <FormPanel number="2" title="Dostawa" description="Wskaż sposób odbioru gotowego dywanu">
-              <DeliveryPicker booking={booking} setBooking={setBooking} />
-            </FormPanel>
+          <FormPanel
+            number="2"
+            title="Dostawa i dane zamawiającego"
+            description="Wybierz sposób dostawy i podaj dane do kontaktu"
+          >
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+              <section aria-labelledby="delivery-section-title">
+                <h3
+                  id="delivery-section-title"
+                  className="mb-4 text-sm font-semibold text-neutral-950"
+                >
+                  Sposób dostawy
+                </h3>
+                <DeliveryPicker booking={booking} setBooking={setBooking} />
+              </section>
 
-            <FormPanel number="3" title="Materiał referencyjny" description="Dodaj zdjęcie, które będzie podstawą projektu">
-              <ReferenceImageUpload
-                file={referenceImage}
-                setFile={setReferenceImage}
-              />
-            </FormPanel>
-          </div>
-        </div>
+              <section
+                aria-labelledby="customer-section-title"
+                className="border-t border-neutral-200 pt-7 lg:border-s lg:border-t-0 lg:ps-8 lg:pt-0"
+              >
+                <h3
+                  id="customer-section-title"
+                  className="mb-4 text-sm font-semibold text-neutral-950"
+                >
+                  Dane kontaktowe
+                </h3>
+                <CustomerForm booking={booking} setBooking={setBooking} />
+              </section>
+            </div>
+          </FormPanel>
 
-        <div className="mt-5">
-          <FormPanel number="4" title="Dane zamawiającego" description="Dane kontaktowe i dodatkowe informacje">
-            <CustomerForm booking={booking} setBooking={setBooking} />
+          <FormPanel
+            number="3"
+            title="Materiał referencyjny"
+            description="Na końcu dodaj zdjęcie, które będzie podstawą projektu"
+          >
+            <ReferenceImageUpload
+              file={referenceImage}
+              setFile={setReferenceImage}
+            />
           </FormPanel>
         </div>
 

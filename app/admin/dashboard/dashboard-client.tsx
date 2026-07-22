@@ -1,12 +1,21 @@
 "use client";
 
 import {
+  addDaysToDateKey,
+  BOOKING_LEAD_DAYS,
+  getBookingLeadDateKeys,
+} from "@/lib/booking-date";
+import {
   CalendarDays,
   Camera,
   Check,
   ChevronRight,
   CircleDollarSign,
   Clock3,
+  Download,
+  LoaderCircle,
+  Lock,
+  LockOpen,
   Mail,
   MapPin,
   Package,
@@ -14,6 +23,7 @@ import {
   Search,
   Truck,
   UserRound,
+  WandSparkles,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -27,7 +37,11 @@ import {
 } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { toggleBlockedDate, updateBookingStatus } from "./actions";
+import {
+  generateAiRugPreview,
+  toggleBlockedDate,
+  updateBookingStatus,
+} from "./actions";
 
 export type AdminBooking = {
   id: number;
@@ -52,6 +66,7 @@ export type AdminBooking = {
   deliveryAddress: string | null;
   referenceImagePath: string | null;
   referenceImageUrl: string | null;
+  aiPreviewUrl: string | null;
 };
 
 type BookingStatus = "paid" | "in_progress" | "completed" | "cancelled";
@@ -136,9 +151,11 @@ const getDeliveryLabel = (method: string | null) => {
 export default function AdminDashboardClient({
   initialBookings,
   initialBlockedDates,
+  todayDateKey,
 }: {
   initialBookings: AdminBooking[];
   initialBlockedDates: string[];
+  todayDateKey: string;
 }) {
   const [bookings, setBookings] = useState(initialBookings);
   const [blockedDates, setBlockedDates] = useState(initialBlockedDates);
@@ -148,12 +165,13 @@ export default function AdminDashboardClient({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [actionMessage, setActionMessage] = useState<string>();
+  const [generatingBookingId, setGeneratingBookingId] = useState<number | null>(
+    null,
+  );
   const [hoveredCalendarDate, setHoveredCalendarDate] = useState<string | null>(
     null,
   );
-  const [selectedCalendarDate, setSelectedCalendarDate] = useState(() =>
-    toDateKey(new Date()),
-  );
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayDateKey);
   const calendarHoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -186,6 +204,16 @@ export default function AdminDashboardClient({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!actionMessage) return;
+
+    const timeout = window.setTimeout(() => {
+      setActionMessage(undefined);
+    }, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [actionMessage]);
 
   const filteredBookings = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase("pl-PL");
@@ -253,7 +281,30 @@ export default function AdminDashboardClient({
     [bookings],
   );
 
+  const automaticBlockedDateKeys = useMemo(
+    () => getBookingLeadDateKeys(todayDateKey),
+    [todayDateKey],
+  );
+  const upcomingRangeEnd = addDaysToDateKey(todayDateKey, BOOKING_LEAD_DAYS - 1);
+  const upcomingBookings = useMemo(
+    () =>
+      bookings
+        .filter(
+          (booking) =>
+            booking.bookingDate &&
+            booking.bookingDate >= todayDateKey &&
+            booking.bookingDate <= upcomingRangeEnd,
+        )
+        .toSorted((first, second) =>
+          (first.bookingDate ?? "").localeCompare(second.bookingDate ?? ""),
+        ),
+    [bookings, todayDateKey, upcomingRangeEnd],
+  );
   const activeCalendarDate = hoveredCalendarDate ?? selectedCalendarDate;
+  const isAutomaticBlockedDate =
+    automaticBlockedDateKeys.includes(activeCalendarDate);
+  const isActiveCalendarDateBlocked =
+    blockedDates.includes(activeCalendarDate) || isAutomaticBlockedDate;
   const calendarBookings = useMemo(
     () =>
       bookings.filter((booking) => booking.bookingDate === activeCalendarDate),
@@ -278,6 +329,40 @@ export default function AdminDashboardClient({
       );
       setActionMessage("Status zamówienia został zaktualizowany.");
     });
+  };
+
+  const handleGenerateAiPreview = async (bookingId: number) => {
+    setActionMessage(undefined);
+    setGeneratingBookingId(bookingId);
+
+    try {
+      const result = await generateAiRugPreview(bookingId);
+
+      if (!result.success) {
+        setActionMessage(result.message);
+        return;
+      }
+
+      const previewUrl = result.previewUrl;
+
+      if (!previewUrl) {
+        setActionMessage("Projekt został zapisany, ale nie można go wyświetlić.");
+        return;
+      }
+
+      setBookings((current) =>
+        current.map((booking) =>
+          booking.id === bookingId
+            ? { ...booking, aiPreviewUrl: previewUrl }
+            : booking,
+        ),
+      );
+      setActionMessage("Projekt dywanu został wygenerowany.");
+    } catch {
+      setActionMessage("Połączenie zostało przerwane. Spróbuj ponownie.");
+    } finally {
+      setGeneratingBookingId(null);
+    }
   };
 
   const handleToggleBlockedDate = (date: Date) => {
@@ -326,18 +411,15 @@ export default function AdminDashboardClient({
 
   const handleCalendarDayClick = (date: Date) => {
     const dateKey = toDateKey(date);
-    const hasBookings = bookings.some(
-      (booking) => booking.bookingDate === dateKey,
-    );
 
     clearCalendarHoverTimeout();
     setSelectedCalendarDate(dateKey);
-    setHoveredCalendarDate(hasBookings ? dateKey : null);
-
-    if (!hasBookings) handleToggleBlockedDate(date);
+    setHoveredCalendarDate(null);
   };
 
-  const blockedDateObjects = blockedDates.map(parseDateKey);
+  const blockedDateObjects = Array.from(
+    new Set([...blockedDates, ...automaticBlockedDateKeys]),
+  ).map(parseDateKey);
   const bookedDateObjects = bookedDateKeys.map(parseDateKey);
 
   return (
@@ -427,6 +509,63 @@ export default function AdminDashboardClient({
               tone="yellow"
             />
           </div>
+        </section>
+
+        <section className="overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] shadow-[5px_5px_0_var(--ruggy-border)]">
+          <div className="flex flex-col justify-between gap-3 border-b-2 border-[var(--ruggy-border)] px-4 py-4 sm:flex-row sm:items-center sm:px-6">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-black text-[var(--ruggy-ink)]">
+                <CalendarDays
+                  size={18}
+                  className="text-[var(--ruggy-blue)]"
+                  aria-hidden="true"
+                />
+                Zlecenia na najbliższe 5 dni
+              </h2>
+              <p className="mt-1 text-xs text-[var(--ruggy-muted)]">
+                {formatDate(todayDateKey)} – {formatDate(upcomingRangeEnd)}
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center rounded-full bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
+              Liczba zleceń: {upcomingBookings.length}
+            </span>
+          </div>
+
+          {upcomingBookings.length ? (
+            <div className="max-h-72 divide-y divide-[var(--ruggy-border)] overflow-y-auto">
+              {upcomingBookings.map((booking) => (
+                <button
+                  key={booking.id}
+                  type="button"
+                  onClick={() => setSelectedBookingId(booking.id)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#fff8d9] focus-visible:bg-[#fff8d9] focus-visible:outline-none sm:px-6"
+                >
+                  <BookingAvatar booking={booking} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-black text-[var(--ruggy-ink)]">
+                      {booking.customerName || "Klient bez nazwy"}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
+                      #{booking.id} · {booking.rugTypeName || "Dywan"} · {booking.rugSizeLabel || "Brak rozmiaru"}
+                    </span>
+                  </span>
+                  <span className="hidden shrink-0 text-xs font-black text-[var(--ruggy-body)] sm:block">
+                    {formatShortDate(booking.bookingDate)}
+                  </span>
+                  <StatusBadge status={booking.status} />
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-[var(--ruggy-muted)]"
+                    aria-hidden="true"
+                  />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-28 items-center justify-center px-4 py-6 text-center text-sm text-[var(--ruggy-muted)]">
+              Brak zleceń na najbliższe 5 dni.
+            </div>
+          )}
         </section>
 
         <section
@@ -616,8 +755,8 @@ export default function AdminDashboardClient({
             <div className="p-3 sm:p-6 xl:border-r-2 xl:border-[var(--ruggy-border)]">
               <DayPicker
                 className="admin-calendar"
-                mode="multiple"
-                selected={blockedDateObjects}
+                mode="single"
+                selected={parseDateKey(selectedCalendarDate)}
                 onDayClick={handleCalendarDayClick}
                 onDayMouseEnter={handleCalendarMouseEnter}
                 onDayMouseLeave={handleCalendarMouseLeave}
@@ -644,43 +783,74 @@ export default function AdminDashboardClient({
                       {formatDate(activeCalendarDate)}
                     </h3>
                   </div>
-                  <span className="rounded-full bg-[var(--ruggy-yellow)] px-2.5 py-1 text-xs font-black text-[var(--ruggy-ink)]">
-                    {calendarBookings.length}
-                  </span>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <span className="rounded-full bg-[var(--ruggy-yellow)] px-2.5 py-1 text-xs font-black text-[var(--ruggy-ink)]">
+                      {calendarBookings.length}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isPending || isAutomaticBlockedDate}
+                      onClick={() =>
+                        handleToggleBlockedDate(parseDateKey(activeCalendarDate))
+                      }
+                      className={`inline-flex min-h-10 items-center gap-2 rounded-xl border-2 px-3 text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
+                        isActiveCalendarDateBlocked
+                          ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-ink)] text-white hover:bg-[var(--ruggy-body)]"
+                          : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] text-[var(--ruggy-ink)] hover:border-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)]"
+                      }`}
+                    >
+                      {isActiveCalendarDateBlocked ? (
+                        isAutomaticBlockedDate ? (
+                          <Lock size={15} aria-hidden="true" />
+                        ) : (
+                          <LockOpen size={15} aria-hidden="true" />
+                        )
+                      ) : (
+                        <Lock size={15} aria-hidden="true" />
+                      )}
+                      {isAutomaticBlockedDate
+                        ? "Blokada 5 dni"
+                        : isActiveCalendarDateBlocked
+                          ? "Odblokuj dzień"
+                          : "Zablokuj dzień"}
+                    </button>
+                  </div>
                 </div>
 
-                {calendarBookings.length ? (
-                  <div className="mt-4 divide-y divide-[var(--ruggy-border)] overflow-hidden rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)]">
-                    {calendarBookings.map((booking) => (
-                      <button
-                        key={booking.id}
-                        type="button"
-                        onClick={() => setSelectedBookingId(booking.id)}
-                        className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[#fff8d9]"
-                      >
-                        <BookingAvatar booking={booking} small />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-black text-[var(--ruggy-ink)]">
-                            {booking.customerName || "Klient bez nazwy"}
+                <div className="mt-4 h-52 overflow-y-auto rounded-2xl">
+                  {calendarBookings.length ? (
+                    <div className="min-h-full divide-y divide-[var(--ruggy-border)] overflow-hidden rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)]">
+                      {calendarBookings.map((booking) => (
+                        <button
+                          key={booking.id}
+                          type="button"
+                          onClick={() => setSelectedBookingId(booking.id)}
+                          className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[#fff8d9]"
+                        >
+                          <BookingAvatar booking={booking} small />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-black text-[var(--ruggy-ink)]">
+                              {booking.customerName || "Klient bez nazwy"}
+                            </span>
+                            <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
+                              #{booking.id} · {booking.rugTypeName || "Dywan"}
+                            </span>
                           </span>
-                          <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
-                            #{booking.id} · {booking.rugTypeName || "Dywan"}
-                          </span>
-                        </span>
-                        <StatusBadge status={booking.status} />
-                        <ChevronRight
-                          size={15}
-                          className="shrink-0 text-[var(--ruggy-muted)]"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-4 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-3 py-4 text-center text-sm text-[var(--ruggy-muted)]">
-                    Brak zamówień w tym dniu
-                  </p>
-                )}
+                          <StatusBadge status={booking.status} />
+                          <ChevronRight
+                            size={15}
+                            className="shrink-0 text-[var(--ruggy-muted)]"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="flex h-full items-center justify-center rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-3 py-4 text-center text-sm text-[var(--ruggy-muted)]">
+                      Brak zamówień w tym dniu
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="p-4 sm:p-6">
@@ -692,34 +862,36 @@ export default function AdminDashboardClient({
                     {blockedDates.length}
                   </span>
                 </div>
-                {blockedDates.length ? (
-                  <div className="mt-3 max-h-48 space-y-1.5 overflow-y-auto">
-                    {blockedDates.map((date) => (
-                      <div
-                        key={date}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-3 py-2"
-                      >
-                        <span className="text-xs font-semibold text-[var(--ruggy-body)]">
-                          {formatDate(date)}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() =>
-                            handleToggleBlockedDate(parseDateKey(date))
-                          }
-                          className="rounded-full px-2 py-1 text-[11px] font-black text-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)] disabled:opacity-50"
+                <div className="mt-3 h-48 overflow-y-auto rounded-2xl">
+                  {blockedDates.length ? (
+                    <div className="space-y-1.5">
+                      {blockedDates.map((date) => (
+                        <div
+                          key={date}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-3 py-2"
                         >
-                          Odblokuj
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-[var(--ruggy-muted)]">
-                    Brak zablokowanych terminów.
-                  </p>
-                )}
+                          <span className="text-xs font-semibold text-[var(--ruggy-body)]">
+                            {formatDate(date)}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() =>
+                              handleToggleBlockedDate(parseDateKey(date))
+                            }
+                            className="rounded-full px-2 py-1 text-[11px] font-black text-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)] disabled:opacity-50"
+                          >
+                            Odblokuj
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="flex h-full items-center justify-center rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-3 text-center text-sm text-[var(--ruggy-muted)]">
+                      Brak zablokowanych terminów.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -730,8 +902,10 @@ export default function AdminDashboardClient({
         <BookingDrawer
           booking={selectedBooking}
           isPending={isPending}
+          isGenerating={generatingBookingId === selectedBooking.id}
           onClose={() => setSelectedBookingId(null)}
           onStatusChange={handleStatusChange}
+          onGenerateAiPreview={handleGenerateAiPreview}
         />
       ) : null}
 
@@ -870,13 +1044,17 @@ function EmptyState({
 function BookingDrawer({
   booking,
   isPending,
+  isGenerating,
   onClose,
   onStatusChange,
+  onGenerateAiPreview,
 }: {
   booking: AdminBooking;
   isPending: boolean;
+  isGenerating: boolean;
   onClose: () => void;
   onStatusChange: (bookingId: number, status: BookingStatus) => void;
+  onGenerateAiPreview: (bookingId: number) => Promise<void>;
 }) {
   return (
     <div
@@ -949,30 +1127,58 @@ function BookingDrawer({
             </label>
           </div>
 
-          {booking.referenceImageUrl ? (
-            <a
-              href={booking.referenceImageUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 block overflow-hidden rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-ink)]"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={booking.referenceImageUrl}
+          <DetailSection title="Materiały projektu">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ProjectImage
+                imageUrl={booking.referenceImageUrl}
+                title="Zdjęcie klienta"
                 alt="Zdjęcie referencyjne klienta"
-                className="max-h-64 w-full object-contain"
+                emptyLabel="Brak zdjęcia"
+                icon={Camera}
               />
-              <span className="flex items-center gap-2 border-t border-white/10 px-3 py-2 text-xs font-semibold text-white/75">
-                <Camera size={14} aria-hidden="true" /> Otwórz zdjęcie
-                referencyjne
-              </span>
-            </a>
-          ) : (
-            <div className="mt-5 flex items-center gap-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-3 text-sm text-[var(--ruggy-muted)]">
-              <Camera size={17} aria-hidden="true" />
-              Brak zdjęcia referencyjnego
+              <ProjectImage
+                imageUrl={booking.aiPreviewUrl}
+                title="Projekt AI"
+                alt="Poglądowy projekt dywanu wygenerowany przez AI"
+                emptyLabel={isGenerating ? "Generowanie..." : "Brak projektu"}
+                icon={isGenerating ? LoaderCircle : WandSparkles}
+                spinning={isGenerating}
+              />
             </div>
-          )}
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={!booking.referenceImagePath || isGenerating}
+                onClick={() => onGenerateAiPreview(booking.id)}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--ruggy-blue)] px-4 text-xs font-black text-white transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {isGenerating ? (
+                  <LoaderCircle className="animate-spin" size={16} aria-hidden="true" />
+                ) : (
+                  <WandSparkles size={16} aria-hidden="true" />
+                )}
+                {isGenerating
+                  ? "Generowanie projektu"
+                  : booking.aiPreviewUrl
+                    ? "Wygeneruj ponownie"
+                    : "Wygeneruj projekt AI"}
+              </button>
+
+              {booking.aiPreviewUrl ? (
+                <a
+                  href={booking.aiPreviewUrl}
+                  download={`projekt-dywanu-${booking.id}.png`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 text-xs font-black text-[var(--ruggy-ink)] transition-colors hover:border-[var(--ruggy-ink)] hover:bg-[var(--ruggy-yellow)]"
+                >
+                  <Download size={16} aria-hidden="true" />
+                  Pobierz projekt
+                </a>
+              ) : null}
+            </div>
+          </DetailSection>
 
           <DetailSection title="Szczegóły zlecenia">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -1093,6 +1299,51 @@ function BookingDrawer({
         </div>
       </aside>
     </div>
+  );
+}
+
+function ProjectImage({
+  imageUrl,
+  title,
+  alt,
+  emptyLabel,
+  icon: Icon,
+  spinning = false,
+}: {
+  imageUrl: string | null;
+  title: string;
+  alt: string;
+  emptyLabel: string;
+  icon: LucideIcon;
+  spinning?: boolean;
+}) {
+  if (!imageUrl) {
+    return (
+      <div className="flex aspect-square min-h-44 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-4 text-center text-[var(--ruggy-muted)]">
+        <Icon
+          className={spinning ? "animate-spin" : undefined}
+          size={22}
+          aria-hidden="true"
+        />
+        <span className="mt-2 text-xs font-black">{emptyLabel}</span>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={imageUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="group overflow-hidden rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-blue-soft)] transition-colors hover:border-[var(--ruggy-ink)]"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageUrl} alt={alt} className="aspect-square w-full object-contain" />
+      <span className="flex min-h-10 items-center gap-2 border-t-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)] px-3 text-xs font-black text-[var(--ruggy-ink)]">
+        <Icon size={14} aria-hidden="true" />
+        {title}
+      </span>
+    </a>
   );
 }
 

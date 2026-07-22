@@ -1,6 +1,9 @@
 "use server";
 
-import { getPolandDateKey, isValidDateKey } from "@/lib/booking-date";
+import {
+  getMinimumBookingDateKey,
+  isValidDateKey,
+} from "@/lib/booking-date";
 import { calculateCustomRugPriceCents } from "@/lib/custom-rug-price";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
@@ -105,8 +108,11 @@ export async function createCheckoutSession(input: unknown) {
     return { success: false, message: "Wybrano nieprawidłowy termin." };
   }
 
-  if (booking.pickupDate < getPolandDateKey()) {
-    return { success: false, message: "Nie można wybrać daty z przeszłości." };
+  if (booking.pickupDate < getMinimumBookingDateKey()) {
+    return {
+      success: false,
+      message: "Najbliższy możliwy termin realizacji jest za 5 dni.",
+    };
   }
 
   const { data: blockedDate, error: blockedDateError } = await supabase
@@ -141,10 +147,10 @@ export async function createCheckoutSession(input: unknown) {
   }
 
   const isCustomType = rugType.name.trim().toLocaleLowerCase() === "inne";
-  const hasCustomDimensions =
-    booking.customWidthCm != null && booking.customHeightCm != null;
+  const hasCustomDimension =
+    booking.customWidthCm != null || booking.customHeightCm != null;
 
-  if (!isCustomType && hasCustomDimensions) {
+  if (!isCustomType && hasCustomDimension) {
     return {
       success: false,
       message: "Własne wymiary są dostępne dla typu Inne.",
@@ -154,13 +160,9 @@ export async function createCheckoutSession(input: unknown) {
   const isCustomSize =
     isCustomType &&
     booking.pickedSize == null &&
-    booking.customWidthCm != null &&
     booking.customHeightCm != null;
   const customPriceCents = isCustomSize
-    ? calculateCustomRugPriceCents(
-        booking.customWidthCm,
-        booking.customHeightCm,
-      )
+    ? calculateCustomRugPriceCents(booking.customHeightCm)
     : null;
   const size = booking.pickedSize
     ? rugType.rug_sizes?.find(
@@ -178,12 +180,14 @@ export async function createCheckoutSession(input: unknown) {
   if (isCustomSize && customPriceCents == null) {
     return {
       success: false,
-      message: "Wymiary własnego dywanu są poza dozwolonym zakresem.",
+      message: "Wysokość własnego dywanu jest poza dozwolonym zakresem.",
     };
   }
 
   const sizeLabel = isCustomSize
-    ? `Własny rozmiar ${booking.customWidthCm} × ${booking.customHeightCm} cm`
+    ? booking.customWidthCm != null
+      ? `Własny rozmiar ${booking.customWidthCm} × ${booking.customHeightCm} cm`
+      : `Własny rozmiar · wysokość ${booking.customHeightCm} cm`
     : size!.label;
   const priceCents = isCustomSize ? customPriceCents! : Number(size!.price_cents);
 
@@ -236,7 +240,10 @@ export async function createCheckoutSession(input: unknown) {
       rugTypeName: rugType.name,
       pickedSize: isCustomSize ? "custom" : String(booking.pickedSize),
       rugSizeLabel: sizeLabel,
-      customWidthCm: isCustomSize ? String(booking.customWidthCm) : "",
+      customWidthCm:
+        isCustomSize && booking.customWidthCm != null
+          ? String(booking.customWidthCm)
+          : "",
       customHeightCm: isCustomSize ? String(booking.customHeightCm) : "",
       pickupDate: booking.pickupDate,
       customerName: booking.customerName,

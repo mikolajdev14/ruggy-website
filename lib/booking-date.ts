@@ -1,5 +1,7 @@
 const POLAND_TIME_ZONE = "Europe/Warsaw";
 
+export const BOOKING_LEAD_DAYS = 5;
+
 export const formatLocalDateKey = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -36,3 +38,26 @@ export const getPolandDateKey = (date = new Date()) => {
 
   return `${values.year}-${values.month}-${values.day}`;
 };
+
+export const addDaysToDateKey = (dateKey: string, days: number) => {
+  if (!isValidDateKey(dateKey) || !Number.isInteger(days)) {
+    throw new Error("Nieprawidłowa data lub liczba dni.");
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const result = new Date(Date.UTC(year, month - 1, day + days));
+
+  return [
+    result.getUTCFullYear(),
+    String(result.getUTCMonth() + 1).padStart(2, "0"),
+    String(result.getUTCDate()).padStart(2, "0"),
+  ].join("-");
+};
+
+export const getMinimumBookingDateKey = (date = new Date()) =>
+  addDaysToDateKey(getPolandDateKey(date), BOOKING_LEAD_DAYS);
+
+export const getBookingLeadDateKeys = (todayDateKey: string) =>
+  Array.from({ length: BOOKING_LEAD_DAYS }, (_, index) =>
+    addDaysToDateKey(todayDateKey, index),
+  );

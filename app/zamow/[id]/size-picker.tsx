@@ -68,13 +68,8 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
 
   const isCustomType = sizeData?.name.trim().toLocaleLowerCase() === "inne";
   const customPriceCents = calculateCustomRugPriceCents(
-    booking.customWidthCm,
     booking.customHeightCm,
   );
-  const customArea =
-    booking.customWidthCm != null && booking.customHeightCm != null
-      ? (booking.customWidthCm * booking.customHeightCm) / 10000
-      : null;
 
   const choosePresetSize = (sizeId: number) => {
     setBooking((previous) => ({
@@ -129,14 +124,16 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
             <div>
               <p className="text-base font-black text-[var(--ruggy-ink)]">Twój wymiar, nasza włóczka</p>
               <p className="mt-1 text-sm leading-6 text-[var(--ruggy-body)]">
-                Podaj szerokość i wysokość w centymetrach. Cena rośnie wraz z powierzchnią.
+                Podaj wysokość dywanu. Szerokość możesz dodać, jeśli ma znaczenie dla projektu.
               </p>
             </div>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm font-black text-[var(--ruggy-ink)]">Szerokość (cm)</span>
+              <span className="text-sm font-black text-[var(--ruggy-ink)]">
+                Szerokość (cm, opcjonalnie)
+              </span>
               <input
                 type="number"
                 min={CUSTOM_RUG_MIN_DIMENSION_CM}
@@ -150,7 +147,9 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-black text-[var(--ruggy-ink)]">Wysokość (cm)</span>
+              <span className="text-sm font-black text-[var(--ruggy-ink)]">
+                Wysokość (cm) *
+              </span>
               <input
                 type="number"
                 min={CUSTOM_RUG_MIN_DIMENSION_CM}
@@ -161,15 +160,18 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
                 onChange={(event) => updateCustomDimension("customHeightCm", event.target.value)}
                 placeholder="np. 70"
                 className={fieldClass}
+                required
               />
             </label>
           </div>
 
           <div className="mt-5 flex flex-col gap-3 rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]">Szacunkowa powierzchnia</p>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]">Podana wysokość</p>
               <p className="mt-1 text-xl font-black text-[var(--ruggy-ink)]" aria-live="polite">
-                {customArea != null ? `${customArea.toFixed(2)} m²` : "Wpisz oba wymiary"}
+                {booking.customHeightCm != null
+                  ? `${booking.customHeightCm} cm`
+                  : "Wpisz wysokość"}
               </p>
             </div>
             <div className="sm:text-end">
@@ -181,7 +183,7 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
           </div>
 
           <p className="mt-4 text-xs leading-5 text-[var(--ruggy-body)]">
-            Wzór: 249 zł opłaty bazowej plus 420 zł za 1 m², zaokrąglone do pełnych 10 zł.
+            Wzór: 249 zł opłaty bazowej plus 4,20 zł za każdy centymetr wysokości, zaokrąglone w górę do pełnych 10 zł.
           </p>
         </div>
       ) : (

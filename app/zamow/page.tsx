@@ -1,7 +1,15 @@
 import { createClientServer } from "@/lib/supabase/server";
 import { ArrowLeft, Sparkles } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { RugCard } from "./rug-card";
+
+export const metadata: Metadata = {
+  title: "Zamów personalizowany dywan",
+  description:
+    "Wybierz wariant, rozmiar i termin wykonania ręcznie tuftowanego dywanu Ruggy.",
+  alternates: { canonical: "/zamow" },
+};
 
 export default async function ZamowPage() {
   const supabase = await createClientServer();
