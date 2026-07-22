@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { HomeScrollReveal } from "@/components/home-scroll-reveal";
 import { OrganizationJsonLd } from "@/components/organization-json-ld";
 import heroWorkshop from "@/public/ruggy/hero-workshop.webp";
 import rugDog from "@/public/ruggy/rug-dog.webp";
@@ -119,7 +120,11 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="overflow-x-hidden bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+    <div
+      data-ruggy-home
+      className="overflow-x-hidden bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]"
+    >
+      <HomeScrollReveal />
       <OrganizationJsonLd />
       <a
         href="#main-content"
@@ -164,25 +169,24 @@ export default function HomePage() {
       </header>
 
       <main id="main-content">
-        <section className="relative isolate overflow-hidden pb-16 pt-10 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
-          <div className="ruggy-blob ruggy-blob-blue absolute -end-20 top-12 -z-10 size-72 sm:size-96" aria-hidden="true" />
-          <div className="ruggy-blob ruggy-blob-yellow absolute -start-24 bottom-2 -z-10 size-56" aria-hidden="true" />
+        <section className="relative isolate overflow-hidden pb-16 pt-12 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
+          <div className="ruggy-blob ruggy-blob-blue absolute -end-24 -top-16 -z-10 size-72 sm:size-96" aria-hidden="true" />
+          <div className="ruggy-blob ruggy-blob-yellow absolute -start-28 bottom-8 -z-10 size-56" aria-hidden="true" />
 
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:px-10">
-            <div className="ruggy-enter-up max-w-2xl">
-              <div className="mb-6 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border-2 border-[var(--ruggy-ink)] bg-white px-4 py-2 text-sm font-bold shadow-[4px_4px_0_var(--ruggy-ink)]">
-                <Sparkles className="size-4 text-[var(--ruggy-coral)]" aria-hidden="true" />
-                Dywan dokładnie taki jak chcesz
-              </div>
-
-              <h1 className="max-w-4xl text-4xl font-black leading-[0.98] sm:text-6xl lg:text-7xl">
-                Twój Wuja Dywaniarz stworzy dla Ciebie wymarzony dywan,{" "}
-                <span className="ruggy-underline relative inline-block text-[var(--ruggy-blue)]">
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(26rem,0.96fr)] lg:gap-16 lg:px-10">
+            <div className="ruggy-enter-up max-w-3xl">
+              <h1 className="text-4xl font-black leading-[0.98] sm:text-6xl lg:text-7xl">
+                <span className="block">Twój Wuja Dywaniarz</span>
+                <span className="mt-2 block text-[var(--ruggy-blue)]">
+                  stworzy dla Ciebie
+                </span>
+                <span className="block">wymarzony dywan,</span>
+                <span className="ruggy-underline relative mt-5 inline-block text-2xl leading-tight text-[var(--ruggy-ink)] sm:text-3xl lg:text-4xl">
                   dokładnie taki jaki chcesz
                 </span>
               </h1>
 
-              <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
+              <p className="mt-8 max-w-xl border-s-4 border-[var(--ruggy-coral)] ps-5 text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
                 Zamieniam Twoje zdjęcia, historie i dziwne pomysły w ręcznie
                 tuftowane dywany. Bez gotowców. Bez nudy.
               </p>
@@ -190,7 +194,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/zamow"
-                  className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--ruggy-blue)] px-7 text-base font-black text-white shadow-[0_8px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_12px_0_var(--ruggy-ink)] ${focusClass}`}
+                  className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--ruggy-blue)] px-7 text-base font-black text-white shadow-[0_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_0_var(--ruggy-ink)] ${focusClass}`}
                 >
                   Pokaż mi swój pomysł
                   <ArrowRight className="size-5" aria-hidden="true" />
@@ -203,7 +207,7 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-bold text-[var(--ruggy-body)]">
+              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t-2 border-[var(--ruggy-border-strong)] pt-5 text-sm font-bold text-[var(--ruggy-body)]">
                 <span className="flex items-center gap-2">
                   <span className="flex -space-x-2" aria-hidden="true">
                     <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-blue)]" />
@@ -221,8 +225,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="ruggy-enter-right relative">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-2 shadow-[12px_14px_0_var(--ruggy-ink)] sm:p-3">
+            <div className="ruggy-enter-right relative pb-4 lg:rotate-[1deg]">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-2 shadow-[10px_12px_0_var(--ruggy-ink)] sm:rounded-[2.5rem] sm:p-3">
                 <Image
                   src={heroWorkshop}
                   alt="Ręczne wykańczanie niebieskiego dywanu Ruggy w pracowni"
@@ -232,11 +236,11 @@ export default function HomePage() {
                   className="rounded-[2rem] object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -start-3 rotate-[-5deg] rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-5 py-3 text-sm font-black shadow-[5px_5px_0_var(--ruggy-ink)] sm:start-8 sm:text-base">
+              <div className="absolute -bottom-3 start-4 rotate-[-4deg] rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-5 py-3 text-sm font-black shadow-[4px_4px_0_var(--ruggy-ink)] sm:start-8 sm:text-base">
                 <span className="block text-xs font-bold uppercase tracking-widest">Aktualnie</span>
                 Tuftuję marzenia
               </div>
-              <div className="absolute -end-3 -top-6 flex size-24 rotate-[8deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
+              <div className="absolute -end-2 -top-8 flex size-24 rotate-[7deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
                 Jeden jedyny egzemplarz
               </div>
             </div>
@@ -245,19 +249,19 @@ export default function HomePage() {
 
         <section id="dlaczego" className="scroll-mt-24 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)]">
           <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-            <div className="mx-auto max-w-3xl text-center">
+            <div data-scroll-reveal className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">Więcej niż dekoracja</p>
               <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Kawałek Ciebie, tylko bardziej miękki.</h2>
             </div>
 
-            <ul className="mt-12 grid gap-5 lg:grid-cols-3">
-              {benefits.map((benefit, index) => {
+            <ul data-scroll-stagger className="mt-12 grid gap-5 lg:grid-cols-3">
+              {benefits.map((benefit) => {
                 const Icon = benefit.icon;
                 return (
                   <li
                     key={benefit.title}
-                    className="ruggy-reveal-up rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
-                    style={{ animationDelay: `${index * 80}ms` }}
+                    data-scroll-reveal
+                    className="rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
                   >
                     <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)]">
                       <Icon className="size-6" aria-hidden="true" />
@@ -273,7 +277,7 @@ export default function HomePage() {
 
         <section id="realizacje" className="scroll-mt-24 bg-[var(--ruggy-ink)] text-white">
           <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div data-scroll-reveal className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-3xl">
                 <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-yellow)]">Pomysł nie zna kształtu</p>
                 <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Galeria rzeczy, które nie chciały być zwykłe.</h2>
@@ -289,12 +293,12 @@ export default function HomePage() {
               </a>
             </div>
 
-            <ul className="mt-12 grid gap-7 sm:grid-cols-3 sm:gap-5">
-              {gallery.map((item, index) => (
+            <ul data-scroll-stagger className="mt-12 grid gap-7 sm:grid-cols-3 sm:gap-5">
+              {gallery.map((item) => (
                 <li
                   key={item.label}
-                  className={`ruggy-reveal-up ${item.className}`}
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  data-scroll-reveal
+                  className={item.className}
                 >
                   <figure className="overflow-hidden rounded-[2rem] border-2 border-white/80 bg-[var(--ruggy-canvas)] p-2 text-[var(--ruggy-ink)]">
                     <div className="relative aspect-square overflow-hidden rounded-[1.5rem]">
@@ -319,7 +323,7 @@ export default function HomePage() {
 
         <section id="jak-to-dziala" className="scroll-mt-24 bg-[var(--ruggy-canvas)]">
           <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-10">
-            <div className="lg:sticky lg:top-28 lg:self-start">
+            <div data-scroll-reveal className="lg:sticky lg:top-28 lg:self-start">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">Cztery kroki</p>
               <h2 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">
                 Od{" "}
@@ -353,14 +357,14 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <ol className="space-y-4">
-              {steps.map((step, index) => {
+            <ol data-scroll-stagger className="space-y-4">
+              {steps.map((step) => {
                 const Icon = step.icon;
                 return (
                   <li
                     key={step.number}
-                    className="ruggy-reveal-right group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
-                    style={{ animationDelay: `${index * 70}ms` }}
+                    data-scroll-reveal="right"
+                    className="group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
                   >
                     <span className="text-5xl font-black tracking-[-0.07em] text-[var(--ruggy-blue-soft-strong)] group-hover:text-[var(--ruggy-yellow)] sm:text-7xl">{step.number}</span>
                     <div>
@@ -379,14 +383,14 @@ export default function HomePage() {
 
         <section id="faq" className="scroll-mt-24 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)]">
           <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:px-10">
-            <div>
+            <div data-scroll-reveal>
               <p className="text-sm font-black uppercase tracking-[0.18em]">Zanim zapytasz na DM</p>
               <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">Pytania mają miękkie lądowanie.</h2>
             </div>
 
-            <div className="space-y-3">
+            <div data-scroll-stagger className="space-y-3">
               {faqs.map((faq) => (
-                <details key={faq.question} className="group rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] open:shadow-[5px_5px_0_var(--ruggy-ink)]">
+                <details key={faq.question} data-scroll-reveal className="group rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] open:shadow-[5px_5px_0_var(--ruggy-ink)]">
                   <summary className={`flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-lg font-black [&::-webkit-details-marker]:hidden ${focusClass}`}>
                     {faq.question}
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-ink)] text-white transition-transform group-open:rotate-45" aria-hidden="true">+</span>
@@ -399,7 +403,7 @@ export default function HomePage() {
         </section>
 
         <section className="bg-[var(--ruggy-blue-soft)] px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-          <div className="ruggy-reveal-scale ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20">
+          <div data-scroll-reveal="scale" className="ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20">
             <span className="flex size-14 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
               <Sparkles className="size-7" aria-hidden="true" />
             </span>
@@ -417,7 +421,7 @@ export default function HomePage() {
       </main>
 
       <footer className="bg-[var(--ruggy-ink)] px-5 py-10 text-white sm:px-8 lg:px-10">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 border-b border-white/20 pb-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        <div data-scroll-reveal className="mx-auto grid w-full max-w-7xl gap-10 border-b border-white/20 pb-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
           <div>
             <Link href="/" className={`ruggy-wordmark text-5xl ${focusLightClass}`}>
               ruggy<span className="text-[var(--ruggy-yellow)]">.</span>
@@ -437,8 +441,31 @@ export default function HomePage() {
             <span className="text-white/50">Ruggy, Polska</span>
           </div>
         </div>
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 pt-6 text-xs text-white/50 lg:flex-row lg:items-center lg:justify-between">
           <span>© 2026 Ruggy. Wszystkie prawa zastrzeżone.</span>
+          <nav
+            aria-label="Informacje prawne"
+            className="flex flex-wrap items-center gap-x-5 gap-y-3 font-bold text-white/70"
+          >
+            <Link
+              href="/polityka-prywatnosci"
+              className={`transition-colors hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}
+            >
+              Polityka prywatności
+            </Link>
+            <Link
+              href="/zwroty"
+              className={`transition-colors hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}
+            >
+              Zwroty
+            </Link>
+            <Link
+              href="/regulamin"
+              className={`transition-colors hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}
+            >
+              Regulamin
+            </Link>
+          </nav>
           <span>Stworzone ręcznie. Tak jak dywany.</span>
         </div>
       </footer>
