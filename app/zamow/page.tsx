@@ -1,4 +1,4 @@
-import { createClientServer } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -11,11 +11,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/zamow" },
 };
 
+export const revalidate = 300;
+
 export default async function ZamowPage() {
-  const supabase = await createClientServer();
+  const supabase = createPublicClient();
   const { data: rugTypes, error } = await supabase
     .from("rug_types")
-    .select("*")
+    .select("id, name, description, lead_time_days")
     .eq("is_active", true);
 
   return (
