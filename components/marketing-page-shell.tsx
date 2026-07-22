@@ -18,7 +18,7 @@ export function MarketingPageShell({
   image,
   imageAlt,
   sections,
-  ctaTitle = "Opowiedz nam o swoim pomyśle",
+  ctaTitle = "Opowiedz mi o swoim pomyśle",
   ctaText = "Wybierz wariant, dodaj zdjęcie i zarezerwuj dogodny termin online.",
 }: {
   path: string;

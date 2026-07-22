@@ -6,8 +6,16 @@ import {
   calculateCustomRugPriceCents,
   formatPriceCents,
 } from "@/lib/custom-rug-price";
+import { usesDirectCheckout } from "@/lib/rug-order-mode";
+import { siteConfig } from "@/lib/site-config";
 import { bookingSchema } from "@/schema/booking";
-import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  AtSign,
+  CreditCard,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import Link from "next/link";
 import {
   type FormEvent,
@@ -16,7 +24,11 @@ import {
   useEffect,
   useState,
 } from "react";
-import { createCheckoutSession, uploadReferenceImage } from "./actions";
+import {
+  createCheckoutSession,
+  createContactBooking,
+  uploadReferenceImage,
+} from "./actions";
 import { CustomerForm } from "./customer-form";
 import { DatePicker } from "./date-picker";
 import { DeliveryPicker } from "./delivery-picker";
@@ -27,6 +39,7 @@ export type DeliveryMethod = "parcel_locker" | "courier";
 
 export type Booking = {
   rugTypeId: string;
+  rugVariantId: number | null;
   pickedSize: number | null;
   customWidthCm: number | null;
   customHeightCm: number | null;
@@ -42,6 +55,7 @@ export type Booking = {
 
 type RugTypeSummary = {
   name: string;
+  slug: string;
   description: string | null;
   lead_time_days: number | null;
 };
@@ -54,11 +68,14 @@ export default function ProductPage({
   const { id } = use(params);
   const [blockedDays, setBlockedDays] = useState<Date[]>([]);
   const [rugType, setRugType] = useState<RugTypeSummary | null>(null);
+  const [hasAcceptedContentWarning, setHasAcceptedContentWarning] =
+    useState(false);
   const [submitMessage, setSubmitMessage] = useState<string>();
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [booking, setBooking] = useState<Booking>({
     rugTypeId: id,
+    rugVariantId: null,
     pickedSize: null,
     customWidthCm: null,
     customHeightCm: null,
@@ -82,7 +99,7 @@ export default function ProductPage({
           supabase.from("blocked_dates").select("date"),
           supabase
             .from("rug_types")
-            .select("name, description, lead_time_days")
+            .select("name, slug, description, lead_time_days")
             .eq("id", id)
             .single(),
         ]);
@@ -99,6 +116,21 @@ export default function ProductPage({
       isMounted = false;
     };
   }, [id]);
+
+  const showContentWarning =
+    rugType?.slug === "papadywany" && !hasAcceptedContentWarning;
+  const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
+
+  useEffect(() => {
+    if (!showContentWarning) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showContentWarning]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -124,9 +156,13 @@ export default function ProductPage({
 
     setIsSubmitting(true);
     setSubmitMessage(
-      referenceImage
-        ? "Przygotowuję zdjęcie i płatność..."
-        : "Przygotowuję płatność...",
+      isDirectCheckout
+        ? referenceImage
+          ? "Przygotowuję zdjęcie i płatność..."
+          : "Przygotowuję płatność..."
+        : referenceImage
+          ? "Przesyłam zdjęcie i zapisuję zgłoszenie..."
+          : "Zapisuję zgłoszenie...",
     );
 
     try {
@@ -144,7 +180,23 @@ export default function ProductPage({
         referenceImagePath = uploadResponse.path;
       }
 
-      const response = await createCheckoutSession({
+      if (isDirectCheckout) {
+        const response = await createCheckoutSession({
+          ...bookingInput,
+          referenceImagePath,
+        });
+
+        if (!response.success) {
+          setSubmitMessage(response.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        window.location.href = response.checkoutUrl!;
+        return;
+      }
+
+      const response = await createContactBooking({
         ...bookingInput,
         referenceImagePath,
       });
@@ -155,7 +207,7 @@ export default function ProductPage({
         return;
       }
 
-      window.location.href = response.checkoutUrl!;
+      window.location.href = siteConfig.instagram;
     } catch (error) {
       console.error("Nie udało się przygotować zamówienia:", error);
       setSubmitMessage(
@@ -195,6 +247,12 @@ export default function ProductPage({
 
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+      {showContentWarning ? (
+        <ContentWarningDialog
+          onAccept={() => setHasAcceptedContentWarning(true)}
+        />
+      ) : null}
+
       <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)]">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
           <Link href="/" className="ruggy-wordmark text-4xl text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]">
@@ -328,8 +386,17 @@ export default function ProductPage({
                 </div>
               )}
               <p className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
-                <ShieldCheck size={14} aria-hidden="true" />
-                Bezpieczna płatność online przez Stripe
+                {isDirectCheckout ? (
+                  <>
+                    <ShieldCheck size={14} aria-hidden="true" />
+                    Bezpieczna płatność online przez Stripe
+                  </>
+                ) : (
+                  <>
+                    <AtSign size={14} aria-hidden="true" />
+                    Zapiszę kompletne zgłoszenie, a cenę i płatność ustalę z Tobą na Instagramie
+                  </>
+                )}
               </p>
             </div>
 
@@ -338,13 +405,72 @@ export default function ProductPage({
               disabled={isSubmitting}
               className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-blue)] px-6 text-sm font-black text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)] disabled:cursor-wait disabled:opacity-70"
             >
-              <CreditCard size={17} aria-hidden="true" />
-              {isSubmitting ? "Przygotowywanie..." : "Zapłać i zarezerwuj"}
+              {isDirectCheckout ? (
+                <CreditCard size={17} aria-hidden="true" />
+              ) : (
+                <AtSign size={17} aria-hidden="true" />
+              )}
+              {isSubmitting
+                ? isDirectCheckout
+                  ? "Przygotowywanie..."
+                  : "Zapisywanie..."
+                : isDirectCheckout
+                  ? "Zapłać i zarezerwuj"
+                  : "Skontaktuj się ze mną"}
             </button>
           </div>
         </div>
       </form>
     </main>
+  );
+}
+
+function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
+      <section
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="content-warning-title"
+        aria-describedby="content-warning-description"
+        className="w-full max-w-xl rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-6 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-8"
+      >
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
+          <TriangleAlert size={24} aria-hidden="true" />
+        </span>
+        <h2
+          id="content-warning-title"
+          className="mt-5 text-2xl font-black text-[var(--ruggy-ink)] sm:text-3xl"
+        >
+          Uwaga dotycząca treści
+        </h2>
+        <p
+          id="content-warning-description"
+          className="mt-4 text-base leading-7 text-[var(--ruggy-body)]"
+        >
+          Serwis nie ma na celu urażania niczyich przekonań religijnych, ale
+          zawarte tu materiały mogą okazać się kontrowersyjne. Osobom wierzącym
+          uprzejmie sugeruję rozważenie opuszczenia strony. Dziękuję za
+          wyrozumiałość.
+        </p>
+        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Link
+            href="/zamow"
+            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)]"
+          >
+            Wróć do wariantów
+          </Link>
+          <button
+            type="button"
+            autoFocus
+            onClick={onAccept}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-opacity hover:opacity-85"
+          >
+            Rozumiem, przechodzę dalej
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 

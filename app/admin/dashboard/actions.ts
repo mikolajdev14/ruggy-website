@@ -10,6 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 const allowedStatuses = [
+  "awaiting_quote",
   "paid",
   "in_progress",
   "completed",

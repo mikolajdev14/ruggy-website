@@ -23,7 +23,7 @@ const benefits = [
   {
     icon: Heart,
     title: "Prezent, którego nie da się powtórzyć",
-    description: "Twój pomysł zamieniamy w miękki obiekt z własnym charakterem.",
+    description: "Twój pomysł zamieniam w miękki obiekt z własnym charakterem.",
   },
   {
     icon: Palette,
@@ -41,7 +41,7 @@ const steps = [
   {
     number: "01",
     icon: Camera,
-    title: "Pokaż nam pomysł",
+    title: "Pokaż mi pomysł",
     description: "Wyślij zdjęcie, szkic albo opisz motyw, który chodzi Ci po głowie.",
   },
   {
@@ -53,14 +53,14 @@ const steps = [
   {
     number: "03",
     icon: Scissors,
-    title: "Wchodzimy do pracowni",
-    description: "Tuftujemy, docinamy i wykańczamy każdy detal ręcznie.",
+    title: "Wchodzę do pracowni",
+    description: "Tuftuję, docinam i wykańczam każdy detal ręcznie.",
   },
   {
     number: "04",
     icon: PackageCheck,
     title: "Ruggy rusza w drogę",
-    description: "Gotowy dywan wysyłamy do paczkomatu albo prosto pod Twoje drzwi.",
+    description: "Gotowy dywan wysyłam do paczkomatu albo prosto pod Twoje drzwi.",
   },
 ];
 
@@ -94,12 +94,12 @@ const faqs = [
   {
     question: "Co jeśli nie mam gotowego projektu?",
     answer:
-      "Wystarczy inspiracja, zdjęcie albo krótki opis. Pomożemy przełożyć pomysł na formę, która dobrze zadziała jako dywan.",
+      "Wystarczy inspiracja, zdjęcie albo krótki opis. Pomogę Ci przełożyć pomysł na formę, która dobrze zadziała jako dywan.",
   },
   {
     question: "Czy mogę zamówić dowolny kształt?",
     answer:
-      "Tak. Lubimy nieregularne formy, ale ostateczny kształt zależy od możliwości wykonania konkretnego wzoru.",
+      "Tak. Lubię nieregularne formy, ale ostateczny kształt zależy od możliwości wykonania konkretnego wzoru.",
   },
   {
     question: "Jak długo trwa realizacja?",
@@ -175,15 +175,16 @@ export default function HomePage() {
                 Dywan dokładnie taki jak chcesz
               </div>
 
-              <h1 className="max-w-3xl text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
-                Ręcznie tuftowane
-                <span className="mt-1 block text-[var(--ruggy-blue)]">dywany</span>
-                <span className="ruggy-underline relative inline-block">na zamówienie.</span>
+              <h1 className="max-w-4xl text-4xl font-black leading-[0.98] sm:text-6xl lg:text-7xl">
+                Twój Wuja Dywaniarz stworzy dla Ciebie wymarzony dywan,{" "}
+                <span className="ruggy-underline relative inline-block text-[var(--ruggy-blue)]">
+                  dokładnie taki jaki chcesz
+                </span>
               </h1>
 
               <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
-                Wujek Dywaniarz zamienia Twoje zdjęcia, historie i dziwne pomysły
-                w ręcznie tuftowane dywany. Bez gotowców. Bez nudy.
+                Zamieniam Twoje zdjęcia, historie i dziwne pomysły w ręcznie
+                tuftowane dywany. Bez gotowców. Bez nudy.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -191,7 +192,7 @@ export default function HomePage() {
                   href="/zamow"
                   className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--ruggy-blue)] px-7 text-base font-black text-white shadow-[0_8px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_12px_0_var(--ruggy-ink)] ${focusClass}`}
                 >
-                  Pokaż nam swój pomysł
+                  Pokaż mi swój pomysł
                   <ArrowRight className="size-5" aria-hidden="true" />
                 </Link>
                 <Link
@@ -233,7 +234,7 @@ export default function HomePage() {
               </div>
               <div className="absolute -bottom-6 -start-3 rotate-[-5deg] rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-5 py-3 text-sm font-black shadow-[5px_5px_0_var(--ruggy-ink)] sm:start-8 sm:text-base">
                 <span className="block text-xs font-bold uppercase tracking-widest">Aktualnie</span>
-                Tuftujemy marzenia
+                Tuftuję marzenia
               </div>
               <div className="absolute -end-3 -top-6 flex size-24 rotate-[8deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
                 Jeden jedyny egzemplarz
@@ -403,7 +404,7 @@ export default function HomePage() {
               <Sparkles className="size-7" aria-hidden="true" />
             </span>
             <h2 className="mt-7 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Masz zdjęcie, pomysł albo bardzo konkretną fazę?</h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">Super. To dokładnie tyle, ile potrzebujemy, żeby zacząć.</p>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">Super. To dokładnie tyle, ile potrzebuję, żeby zacząć.</p>
             <Link
               href="/zamow"
               className={`mt-8 inline-flex min-h-14 items-center gap-3 rounded-full bg-[var(--ruggy-yellow)] px-7 text-base font-black text-[var(--ruggy-ink)] transition-transform hover:-translate-y-1 ${focusClass}`}

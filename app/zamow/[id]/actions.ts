@@ -4,15 +4,53 @@ import {
   getMinimumBookingDateKey,
   isValidDateKey,
 } from "@/lib/booking-date";
-import { calculateCustomRugPriceCents } from "@/lib/custom-rug-price";
+import {
+  calculateCustomRugPriceCents,
+  formatCustomRugSizeLabel,
+} from "@/lib/custom-rug-price";
+import {
+  PAPADYWANY_SLUG,
+  usesDirectCheckout,
+} from "@/lib/rug-order-mode";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { consumeReferenceImageUploadLimit } from "@/lib/upload-rate-limit";
+import {
+  consumeContactBookingLimit,
+  consumeReferenceImageUploadLimit,
+} from "@/lib/upload-rate-limit";
 import { headers } from "next/headers";
 
 const REFERENCE_IMAGES_BUCKET = "booking-reference-images";
 const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024;
+
+async function validateBookingDate(
+  supabase: ReturnType<typeof createAdminClient>,
+  pickupDate: string,
+) {
+  if (!isValidDateKey(pickupDate)) {
+    return "Wybrano nieprawidłowy termin.";
+  }
+
+  if (pickupDate < getMinimumBookingDateKey()) {
+    return "Najbliższy możliwy termin realizacji jest za 5 dni.";
+  }
+
+  const { data: blockedDate, error } = await supabase
+    .from("blocked_dates")
+    .select("date")
+    .eq("date", pickupDate)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Nie udało się sprawdzić dostępności terminu:", error);
+    return "Nie udało się sprawdzić dostępności terminu.";
+  }
+
+  return blockedDate
+    ? "Wybrany termin jest niedostępny. Wybierz inny dzień."
+    : null;
+}
 
 export async function uploadReferenceImage(file: File) {
   const extensionByType: Record<string, string> = {
@@ -103,42 +141,13 @@ export async function createCheckoutSession(input: unknown) {
 
   const booking = result.data;
   const supabase = createAdminClient();
+  const dateError = await validateBookingDate(supabase, booking.pickupDate);
 
-  if (!isValidDateKey(booking.pickupDate)) {
-    return { success: false, message: "Wybrano nieprawidłowy termin." };
-  }
-
-  if (booking.pickupDate < getMinimumBookingDateKey()) {
-    return {
-      success: false,
-      message: "Najbliższy możliwy termin realizacji jest za 5 dni.",
-    };
-  }
-
-  const { data: blockedDate, error: blockedDateError } = await supabase
-    .from("blocked_dates")
-    .select("date")
-    .eq("date", booking.pickupDate)
-    .maybeSingle();
-
-  if (blockedDateError) {
-    console.error("Nie udało się sprawdzić dostępności terminu:", blockedDateError);
-    return {
-      success: false,
-      message: "Nie udało się sprawdzić dostępności terminu.",
-    };
-  }
-
-  if (blockedDate) {
-    return {
-      success: false,
-      message: "Wybrany termin jest niedostępny. Wybierz inny dzień.",
-    };
-  }
+  if (dateError) return { success: false, message: dateError };
 
   const { data: rugType, error: rugTypeError } = await supabase
     .from("rug_types")
-    .select("id, name, rug_sizes(id, label, price_cents)")
+    .select("id, name, slug")
     .eq("id", Number(booking.rugTypeId))
     .single();
 
@@ -146,50 +155,83 @@ export async function createCheckoutSession(input: unknown) {
     return { success: false, message: "Nie znaleziono typu dywanu." };
   }
 
-  const isCustomType = rugType.name.trim().toLocaleLowerCase() === "inne";
-  const hasCustomDimension =
-    booking.customWidthCm != null || booking.customHeightCm != null;
-
-  if (!isCustomType && hasCustomDimension) {
+  if (!usesDirectCheckout(rugType.slug)) {
     return {
       success: false,
-      message: "Własne wymiary są dostępne dla typu Inne.",
+      message: "Ten wariant wymaga indywidualnej wyceny na Instagramie.",
     };
   }
 
-  const isCustomSize =
-    isCustomType &&
-    booking.pickedSize == null &&
-    booking.customHeightCm != null;
-  const customPriceCents = isCustomSize
-    ? calculateCustomRugPriceCents(booking.customHeightCm)
-    : null;
-  const size = booking.pickedSize
-    ? rugType.rug_sizes?.find(
-        (rugSize) => Number(rugSize.id) === booking.pickedSize,
-      )
-    : null;
+  if (
+    booking.pickedSize == null ||
+    booking.customWidthCm != null ||
+    booking.customHeightCm != null
+  ) {
+    return {
+      success: false,
+      message: "Wybierz dostępny rozmiar dywanu.",
+    };
+  }
 
-  if (!isCustomSize && !size) {
+  const { data: size, error: sizeError } = await supabase
+    .from("rug_sizes")
+    .select("id, label, price_cents, rug_type_id, rug_variant_id, is_active")
+    .eq("id", booking.pickedSize)
+    .maybeSingle();
+
+  if (sizeError || !size || size.is_active === false) {
+    return {
+      success: false,
+      message: "Wybrany rozmiar jest niedostępny.",
+    };
+  }
+
+  let rugVariant: { id: number | string; name: string } | null = null;
+
+  if (rugType.slug === PAPADYWANY_SLUG) {
+    if (booking.rugVariantId == null) {
+      return { success: false, message: "Wybierz podrodzaj papadywanu." };
+    }
+
+    const { data: selectedVariant, error: variantError } = await supabase
+      .from("rug_variants")
+      .select("id, name")
+      .eq("id", booking.rugVariantId)
+      .eq("rug_type_id", Number(rugType.id))
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (
+      variantError ||
+      !selectedVariant ||
+      Number(size.rug_variant_id) !== Number(selectedVariant.id)
+    ) {
+      return {
+        success: false,
+        message: "Wybrany rozmiar nie należy do tego podrodzaju.",
+      };
+    }
+
+    rugVariant = selectedVariant;
+  } else if (
+    Number(size.rug_type_id) !== Number(rugType.id) ||
+    size.rug_variant_id != null
+  ) {
     return {
       success: false,
       message: "Wybrany rozmiar nie należy do tego wariantu dywanu.",
     };
   }
 
-  if (isCustomSize && customPriceCents == null) {
+  const sizeLabel = size.label;
+  const priceCents = Number(size.price_cents);
+
+  if (!Number.isInteger(priceCents) || priceCents <= 0) {
     return {
       success: false,
-      message: "Wysokość własnego dywanu jest poza dozwolonym zakresem.",
+      message: "Wybrany rozmiar nie ma prawidłowej ceny.",
     };
   }
-
-  const sizeLabel = isCustomSize
-    ? booking.customWidthCm != null
-      ? `Własny rozmiar ${booking.customWidthCm} × ${booking.customHeightCm} cm`
-      : `Własny rozmiar · wysokość ${booking.customHeightCm} cm`
-    : size!.label;
-  const priceCents = isCustomSize ? customPriceCents! : Number(size!.price_cents);
 
   const requestOrigin = (await headers()).get("origin");
   const checkoutOriginSource =
@@ -229,7 +271,7 @@ export async function createCheckoutSession(input: unknown) {
           currency: "pln",
           unit_amount: priceCents,
           product_data: {
-            name: `${rugType.name} · ${sizeLabel}`,
+            name: `${rugType.name}${rugVariant ? ` · ${rugVariant.name}` : ""} · ${sizeLabel}`,
           },
         },
         quantity: 1,
@@ -238,13 +280,13 @@ export async function createCheckoutSession(input: unknown) {
     metadata: {
       rugTypeId: booking.rugTypeId,
       rugTypeName: rugType.name,
-      pickedSize: isCustomSize ? "custom" : String(booking.pickedSize),
+      rugTypeSlug: rugType.slug,
+      rugVariantId: rugVariant ? String(rugVariant.id) : "",
+      rugVariantName: rugVariant?.name ?? "",
+      pickedSize: String(booking.pickedSize),
       rugSizeLabel: sizeLabel,
-      customWidthCm:
-        isCustomSize && booking.customWidthCm != null
-          ? String(booking.customWidthCm)
-          : "",
-      customHeightCm: isCustomSize ? String(booking.customHeightCm) : "",
+      customWidthCm: "",
+      customHeightCm: "",
       pickupDate: booking.pickupDate,
       customerName: booking.customerName,
       customerPhone: booking.customerPhone ?? "",
@@ -260,4 +302,117 @@ export async function createCheckoutSession(input: unknown) {
     success: true,
     checkoutUrl: session.url,
   };
+}
+
+export async function createContactBooking(input: unknown) {
+  const result = bookingSchema.safeParse(input);
+
+  if (!result.success) {
+    return {
+      success: false,
+      message: result.error.issues[0]?.message ?? "Nieprawidłowe dane.",
+    };
+  }
+
+  const rateLimit = await consumeContactBookingLimit();
+
+  if (rateLimit.unavailable) {
+    return {
+      success: false,
+      message: "Nie udało się teraz zapisać zgłoszenia. Spróbuj ponownie.",
+    };
+  }
+
+  if (!rateLimit.allowed) {
+    return {
+      success: false,
+      message: "Wysłano zbyt wiele zgłoszeń. Spróbuj ponownie później.",
+    };
+  }
+
+  const booking = result.data;
+  const supabase = createAdminClient();
+  const dateError = await validateBookingDate(supabase, booking.pickupDate);
+
+  if (dateError) return { success: false, message: dateError };
+
+  const { data: rugType, error: rugTypeError } = await supabase
+    .from("rug_types")
+    .select("id, name, slug")
+    .eq("id", Number(booking.rugTypeId))
+    .single();
+
+  if (rugTypeError || !rugType) {
+    return { success: false, message: "Nie znaleziono typu dywanu." };
+  }
+
+  if (usesDirectCheckout(rugType.slug)) {
+    return {
+      success: false,
+      message: "Ten wariant należy opłacić online po wybraniu rozmiaru.",
+    };
+  }
+
+  if (
+    booking.pickedSize != null ||
+    booking.rugVariantId != null ||
+    booking.customHeightCm == null
+  ) {
+    return {
+      success: false,
+      message: "Podaj własne wymiary dywanu.",
+    };
+  }
+
+  const estimatedPriceCents = calculateCustomRugPriceCents(
+    booking.customHeightCm,
+  );
+
+  if (estimatedPriceCents == null) {
+    return {
+      success: false,
+      message: "Wysokość dywanu jest poza dozwolonym zakresem.",
+    };
+  }
+
+  const { data: createdBooking, error } = await supabase
+    .from("bookings")
+    .insert({
+      rug_type_id: Number(rugType.id),
+      rug_variant_id: null,
+      rug_size_id: null,
+      rug_type_name: rugType.name,
+      rug_variant_name: null,
+      rug_size_label: formatCustomRugSizeLabel(
+        booking.customWidthCm,
+        booking.customHeightCm,
+      ),
+      price_cents: estimatedPriceCents,
+      customer_name: booking.customerName,
+      customer_email: booking.customerEmail,
+      customer_phone: booking.customerPhone?.trim() || null,
+      notes: booking.customerNotes?.trim() || null,
+      booking_date: booking.pickupDate,
+      status: "awaiting_quote",
+      stripe_session_id: null,
+      stripe_payment_intent_id: null,
+      expires_at: null,
+      delivery_method: booking.deliveryMethod,
+      parcel_locker_code: booking.parcelLockerCode?.trim() || null,
+      delivery_address: booking.deliveryAddress?.trim() || null,
+      reference_image_path: booking.referenceImagePath ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error || !createdBooking) {
+    console.error("Nie udało się zapisać zgłoszenia w Supabase:", error);
+    return {
+      success: false,
+      message: "Nie udało się zapisać zgłoszenia. Spróbuj ponownie.",
+    };
+  }
+
+  return { success: true, bookingId: Number(createdBooking.id) };
 }

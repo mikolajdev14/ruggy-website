@@ -50,6 +50,10 @@ export async function POST(request: Request) {
   ) {
     const session = event.data.object;
 
+    if (session.metadata?.checkoutKind === "agreed_project_payment") {
+      return NextResponse.json({ received: true });
+    }
+
     const result = await fulfillCheckout(session.id);
 
     if (!result.success && result.reason !== "not_paid") {

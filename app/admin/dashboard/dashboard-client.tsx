@@ -46,8 +46,10 @@ import {
 export type AdminBooking = {
   id: number;
   rugTypeId: number | null;
+  rugVariantId: number | null;
   rugSizeId: number | null;
   rugTypeName: string | null;
+  rugVariantName: string | null;
   rugSizeLabel: string | null;
   priceCents: number | null;
   customerName: string | null;
@@ -69,10 +71,16 @@ export type AdminBooking = {
   aiPreviewUrl: string | null;
 };
 
-type BookingStatus = "paid" | "in_progress" | "completed" | "cancelled";
+type BookingStatus =
+  | "awaiting_quote"
+  | "paid"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 type StatusFilter = "all" | BookingStatus;
 
 const statusOptions: Array<{ value: BookingStatus; label: string }> = [
+  { value: "awaiting_quote", label: "Do wyceny" },
   { value: "paid", label: "Opłacone" },
   { value: "in_progress", label: "W realizacji" },
   { value: "completed", label: "Zakończone" },
@@ -84,6 +92,7 @@ const statusLabels: Record<string, string> = Object.fromEntries(
 );
 
 const statusClasses: Record<string, string> = {
+  awaiting_quote: "bg-[#f7e8ff] text-[#7a3691]",
   paid: "bg-[#fff1bf] text-[#8a6411]",
   in_progress: "bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]",
   completed: "bg-[#e1f1e8] text-[var(--ruggy-success)]",
@@ -147,6 +156,15 @@ const getDeliveryLabel = (method: string | null) => {
   if (method === "courier") return "Kurier";
   return "Brak danych";
 };
+
+const getRugDetails = (booking: AdminBooking) =>
+  [
+    booking.rugTypeName || "Dywan",
+    booking.rugVariantName,
+    booking.rugSizeLabel || "Brak rozmiaru",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
 export default function AdminDashboardClient({
   initialBookings,
@@ -225,6 +243,7 @@ export default function AdminDashboardClient({
         booking.customerName,
         booking.customerEmail,
         booking.rugTypeName,
+        booking.rugVariantName,
         booking.rugSizeLabel,
         String(booking.id),
       ]
@@ -240,12 +259,14 @@ export default function AdminDashboardClient({
     () => ({
       total: bookings.length,
       active: bookings.filter((booking) =>
-        ["paid", "in_progress"].includes(booking.status),
+        ["awaiting_quote", "paid", "in_progress"].includes(booking.status),
       ).length,
       completed: bookings.filter((booking) => booking.status === "completed")
         .length,
       revenue: bookings
-        .filter((booking) => booking.status !== "cancelled")
+        .filter((booking) =>
+          ["paid", "in_progress", "completed"].includes(booking.status),
+        )
         .reduce((total, booking) => total + (booking.priceCents ?? 0), 0),
     }),
     [bookings],
@@ -254,6 +275,9 @@ export default function AdminDashboardClient({
   const statusCounts = useMemo(
     () => ({
       all: bookings.length,
+      awaiting_quote: bookings.filter(
+        (booking) => booking.status === "awaiting_quote",
+      ).length,
       paid: bookings.filter((booking) => booking.status === "paid").length,
       in_progress: bookings.filter(
         (booking) => booking.status === "in_progress",
@@ -546,7 +570,7 @@ export default function AdminDashboardClient({
                       {booking.customerName || "Klient bez nazwy"}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
-                      #{booking.id} · {booking.rugTypeName || "Dywan"} · {booking.rugSizeLabel || "Brak rozmiaru"}
+                      #{booking.id} · {getRugDetails(booking)}
                     </span>
                   </span>
                   <span className="hidden shrink-0 text-xs font-black text-[var(--ruggy-body)] sm:block">
@@ -648,8 +672,7 @@ export default function AdminDashboardClient({
                             {booking.customerName || "Klient bez nazwy"}
                           </span>
                           <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
-                            {booking.rugTypeName || "Dywan"} ·{" "}
-                            {booking.rugSizeLabel || "brak rozmiaru"}
+                            {getRugDetails(booking)}
                           </span>
                         </span>
                       </span>
@@ -695,7 +718,11 @@ export default function AdminDashboardClient({
                         <StatusBadge status={booking.status} />
                       </span>
                       <span className="mt-1 block truncate text-xs text-[var(--ruggy-muted)]">
-                        #{booking.id} · {booking.rugTypeName || "Dywan"} ·{" "}
+                        #{booking.id} · {booking.rugTypeName || "Dywan"}
+                        {booking.rugVariantName
+                          ? ` · ${booking.rugVariantName}`
+                          : ""}{" "}
+                        ·{" "}
                         {formatShortDate(booking.bookingDate)}
                       </span>
                     </span>
@@ -834,6 +861,9 @@ export default function AdminDashboardClient({
                             </span>
                             <span className="mt-0.5 block truncate text-xs text-[var(--ruggy-muted)]">
                               #{booking.id} · {booking.rugTypeName || "Dywan"}
+                              {booking.rugVariantName
+                                ? ` · ${booking.rugVariantName}`
+                                : ""}
                             </span>
                           </span>
                           <StatusBadge status={booking.status} />
@@ -1187,6 +1217,13 @@ function BookingDrawer({
                 label="Wariant"
                 value={booking.rugTypeName || "Dywan"}
               />
+              {booking.rugVariantName ? (
+                <DetailRow
+                  icon={Package}
+                  label="Podrodzaj"
+                  value={booking.rugVariantName}
+                />
+              ) : null}
               <DetailRow
                 icon={Package}
                 label="Rozmiar"
@@ -1199,7 +1236,11 @@ function BookingDrawer({
               />
               <DetailRow
                 icon={CircleDollarSign}
-                label="Kwota"
+                label={
+                  booking.status === "awaiting_quote"
+                    ? "Cena orientacyjna"
+                    : "Kwota"
+                }
                 value={formatPrice(booking.priceCents)}
               />
             </div>

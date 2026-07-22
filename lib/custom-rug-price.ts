@@ -31,3 +31,12 @@ export function formatPriceCents(priceCents: number | null) {
     maximumFractionDigits: 0,
   }).format(priceCents / 100);
 }
+
+export function formatCustomRugSizeLabel(
+  widthCm: number | null | undefined,
+  heightCm: number,
+) {
+  return widthCm != null
+    ? `Własny rozmiar ${widthCm} × ${heightCm} cm`
+    : `Własny rozmiar · wysokość ${heightCm} cm`;
+}

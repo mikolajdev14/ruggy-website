@@ -52,6 +52,11 @@ export async function fulfillCheckout(
 
   const metadata = session.metadata ?? {};
   const rugTypeId = Number(metadata.rugTypeId);
+  const parsedRugVariantId = Number(metadata.rugVariantId);
+  const rugVariantId =
+    Number.isInteger(parsedRugVariantId) && parsedRugVariantId > 0
+      ? parsedRugVariantId
+      : null;
   const isCustomSize = metadata.pickedSize === "custom";
   const rugSizeId = isCustomSize ? null : Number(metadata.pickedSize);
   const bookingDate = metadata.pickupDate?.slice(0, 10);
@@ -88,8 +93,10 @@ export async function fulfillCheckout(
   const { error } = await supabase.from("bookings").upsert(
     {
       rug_type_id: rugTypeId,
+      rug_variant_id: rugVariantId,
       rug_size_id: rugSizeId,
       rug_type_name: metadata.rugTypeName,
+      rug_variant_name: optionalMetadata(metadata.rugVariantName),
       rug_size_label: metadata.rugSizeLabel,
       price_cents: session.amount_total,
       customer_name: metadata.customerName,

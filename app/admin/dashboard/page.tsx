@@ -22,8 +22,10 @@ export const maxDuration = 120;
 type BookingRow = {
   id: number | string;
   rug_type_id: number | string | null;
+  rug_variant_id: number | string | null;
   rug_size_id: number | string | null;
   rug_type_name: string | null;
+  rug_variant_name: string | null;
   rug_size_label: string | null;
   price_cents: number | string | null;
   customer_name: string | null;
@@ -62,7 +64,7 @@ export default async function AdminDashboardPage() {
     supabase
       .from("bookings")
       .select(
-        "id, rug_type_id, rug_size_id, rug_type_name, rug_size_label, price_cents, customer_name, customer_email, customer_phone, notes, booking_date, status, stripe_session_id, stripe_payment_intent_id, expires_at, created_at, updated_at, delivery_method, parcel_locker_code, delivery_address, reference_image_path",
+        "id, rug_type_id, rug_variant_id, rug_size_id, rug_type_name, rug_variant_name, rug_size_label, price_cents, customer_name, customer_email, customer_phone, notes, booking_date, status, stripe_session_id, stripe_payment_intent_id, expires_at, created_at, updated_at, delivery_method, parcel_locker_code, delivery_address, reference_image_path",
       )
       .order("created_at", { ascending: false }),
     supabase.from("blocked_dates").select("date").order("date"),
@@ -80,9 +82,12 @@ export default async function AdminDashboardPage() {
       id: Number(booking.id),
       rugTypeId:
         booking.rug_type_id == null ? null : Number(booking.rug_type_id),
+      rugVariantId:
+        booking.rug_variant_id == null ? null : Number(booking.rug_variant_id),
       rugSizeId:
         booking.rug_size_id == null ? null : Number(booking.rug_size_id),
       rugTypeName: booking.rug_type_name,
+      rugVariantName: booking.rug_variant_name,
       rugSizeLabel: booking.rug_size_label,
       priceCents:
         booking.price_cents == null ? null : Number(booking.price_cents),

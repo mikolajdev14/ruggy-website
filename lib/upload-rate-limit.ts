@@ -4,7 +4,11 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function consumeReferenceImageUploadLimit() {
+async function consumePublicActionLimit(
+  namespace: string,
+  limit: number,
+  windowSeconds: number,
+) {
   const requestHeaders = await headers();
   const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0];
   const clientAddress =
@@ -18,16 +22,28 @@ export async function consumeReferenceImageUploadLimit() {
   const { data, error } = await createAdminClient().rpc(
     "consume_upload_rate_limit",
     {
-      p_key: fingerprint,
-      p_limit: 12,
-      p_window_seconds: 60 * 60,
+      p_key: `${namespace}:${fingerprint}`,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
     },
   );
 
   if (error) {
-    console.error("Nie udało się sprawdzić limitu uploadu:", error);
+    console.error("Nie udało się sprawdzić limitu akcji publicznej:", error);
     return { allowed: false, unavailable: true };
   }
 
   return { allowed: data === true, unavailable: false };
+}
+
+export function consumeReferenceImageUploadLimit() {
+  return consumePublicActionLimit("reference-image", 12, 60 * 60);
+}
+
+export function consumeContactBookingLimit() {
+  return consumePublicActionLimit("contact-booking", 6, 60 * 60);
+}
+
+export function consumeAgreedProjectPaymentLimit() {
+  return consumePublicActionLimit("agreed-project-payment", 12, 60 * 60);
 }
