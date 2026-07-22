@@ -31,7 +31,12 @@ adresu projektu Vercel, a lokalnie `NEXT_PUBLIC_APP_URL` lub
 ```bash
 npm run lint
 npm run build
+npm run start
 ```
+
+Lighthouse uruchamiaj na produkcyjnym serwerze `http://localhost:3000`, który
+startuje ostatnia komenda. Nie mierz `npm run dev`, ponieważ tryb deweloperski
+dołącza DevTools, HMR i rozwojowe wersje Reacta, które nie trafiają na produkcję.
 
 Po wdrożeniu sprawdź:
 

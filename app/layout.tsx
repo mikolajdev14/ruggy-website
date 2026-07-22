@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Lobster } from "next/font/google";
+import { Lobster } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site-config";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const lobster = Lobster({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-lobster",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -62,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      className={`h-full font-sans antialiased ${inter.variable} ${lobster.variable}`}
+      className={`h-full font-sans antialiased ${lobster.variable}`}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
