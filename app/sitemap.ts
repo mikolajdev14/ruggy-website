@@ -3,11 +3,7 @@ import { absoluteUrl } from "@/lib/site-config";
 
 const publicPages = [
   "",
-  "/dywany-na-zamowienie",
-  "/dywan-ze-zdjecia",
   "/realizacje",
-  "/o-nas",
-  "/dostawa-i-platnosci",
   "/zamow",
 ] as const;
 
@@ -21,4 +17,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: index === 0 ? 1 : path === "/zamow" ? 0.9 : 0.8,
   }));
 }
-

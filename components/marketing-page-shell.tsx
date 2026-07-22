@@ -71,17 +71,14 @@ export function MarketingPageShell({
             ruggy<span className="text-[var(--ruggy-blue)]">.</span>
           </Link>
           <div className="hidden items-center gap-6 text-sm font-bold lg:flex">
-            <Link href="/dywany-na-zamowienie" className="hover:text-[var(--ruggy-blue)]">
-              Dywany na zamówienie
+            <Link href="/#jak-to-dziala" className="hover:text-[var(--ruggy-blue)]">
+              Proces
             </Link>
-            <Link href="/dywan-ze-zdjecia" className="hover:text-[var(--ruggy-blue)]">
-              Dywan ze zdjęcia
-            </Link>
-            <Link href="/realizacje" className="hover:text-[var(--ruggy-blue)]">
+            <Link href="/#realizacje" className="hover:text-[var(--ruggy-blue)]">
               Realizacje
             </Link>
-            <Link href="/o-nas" className="hover:text-[var(--ruggy-blue)]">
-              O nas
+            <Link href="/#faq" className="hover:text-[var(--ruggy-blue)]">
+              FAQ
             </Link>
           </div>
           <Link
@@ -180,14 +177,12 @@ export function MarketingPageShell({
               Personalizowane dywany wykonywane ręcznie w Polsce.
             </p>
           </div>
-          <nav aria-label="Oferta" className="flex flex-col items-start gap-3 text-sm font-bold">
-            <Link href="/dywany-na-zamowienie">Dywany na zamówienie</Link>
-            <Link href="/dywan-ze-zdjecia">Dywan ze zdjęcia</Link>
-            <Link href="/dostawa-i-platnosci">Dostawa i płatności</Link>
+          <nav aria-label="Nawigacja" className="flex flex-col items-start gap-3 text-sm font-bold">
+            <Link href="/#jak-to-dziala">Proces</Link>
+            <Link href="/#realizacje">Realizacje</Link>
+            <Link href="/#faq">FAQ</Link>
           </nav>
           <div className="flex flex-col items-start gap-3 text-sm font-bold">
-            <Link href="/realizacje">Realizacje</Link>
-            <Link href="/o-nas">O nas</Link>
             <a href="https://www.instagram.com/ruggy.pl/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2">
               <AtSign size={16} aria-hidden="true" /> Instagram
             </a>
@@ -200,4 +195,3 @@ export function MarketingPageShell({
     </div>
   );
 }
-

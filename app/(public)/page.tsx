@@ -142,14 +142,14 @@ export default function HomePage() {
           </Link>
 
           <div className="hidden items-center gap-8 text-sm font-bold md:flex">
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/dywany-na-zamowienie">
-              Dywany na zamówienie
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#jak-to-dziala">
+              Proces
             </Link>
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/realizacje">
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#realizacje">
               Realizacje
             </Link>
-            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="/o-nas">
-              O nas
+            <Link className={`transition-opacity hover:opacity-60 ${focusClass}`} href="#faq">
+              FAQ
             </Link>
           </div>
 
@@ -424,13 +424,11 @@ export default function HomePage() {
             <p className="mt-4 max-w-sm text-base leading-7 text-white/70">Personalizowane dywany z pomysłu, ręki i dużej ilości włóczki.</p>
           </div>
           <nav aria-label="Stopka" className="flex flex-col items-start gap-3 text-sm font-bold">
-            <Link href="/dywany-na-zamowienie" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dywany na zamówienie</Link>
-            <Link href="/dywan-ze-zdjecia" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dywan ze zdjęcia</Link>
-            <Link href="/realizacje" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Realizacje</Link>
+            <Link href="#jak-to-dziala" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Proces</Link>
+            <Link href="#realizacje" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Realizacje</Link>
+            <Link href="#faq" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>FAQ</Link>
           </nav>
           <div className="flex flex-col items-start gap-3 text-sm font-bold">
-            <Link href="/o-nas" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>O nas</Link>
-            <Link href="/dostawa-i-platnosci" className={`hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>Dostawa i płatności</Link>
             <a href="https://www.instagram.com/ruggy.pl/" target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 hover:text-[var(--ruggy-yellow)] ${focusLightClass}`}>
               <AtSign className="size-5" aria-hidden="true" />
               Instagram
