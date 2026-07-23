@@ -9,6 +9,7 @@ export const handleLogin = async (
 ) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const requestedDestination = formData.get("next");
 
   if (!email || !password) {
     return { error: "Uzupełnij email i hasło" };
@@ -22,5 +23,12 @@ export const handleLogin = async (
     return { error: "Nieprawidlowy email lub haslo" };
   }
 
-  redirect("/admin/dashboard");
+  const destination =
+    typeof requestedDestination === "string" &&
+    requestedDestination.startsWith("/admin/") &&
+    !requestedDestination.startsWith("//")
+      ? requestedDestination
+      : "/admin/dashboard";
+
+  redirect(destination);
 };

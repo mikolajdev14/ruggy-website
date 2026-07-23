@@ -22,6 +22,7 @@ import {
   type ReactNode,
   use,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -73,6 +74,7 @@ export default function ProductPage({
   const [submitMessage, setSubmitMessage] = useState<string>();
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAntiSlipOfferOpen, setIsAntiSlipOfferOpen] = useState(false);
   const [booking, setBooking] = useState<Booking>({
     rugTypeId: id,
     rugVariantId: null,
@@ -132,9 +134,7 @@ export default function ProductPage({
     };
   }, [showContentWarning]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const submitBooking = async (antiSlipMat: boolean) => {
     if (isSubmitting) return;
 
     const bookingInput = {
@@ -143,6 +143,7 @@ export default function ProductPage({
         ? formatLocalDateKey(booking.pickupDate)
         : "",
       referenceImagePath: undefined,
+      antiSlipMat,
     };
 
     const validation = bookingSchema.safeParse(bookingInput);
@@ -151,9 +152,10 @@ export default function ProductPage({
       setSubmitMessage(
         validation.error.issues[0]?.message ?? "Nieprawidłowe dane.",
       );
-      return;
+      return false;
     }
 
+    setIsAntiSlipOfferOpen(false);
     setIsSubmitting(true);
     setSubmitMessage(
       isDirectCheckout
@@ -174,7 +176,7 @@ export default function ProductPage({
         if (!uploadResponse.success) {
           setSubmitMessage(uploadResponse.message);
           setIsSubmitting(false);
-          return;
+          return false;
         }
 
         referenceImagePath = uploadResponse.path;
@@ -189,11 +191,11 @@ export default function ProductPage({
         if (!response.success) {
           setSubmitMessage(response.message);
           setIsSubmitting(false);
-          return;
+          return false;
         }
 
         window.location.href = response.checkoutUrl!;
-        return;
+        return true;
       }
 
       const response = await createContactBooking({
@@ -204,17 +206,44 @@ export default function ProductPage({
       if (!response.success) {
         setSubmitMessage(response.message);
         setIsSubmitting(false);
-        return;
+        return false;
       }
 
       window.location.href = siteConfig.instagram;
+      return true;
     } catch (error) {
       console.error("Nie udało się przygotować zamówienia:", error);
       setSubmitMessage(
         "Nie udało się przygotować zamówienia. Spróbuj ponownie.",
       );
       setIsSubmitting(false);
+      return false;
     }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (isSubmitting) return;
+
+    const validation = bookingSchema.safeParse({
+      ...booking,
+      pickupDate: booking.pickupDate
+        ? formatLocalDateKey(booking.pickupDate)
+        : "",
+      referenceImagePath: undefined,
+      antiSlipMat: false,
+    });
+
+    if (!validation.success) {
+      setSubmitMessage(
+        validation.error.issues[0]?.message ?? "Nieprawidłowe dane.",
+      );
+      return;
+    }
+
+    setSubmitMessage(undefined);
+    setIsAntiSlipOfferOpen(true);
   };
 
   const selectedDate = booking.pickupDate
@@ -250,6 +279,12 @@ export default function ProductPage({
       {showContentWarning ? (
         <ContentWarningDialog
           onAccept={() => setHasAcceptedContentWarning(true)}
+        />
+      ) : null}
+      {isAntiSlipOfferOpen ? (
+        <AntiSlipOfferDialog
+          onAccept={() => void submitBooking(true)}
+          onDecline={() => void submitBooking(false)}
         />
       ) : null}
 
@@ -422,6 +457,109 @@ export default function ProductPage({
         </div>
       </form>
     </main>
+  );
+}
+
+function AntiSlipOfferDialog({
+  onAccept,
+  onDecline,
+}: {
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  const acceptButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const previouslyFocusedElement = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    acceptButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onDecline();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), a[href]",
+        ) ?? [],
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements.at(-1);
+
+      if (!firstElement || !lastElement) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedElement?.focus();
+    };
+  }, [onDecline]);
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="anti-slip-offer-title"
+        aria-describedby="anti-slip-offer-description"
+        className="w-full max-w-lg rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-6 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-8"
+      >
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
+          <ShieldCheck size={24} aria-hidden="true" />
+        </span>
+        <h2
+          id="anti-slip-offer-title"
+          className="mt-5 text-2xl font-black leading-tight text-[var(--ruggy-ink)] sm:text-3xl"
+        >
+          A weź se dorzuć podkład antypoślizgowy
+        </h2>
+        <p
+          id="anti-slip-offer-description"
+          className="mt-4 text-base leading-7 text-[var(--ruggy-body)]"
+        >
+          39 zł, co byś se kostki nie skręcił.
+        </p>
+        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onDecline}
+            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
+          >
+            Nie, dzięki
+          </button>
+          <button
+            ref={acceptButtonRef}
+            type="button"
+            onClick={onAccept}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-6 text-sm font-black text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
+          >
+            Chcę (+39 zł)
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 

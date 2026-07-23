@@ -18,6 +18,7 @@ export const bookingSchema = z.object({
   parcelLockerCode: z.string().max(100).optional(),
   deliveryAddress: z.string().max(500).optional(),
   referenceImagePath: z.string().max(300).optional(),
+  antiSlipMat: z.boolean().optional().default(false),
 }).superRefine((booking, context) => {
   const hasHeight = booking.customHeightCm != null;
 

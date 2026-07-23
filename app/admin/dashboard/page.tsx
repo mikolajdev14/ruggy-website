@@ -45,7 +45,16 @@ type BookingRow = {
   reference_image_path: string | null;
 };
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ booking?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const requestedBookingValue = Array.isArray(params.booking)
+    ? params.booking[0]
+    : params.booking;
+  const requestedBookingId = Number(requestedBookingValue);
   const serverSupabase = await createClientServer();
   const {
     data: { user },
@@ -141,6 +150,11 @@ export default async function AdminDashboardPage() {
     blockedRows
       ?.map((row) => row.date)
       .filter((date): date is string => Boolean(date)) ?? [];
+  const initialSelectedBookingId =
+    Number.isInteger(requestedBookingId) &&
+    bookings.some((booking) => booking.id === requestedBookingId)
+      ? requestedBookingId
+      : null;
 
   return (
     <div className="ruggy-thread-bg min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
@@ -269,6 +283,7 @@ export default async function AdminDashboardPage() {
             <AdminDashboardClient
               initialBookings={bookings as AdminBooking[]}
               initialBlockedDates={blockedDates}
+              initialSelectedBookingId={initialSelectedBookingId}
               todayDateKey={getPolandDateKey()}
             />
           </main>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lobster } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site-config";
+import { InactiveTabTitle } from "@/components/inactive-tab-title";
 
 const lobster = Lobster({
   subsets: ["latin"],
@@ -63,7 +64,10 @@ export default function RootLayout({
       lang="pl"
       className={`h-full font-sans antialiased ${lobster.variable}`}
     >
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+      <body className="flex min-h-full flex-col font-sans">
+        <InactiveTabTitle />
+        {children}
+      </body>
     </html>
   );
 }

@@ -3,6 +3,7 @@ import "server-only";
 import { isValidDateKey } from "@/lib/booking-date";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { appendAntiSlipMatLabel } from "@/lib/order-addons";
 
 export type FulfillmentResult =
   | { success: true }
@@ -97,7 +98,10 @@ export async function fulfillCheckout(
       rug_size_id: rugSizeId,
       rug_type_name: metadata.rugTypeName,
       rug_variant_name: optionalMetadata(metadata.rugVariantName),
-      rug_size_label: metadata.rugSizeLabel,
+      rug_size_label: appendAntiSlipMatLabel(
+        metadata.rugSizeLabel,
+        metadata.antiSlipMat === "true",
+      ),
       price_cents: session.amount_total,
       customer_name: metadata.customerName,
       customer_email: customerEmail,

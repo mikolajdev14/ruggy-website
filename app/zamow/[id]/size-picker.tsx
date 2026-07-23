@@ -14,6 +14,7 @@ import {
   PAPADYWANY_SLUG,
   usesDirectCheckout,
 } from "@/lib/rug-order-mode";
+import { getPopularRugSizeLabel } from "@/lib/popular-rug-sizes";
 import type { Booking } from "./page";
 
 type RugSize = {
@@ -44,6 +45,37 @@ type SizePickerProps = {
   id: string;
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
+};
+
+const getActiveSizes = (sizes: RugSize[]) =>
+  sizes
+    .filter((size) => size.is_active !== false)
+    .toSorted(
+      (first, second) =>
+        Number(first.display_order ?? 0) - Number(second.display_order ?? 0),
+    );
+
+const getActiveVariants = (variants: RugVariant[]) =>
+  variants
+    .filter((variant) => variant.is_active !== false)
+    .toSorted(
+      (first, second) =>
+        Number(first.display_order ?? 0) - Number(second.display_order ?? 0),
+    );
+
+const findPopularSize = (
+  rugTypeSlug: string,
+  sizes: RugSize[],
+  rugVariantSlug?: string,
+) => {
+  const popularSizeLabel = getPopularRugSizeLabel(
+    rugTypeSlug,
+    rugVariantSlug,
+  );
+
+  return popularSizeLabel
+    ? getActiveSizes(sizes).find((size) => size.label === popularSizeLabel)
+    : undefined;
 };
 
 const fieldClass =
@@ -87,7 +119,61 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
         setSizeData(nextSizeData);
         setLoadError(false);
 
-        if (!usesDirectCheckout(nextSizeData.slug)) {
+        if (nextSizeData.slug === PAPADYWANY_SLUG) {
+          const variants = getActiveVariants(nextSizeData.rug_variants);
+
+          setBooking((previous) => {
+            const selectedVariant =
+              variants.find(
+                (variant) => variant.id === previous.rugVariantId,
+              ) ?? variants[0];
+            const availableSizes = selectedVariant
+              ? getActiveSizes(selectedVariant.rug_sizes)
+              : [];
+            const previousSizeIsAvailable = availableSizes.some(
+              (size) => size.id === previous.pickedSize,
+            );
+            const defaultSize = selectedVariant
+              ? findPopularSize(
+                  nextSizeData.slug,
+                  selectedVariant.rug_sizes,
+                  selectedVariant.slug,
+                )
+              : undefined;
+
+            return {
+              ...previous,
+              rugVariantId: selectedVariant?.id ?? null,
+              pickedSize: previousSizeIsAvailable
+                ? previous.pickedSize
+                : defaultSize?.id ?? null,
+              customWidthCm: null,
+              customHeightCm: null,
+            };
+          });
+        } else if (usesDirectCheckout(nextSizeData.slug)) {
+          const availableSizes = getActiveSizes(nextSizeData.rug_sizes);
+
+          setBooking((previous) => {
+            const previousSizeIsAvailable = availableSizes.some(
+              (size) => size.id === previous.pickedSize,
+            );
+            const defaultSize = findPopularSize(
+              nextSizeData.slug,
+              availableSizes,
+            );
+
+            return {
+              ...previous,
+              rugVariantId: null,
+              pickedSize: previousSizeIsAvailable
+                ? previous.pickedSize
+                : defaultSize?.id ?? null,
+              customWidthCm: null,
+              customHeightCm: null,
+            };
+          });
+        } else {
           setBooking((previous) => ({
             ...previous,
             rugVariantId: null,
@@ -107,32 +193,26 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
 
   const isPapadywany = sizeData?.slug === PAPADYWANY_SLUG;
   const isCustomType = Boolean(sizeData && !usesDirectCheckout(sizeData.slug));
-  const activeVariants = (sizeData?.rug_variants ?? [])
-    .filter((variant) => variant.is_active !== false)
-    .toSorted(
-      (first, second) =>
-        Number(first.display_order ?? 0) - Number(second.display_order ?? 0),
-    );
+  const activeVariants = getActiveVariants(sizeData?.rug_variants ?? []);
   const selectedVariant = activeVariants.find(
     (variant) => variant.id === booking.rugVariantId,
   );
-  const availableSizes = (
-    isPapadywany ? selectedVariant?.rug_sizes ?? [] : sizeData?.rug_sizes ?? []
-  )
-    .filter((size) => size.is_active !== false)
-    .toSorted(
-      (first, second) =>
-        Number(first.display_order ?? 0) - Number(second.display_order ?? 0),
-    );
+  const availableSizes = getActiveSizes(
+    isPapadywany ? selectedVariant?.rug_sizes ?? [] : sizeData?.rug_sizes ?? [],
+  );
   const customPriceCents = calculateCustomRugPriceCents(
     booking.customHeightCm,
   );
 
-  const chooseVariant = (variantId: number) => {
+  const chooseVariant = (variant: RugVariant) => {
+    const popularSize = sizeData
+      ? findPopularSize(sizeData.slug, variant.rug_sizes, variant.slug)
+      : undefined;
+
     setBooking((previous) => ({
       ...previous,
-      rugVariantId: variantId,
-      pickedSize: null,
+      rugVariantId: variant.id,
+      pickedSize: popularSize?.id ?? null,
       customWidthCm: null,
       customHeightCm: null,
     }));
@@ -291,7 +371,7 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
                       key={variant.id}
                       type="button"
                       aria-pressed={isSelected}
-                      onClick={() => chooseVariant(variant.id)}
+                      onClick={() => chooseVariant(variant)}
                       className={`relative min-h-14 rounded-2xl border-2 px-4 py-3 text-start text-sm font-black transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
                         isSelected
                           ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] shadow-[3px_4px_0_var(--ruggy-ink)]"
@@ -320,6 +400,14 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
             <div className="grid gap-3 sm:grid-cols-2">
               {availableSizes.map((size) => {
                 const isSelected = booking.pickedSize === size.id;
+                const isPopular =
+                  sizeData != null &&
+                  size.label ===
+                    getPopularRugSizeLabel(
+                      sizeData.slug,
+                      selectedVariant?.slug,
+                    );
+
                 return (
                   <button
                     key={size.id}
@@ -332,6 +420,11 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
                         : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
                     }`}
                   >
+                    {isPopular ? (
+                      <span className="absolute -top-2 start-4 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-3 py-0.5 text-xs font-black uppercase text-white">
+                        Popularne
+                      </span>
+                    ) : null}
                     <span>
                       <span className="block text-base font-black text-[var(--ruggy-ink)]">
                         {size.label}

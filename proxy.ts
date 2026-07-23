@@ -1,6 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const getSafeAdminPath = (value: string | null) =>
+  value?.startsWith("/admin/") && !value.startsWith("//") ? value : null;
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -35,11 +38,19 @@ export async function proxy(request: NextRequest) {
   const isLoginPage = pathname === "/admin/login";
 
   if (isAdminRoute && !isLoginPage && !user) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set(
+      "next",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+    return NextResponse.redirect(loginUrl);
   }
 
   if (isLoginPage && user) {
-    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    const destination =
+      getSafeAdminPath(request.nextUrl.searchParams.get("next")) ??
+      "/admin/dashboard";
+    return NextResponse.redirect(new URL(destination, request.url));
   }
 
   return response;

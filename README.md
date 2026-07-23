@@ -48,3 +48,29 @@ Po wdrożeniu sprawdź:
 
 Panel `/admin`, konfiguratory `/zamow/[id]` oraz strony wyniku płatności mają
 ustawione `noindex` i celowo nie występują w sitemapie.
+
+## Powiadomienia WhatsApp
+
+Powiadomienia o nowych zgłoszeniach do wyceny korzystają z oficjalnego Meta
+WhatsApp Cloud API. W WhatsApp Manager utwórz i zatwierdź szablon typu Utility:
+
+```text
+Nazwa: new_quote_request
+Język: Polish (pl)
+Treść: Ktoś prosi o wycenę. Otwórz zamówienie: {{1}}
+```
+
+Następnie ustaw lokalnie i na Vercelu:
+
+```env
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_RECIPIENT_NUMBER=48XXXXXXXXX
+WHATSAPP_GRAPH_API_VERSION=vXX.X
+WHATSAPP_TEMPLATE_NAME=new_quote_request
+WHATSAPP_TEMPLATE_LANGUAGE=pl
+```
+
+Numer odbiorcy podaj z kodem kraju, bez znaku `+`. Wersję Graph API wpisz
+zgodnie z wersją wybraną w aplikacji Meta. `NEXT_PUBLIC_SITE_URL` musi
+wskazywać publiczną domenę, ponieważ jest używany w linku do zamówienia.

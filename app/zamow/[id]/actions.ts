@@ -12,6 +12,12 @@ import {
   PAPADYWANY_SLUG,
   usesDirectCheckout,
 } from "@/lib/rug-order-mode";
+import {
+  addAntiSlipMatPrice,
+  ANTI_SLIP_MAT_LABEL,
+  ANTI_SLIP_MAT_PRICE_CENTS,
+  appendAntiSlipMatLabel,
+} from "@/lib/order-addons";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -20,6 +26,7 @@ import {
   consumeReferenceImageUploadLimit,
 } from "@/lib/upload-rate-limit";
 import { headers } from "next/headers";
+import { sendQuoteRequestWhatsAppNotification } from "@/lib/whatsapp-notification";
 
 const REFERENCE_IMAGES_BUCKET = "booking-reference-images";
 const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -260,23 +267,38 @@ export async function createCheckoutSession(input: unknown) {
   const cancelUrl = new URL("/zamow/anulowano", checkoutOrigin);
 
   const stripe = getStripe();
+  const lineItems = [
+    {
+      price_data: {
+        currency: "pln",
+        unit_amount: priceCents,
+        product_data: {
+          name: `${rugType.name}${rugVariant ? ` · ${rugVariant.name}` : ""} · ${sizeLabel}`,
+        },
+      },
+      quantity: 1,
+    },
+  ];
+
+  if (booking.antiSlipMat) {
+    lineItems.push({
+      price_data: {
+        currency: "pln",
+        unit_amount: ANTI_SLIP_MAT_PRICE_CENTS,
+        product_data: {
+          name: ANTI_SLIP_MAT_LABEL,
+        },
+      },
+      quantity: 1,
+    });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: booking.customerEmail,
     success_url: successUrl.toString(),
     cancel_url: cancelUrl.toString(),
-    line_items: [
-      {
-        price_data: {
-          currency: "pln",
-          unit_amount: priceCents,
-          product_data: {
-            name: `${rugType.name}${rugVariant ? ` · ${rugVariant.name}` : ""} · ${sizeLabel}`,
-          },
-        },
-        quantity: 1,
-      },
-    ],
+    line_items: lineItems,
     metadata: {
       rugTypeId: booking.rugTypeId,
       rugTypeName: rugType.name,
@@ -295,6 +317,7 @@ export async function createCheckoutSession(input: unknown) {
       parcelLockerCode: booking.parcelLockerCode ?? "",
       deliveryAddress: booking.deliveryAddress ?? "",
       referenceImagePath: booking.referenceImagePath ?? "",
+      antiSlipMat: String(booking.antiSlipMat),
     },
   });
 
@@ -383,11 +406,17 @@ export async function createContactBooking(input: unknown) {
       rug_size_id: null,
       rug_type_name: rugType.name,
       rug_variant_name: null,
-      rug_size_label: formatCustomRugSizeLabel(
-        booking.customWidthCm,
-        booking.customHeightCm,
+      rug_size_label: appendAntiSlipMatLabel(
+        formatCustomRugSizeLabel(
+          booking.customWidthCm,
+          booking.customHeightCm,
+        ),
+        booking.antiSlipMat,
       ),
-      price_cents: estimatedPriceCents,
+      price_cents: addAntiSlipMatPrice(
+        estimatedPriceCents,
+        booking.antiSlipMat,
+      ),
       customer_name: booking.customerName,
       customer_email: booking.customerEmail,
       customer_phone: booking.customerPhone?.trim() || null,
@@ -407,12 +436,35 @@ export async function createContactBooking(input: unknown) {
     .single();
 
   if (error || !createdBooking) {
-    console.error("Nie udało się zapisać zgłoszenia w Supabase:", error);
+    console.error(
+      "Nie udało się zapisać zgłoszenia w Supabase:",
+      JSON.stringify({
+        code: error?.code,
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+      }),
+    );
     return {
       success: false,
       message: "Nie udało się zapisać zgłoszenia. Spróbuj ponownie.",
     };
   }
 
-  return { success: true, bookingId: Number(createdBooking.id) };
+  const bookingId = Number(createdBooking.id);
+  const notificationResult =
+    await sendQuoteRequestWhatsAppNotification(bookingId);
+
+  if (!notificationResult.success) {
+    console.error(
+      "Nie udało się wysłać powiadomienia WhatsApp:",
+      JSON.stringify(notificationResult),
+    );
+  }
+
+  return {
+    success: true,
+    bookingId,
+    notificationSent: notificationResult.success,
+  };
 }

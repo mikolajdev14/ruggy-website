@@ -169,16 +169,18 @@ const getRugDetails = (booking: AdminBooking) =>
 export default function AdminDashboardClient({
   initialBookings,
   initialBlockedDates,
+  initialSelectedBookingId,
   todayDateKey,
 }: {
   initialBookings: AdminBooking[];
   initialBlockedDates: string[];
+  initialSelectedBookingId: number | null;
   todayDateKey: string;
 }) {
   const [bookings, setBookings] = useState(initialBookings);
   const [blockedDates, setBlockedDates] = useState(initialBlockedDates);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
-    null,
+    initialSelectedBookingId,
   );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");

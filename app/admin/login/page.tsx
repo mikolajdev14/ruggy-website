@@ -1,9 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { use, useActionState } from "react";
 import { handleLogin } from "./actions";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const params = use(searchParams);
+  const requestedDestination = Array.isArray(params.next)
+    ? params.next[0]
+    : params.next;
+  const destination =
+    requestedDestination?.startsWith("/admin/") &&
+    !requestedDestination.startsWith("//")
+      ? requestedDestination
+      : "/admin/dashboard";
   const [data, formAction, isPending] = useActionState(handleLogin, undefined);
 
   return (
@@ -23,6 +36,7 @@ export default function LoginPage() {
 
         <div className="rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-border)] sm:p-8">
           <form action={formAction} className="flex flex-col gap-5">
+            <input type="hidden" name="next" value={destination} />
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="email"
