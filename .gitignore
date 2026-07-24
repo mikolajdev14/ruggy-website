@@ -20,6 +20,9 @@
 # production
 /build
 
+# local source photos (final web-ready images stay in /public)
+/assets-source/ruggy/oryginaly/
+
 # misc
 .DS_Store
 *.pem
