@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lobster } from "next/font/google";
+import { Archivo_Black, Lobster, Manrope } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site-config";
 import { InactiveTabTitle } from "@/components/inactive-tab-title";
@@ -9,6 +9,17 @@ const lobster = Lobster({
   weight: "400",
   variable: "--font-lobster",
   preload: false,
+});
+
+const archivoBlack = Archivo_Black({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-archivo-black",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
 });
 
 export const metadata: Metadata = {
@@ -62,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      className={`h-full font-sans antialiased ${lobster.variable}`}
+      className={`h-full font-sans antialiased ${lobster.variable} ${archivoBlack.variable} ${manrope.variable}`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <InactiveTabTitle />

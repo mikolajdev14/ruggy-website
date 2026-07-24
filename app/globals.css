@@ -5,6 +5,8 @@
 @theme inline {
   --font-heading: ui-sans-serif, system-ui, sans-serif;
   --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-editorial: var(--font-archivo-black), ui-sans-serif, system-ui, sans-serif;
+  --font-copy: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -167,6 +169,16 @@
   background-size: 1.5rem 1.5rem, 1.25rem 1.25rem;
 }
 
+.ruggy-carousel-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-padding-inline: 0.25rem;
+}
+
+.ruggy-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes ruggy-enter-up {
   from {
     translate: 0 1.5rem;
@@ -176,6 +188,21 @@
 @keyframes ruggy-enter-right {
   from {
     translate: 2rem 0;
+  }
+}
+
+@keyframes ruggy-experimental-letter {
+  from {
+    clip-path: inset(0 0 100% 0);
+    translate: 0 65%;
+  }
+}
+
+@keyframes ruggy-experimental-product {
+  from {
+    clip-path: inset(100% 0 0 0);
+    filter: blur(0.4rem);
+    translate: 0 3rem;
   }
 }
 
@@ -193,6 +220,47 @@
 
 .ruggy-enter-right {
   animation: ruggy-enter-right 800ms 120ms ease-out both;
+}
+
+.ruggy-experimental-hero {
+  --letter-x: 0px;
+  --letter-y: 0px;
+  --letter-x-reverse: 0px;
+  --letter-y-reverse: 0px;
+  --rug-x: 0px;
+  --rug-y: 0px;
+  --rug-rotate-x: 0deg;
+  --rug-rotate-y: 0deg;
+}
+
+.ruggy-experimental-letter {
+  translate: var(--letter-x) var(--letter-y);
+  transition: translate 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: translate;
+}
+
+.ruggy-experimental-letter-reverse {
+  translate: var(--letter-x-reverse) var(--letter-y-reverse);
+}
+
+.ruggy-experimental-letter-face {
+  animation: ruggy-experimental-letter 850ms cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+  will-change: clip-path, translate;
+}
+
+.ruggy-experimental-product {
+  transform: translate3d(var(--rug-x), var(--rug-y), 0)
+    rotateX(var(--rug-rotate-x)) rotateY(var(--rug-rotate-y)) rotateZ(-2deg);
+  transform-origin: bottom center;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.ruggy-experimental-product-reveal {
+  animation: ruggy-experimental-product 1050ms 140ms
+    cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: clip-path, filter, translate;
 }
 
 .ruggy-motion-ready [data-scroll-reveal] {
@@ -229,8 +297,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ruggy-enter-up,
-  .ruggy-enter-right {
+  .ruggy-enter-right,
+  .ruggy-experimental-letter-face,
+  .ruggy-experimental-product-reveal {
     animation: none;
+  }
+
+  .ruggy-experimental-letter,
+  .ruggy-experimental-product {
+    transition: none;
   }
 
   .ruggy-motion-ready [data-scroll-reveal] {

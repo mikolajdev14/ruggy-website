@@ -17,7 +17,7 @@ export default async function ZamowPage() {
   const supabase = createPublicClient();
   const { data: rugTypes, error } = await supabase
     .from("rug_types")
-    .select("id, name, description, lead_time_days")
+    .select("id, name, slug, description, lead_time_days")
     .eq("is_active", true);
 
   return (
@@ -88,6 +88,7 @@ export default async function ZamowPage() {
               <li key={rug.id}>
                 <RugCard
                   id={rug.id}
+                  slug={rug.slug}
                   name={rug.name}
                   description={rug.description}
                   leadDays={rug.lead_time_days}

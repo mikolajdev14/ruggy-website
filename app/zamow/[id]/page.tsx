@@ -1,5 +1,7 @@
 "use client";
 
+import { CategoryRealizations } from "@/components/category-realizations";
+import { getCategory } from "@/lib/gallery";
 import { createClient } from "@/lib/supabase/client";
 import { formatLocalDateKey } from "@/lib/booking-date";
 import {
@@ -122,6 +124,7 @@ export default function ProductPage({
   const showContentWarning =
     rugType?.slug === "papadywany" && !hasAcceptedContentWarning;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
+  const category = getCategory(rugType?.slug);
 
   useEffect(() => {
     if (!showContentWarning) return;
@@ -333,6 +336,13 @@ export default function ProductPage({
           </div>
         </div>
       </section>
+
+      {category ? (
+        <CategoryRealizations
+          photos={category.photos}
+          categoryName={category.label}
+        />
+      ) : null}
 
       <form
         onSubmit={handleSubmit}

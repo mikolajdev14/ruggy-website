@@ -1,8 +1,8 @@
 import { MarketingPageShell } from "@/components/marketing-page-shell";
 import { createPageMetadata } from "@/lib/seo";
-import heroWorkshop from "@/public/ruggy/hero-workshop.webp";
-import rugDog from "@/public/ruggy/rug-dog.webp";
-import rugVinyl from "@/public/ruggy/rug-vinyl.webp";
+import rugHero from "@/public/ruggy/kategorie/dywanyzwierzaki/biale-tlo/IMG_0857-white-bg.jpg";
+import rugAnimal from "@/public/ruggy/kategorie/dywanyzwierzaki/biale-tlo/IMG_4803-white-bg.jpg";
+import rugCustom from "@/public/ruggy/kategorie/custom/biale-tlo/IMG_3628-white-bg.jpg";
 import Image from "next/image";
 
 const description =
@@ -21,8 +21,8 @@ export default function PortfolioPage() {
       eyebrow="Realizacje"
       title="Pomysły, które stały się dywanami"
       intro="Każda realizacja zaczyna się od innego materiału: zdjęcia, symbolu, ilustracji albo luźnego pomysłu. Łączy je ręczne wykonanie i wyrazisty kształt."
-      image={rugVinyl}
-      imageAlt="Okrągły dywan tuftowany inspirowany płytą winylową"
+      image={rugHero}
+      imageAlt="Ręcznie tuftowany dywan Ruggy z motywem zwierzaka"
       sections={[
         {
           title: "Wybrane realizacje Ruggy",
@@ -30,8 +30,8 @@ export default function PortfolioPage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <figure>
                 <Image
-                  src={rugDog}
-                  alt="Personalizowany dywan tuftowany w kształcie pieska"
+                  src={rugAnimal}
+                  alt="Personalizowany dywan tuftowany z motywem zwierzaka"
                   sizes="(min-width: 640px) 30vw, 100vw"
                   className="aspect-square w-full rounded-2xl border-2 border-[var(--ruggy-ink)] object-cover"
                 />
@@ -41,13 +41,13 @@ export default function PortfolioPage() {
               </figure>
               <figure>
                 <Image
-                  src={heroWorkshop}
-                  alt="Niebieski dywan tuftowany podczas ręcznego wykańczania"
+                  src={rugCustom}
+                  alt="Autorski dywan tuftowany na zamówienie"
                   sizes="(min-width: 640px) 30vw, 100vw"
                   className="aspect-square w-full rounded-2xl border-2 border-[var(--ruggy-ink)] object-cover"
                 />
                 <figcaption className="mt-2 text-sm font-bold text-[var(--ruggy-ink)]">
-                  Projekt podczas końcowego docinania
+                  Projekt custom podczas końcowego wykończenia
                 </figcaption>
               </figure>
             </div>
