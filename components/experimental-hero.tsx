@@ -87,7 +87,7 @@ export function ExperimentalHero() {
       ref={heroRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={resetPointerPosition}
-      className="ruggy-experimental-hero relative isolate border-b-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-canvas)] font-copy"
+      className="ruggy-experimental-hero relative isolate z-10 border-b-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-canvas)] font-copy"
     >
       <div
         aria-hidden="true"

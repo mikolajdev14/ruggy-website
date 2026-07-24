@@ -8,13 +8,13 @@ import {
   Palette,
   Ruler,
   Scissors,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DomeGallery from "@/components/DomeGallery";
 import { ExperimentalHero } from "@/components/experimental-hero";
 import { HomeScrollReveal } from "@/components/home-scroll-reveal";
+import { MagneticCta } from "@/components/magnetic-cta";
 import { OrganizationJsonLd } from "@/components/organization-json-ld";
 import { TuftedField } from "@/components/tufted-field";
 import { allRugPhotos } from "@/lib/gallery";
@@ -184,10 +184,6 @@ export default function HomePage() {
                   <span className="relative">tylko bardziej miękki.</span>
                 </span>
               </h2>
-              <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--ruggy-blue)]/80">
-                <Sparkles className="size-4" aria-hidden="true" />
-                Przesuń kursorem po włóczce
-              </p>
             </div>
 
             <ul
@@ -275,19 +271,17 @@ export default function HomePage() {
 
             <div
               data-scroll-reveal
-              className="relative mt-12 h-[68vh] min-h-[460px] w-full touch-none overflow-hidden rounded-[2rem] border-2 border-white/80"
+              className="relative mt-12 h-[90vh] min-h-[640px] w-full touch-none overflow-hidden rounded-[2rem]"
             >
               <DomeGallery
                 images={allRugPhotos}
                 grayscale={false}
                 overlayBlurColor="#142033"
-                openedImageWidth="320px"
-                openedImageHeight="320px"
+                fit={0.62}
+                openedImageWidth="380px"
+                openedImageHeight="380px"
               />
             </div>
-            <p className="mt-5 text-center text-sm font-bold text-white/60">
-              Chwyć i obróć kopułę · dotknij dywanu, aby powiększyć
-            </p>
           </div>
         </section>
 
@@ -407,27 +401,12 @@ export default function HomePage() {
         </section>
 
         <section className="bg-[var(--ruggy-blue-soft)] px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
-          <div
-            data-scroll-reveal="scale"
-            className="ruggy-thread-bg mx-auto flex w-full max-w-7xl flex-col items-center rounded-[2.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue)] px-6 py-14 text-center text-white shadow-[10px_12px_0_var(--ruggy-ink)] sm:px-12 sm:py-20"
-          >
-            <span className="flex size-14 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
-              <Sparkles className="size-7" aria-hidden="true" />
-            </span>
-            <h2 className="mt-7 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">
-              Masz zdjęcie, pomysł albo bardzo konkretną fazę?
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">
-              Super. To dokładnie tyle, ile potrzebuję, żeby zacząć.
-            </p>
-            <Link
-              href="/zamow"
-              className={`mt-8 inline-flex min-h-14 items-center gap-3 rounded-full bg-[var(--ruggy-yellow)] px-7 text-base font-black text-[var(--ruggy-ink)] transition-transform hover:-translate-y-1 ${focusClass}`}
-            >
-              Wyceń swój dywan
-              <ArrowRight className="size-5" aria-hidden="true" />
-            </Link>
-          </div>
+          <MagneticCta
+            title="Masz zdjęcie, pomysł albo bardzo konkretną fazę?"
+            subtitle="Super. To dokładnie tyle, ile potrzebuję, żeby zacząć."
+            ctaLabel="Wyceń swój dywan"
+            ctaHref="/zamow"
+          />
         </section>
       </main>
 

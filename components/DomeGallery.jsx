@@ -124,7 +124,9 @@ export default function DomeGallery({
   openedImageHeight = '350px',
   imageBorderRadius = '30px',
   openedImageBorderRadius = '30px',
-  grayscale = true
+  grayscale = true,
+  autoRotate = true,
+  autoRotateSpeed = 4
 }) {
   const rootRef = useRef(null);
   const mainRef = useRef(null);
@@ -256,6 +258,47 @@ export default function DomeGallery({
   useEffect(() => {
     applyTransform(rotationRef.current.x, rotationRef.current.y);
   }, []);
+
+  // Continuous gentle auto-rotation. Pauses while the user drags, while an
+  // image is enlarged, while inertia runs, when the tab is hidden, and when the
+  // gallery scrolls off-screen. Disabled for reduced-motion users.
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !autoRotate || !autoRotateSpeed) return;
+
+    let rafId = null;
+    let last = null;
+    let onScreen = true;
+
+    const tick = ts => {
+      if (last == null) last = ts;
+      const dt = (ts - last) / 1000;
+      last = ts;
+      if (
+        onScreen &&
+        !document.hidden &&
+        !draggingRef.current &&
+        !focusedElRef.current &&
+        inertiaRAF.current == null
+      ) {
+        const nextY = wrapAngleSigned(rotationRef.current.y + autoRotateSpeed * dt);
+        rotationRef.current = { x: rotationRef.current.x, y: nextY };
+        applyTransform(rotationRef.current.x, nextY);
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting), {
+      threshold: 0
+    });
+    if (rootRef.current) io.observe(rootRef.current);
+
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      io.disconnect();
+    };
+  }, [autoRotate, autoRotateSpeed]);
 
   const stopInertia = useCallback(() => {
     if (inertiaRAF.current) {
