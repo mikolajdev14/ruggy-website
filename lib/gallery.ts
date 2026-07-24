@@ -143,18 +143,9 @@ export function getCategoryCover(
 }
 
 /**
- * ~10 hand-picked highlights spanning every category, used by the homepage
- * gallery carousel.
+ * Flat pool of every category's realizations, spanning all categories.
+ * Used to fill the 3D dome gallery on the homepage.
  */
-export const galleryHighlights: GalleryPhoto[] = [
-  categories[0].photos[0], // zwierzaki
-  categories[2].photos[2], // autodywany
-  categories[1].photos[2], // custom
-  categories[3].photos[2], // papadywany – shrek
-  categories[5].photos[2], // piwodywany
-  categories[4].photos[3], // herbowe
-  categories[1].photos[4], // custom – pepsi
-  categories[0].photos[4], // zwierzaki
-  categories[2].photos[4], // autodywany
-  categories[3].photos[0], // papadywany – jan paweł II
-];
+export const allRugPhotos: GalleryPhoto[] = categories.flatMap(
+  (category) => category.photos,
+);

@@ -12,11 +12,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import DomeGallery from "@/components/DomeGallery";
 import { ExperimentalHero } from "@/components/experimental-hero";
-import { GalleryCarousel } from "@/components/gallery-carousel";
 import { HomeScrollReveal } from "@/components/home-scroll-reveal";
 import { OrganizationJsonLd } from "@/components/organization-json-ld";
-import { galleryHighlights } from "@/lib/gallery";
+import { TuftedField } from "@/components/tufted-field";
+import { allRugPhotos } from "@/lib/gallery";
 
 const benefits = [
   {
@@ -160,34 +161,81 @@ export default function HomePage() {
 
         <section
           id="dlaczego"
-          className="scroll-mt-24 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)]"
+          className="relative isolate scroll-mt-24 overflow-hidden border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)]"
         >
-          <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
+          <TuftedField />
+
+          <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
             <div data-scroll-reveal className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
+              <p className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-8 rounded-full bg-[repeating-linear-gradient(90deg,var(--ruggy-blue)_0_6px,transparent_6px_11px)]"
+                />
                 Więcej niż dekoracja
               </p>
-              <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">
-                Kawałek Ciebie, tylko bardziej miękki.
+              <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.04em] sm:text-6xl">
+                Kawałek Ciebie,{" "}
+                <span className="relative inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.1em] bottom-[0.1em] top-[0.55em] -rotate-[1.2deg] rounded-[0.2em] bg-[var(--ruggy-yellow)]"
+                  />
+                  <span className="relative">tylko bardziej miękki.</span>
+                </span>
               </h2>
+              <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--ruggy-blue)]/80">
+                <Sparkles className="size-4" aria-hidden="true" />
+                Przesuń kursorem po włóczce
+              </p>
             </div>
 
-            <ul data-scroll-stagger className="mt-12 grid gap-5 lg:grid-cols-3">
-              {benefits.map((benefit) => {
+            <ul
+              data-scroll-stagger
+              className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {benefits.map((benefit, index) => {
                 const Icon = benefit.icon;
+                const badgeTone = [
+                  "bg-[var(--ruggy-yellow)]",
+                  "bg-[var(--ruggy-blue)] text-white",
+                  "bg-[var(--ruggy-coral)] text-white",
+                ][index];
                 return (
                   <li
                     key={benefit.title}
                     data-scroll-reveal
-                    className="rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[6px_6px_0_var(--ruggy-ink)]"
+                    className={[
+                      "ruggy-swatch group relative rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-7 shadow-[7px_8px_0_var(--ruggy-ink)]",
+                      index === 1
+                        ? "sm:mt-8 sm:rotate-[0.9deg]"
+                        : index === 2
+                          ? "lg:mt-4 sm:-rotate-[0.8deg]"
+                          : "sm:-rotate-[1.2deg]",
+                      index === 2 ? "sm:col-span-2 lg:col-span-1" : "",
+                    ].join(" ")}
                   >
-                    <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)]">
-                      <Icon className="size-6" aria-hidden="true" />
-                    </span>
-                    <h3 className="mt-7 text-2xl font-black tracking-tight">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-2 rounded-[1.5rem] border-2 border-dashed border-[var(--ruggy-ink)]/20"
+                    />
+                    <div className="relative flex items-start justify-between">
+                      <span
+                        className={`flex size-14 items-center justify-center rounded-2xl border-2 border-[var(--ruggy-ink)] shadow-[3px_3px_0_var(--ruggy-ink)] transition-transform duration-300 group-hover:-rotate-6 ${badgeTone}`}
+                      >
+                        <Icon className="size-7" aria-hidden="true" />
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="mt-1 font-editorial text-5xl leading-none text-[var(--ruggy-ink)]/10"
+                      >
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <h3 className="relative mt-7 text-2xl font-black tracking-tight">
                       {benefit.title}
                     </h3>
-                    <p className="mt-3 text-base leading-7 text-[var(--ruggy-body)]">
+                    <p className="relative mt-3 text-base leading-7 text-[var(--ruggy-body)]">
                       {benefit.description}
                     </p>
                   </li>
@@ -225,7 +273,21 @@ export default function HomePage() {
               </a>
             </div>
 
-            <GalleryCarousel photos={galleryHighlights} />
+            <div
+              data-scroll-reveal
+              className="relative mt-12 h-[68vh] min-h-[460px] w-full touch-none overflow-hidden rounded-[2rem] border-2 border-white/80"
+            >
+              <DomeGallery
+                images={allRugPhotos}
+                grayscale={false}
+                overlayBlurColor="#142033"
+                openedImageWidth="320px"
+                openedImageHeight="320px"
+              />
+            </div>
+            <p className="mt-5 text-center text-sm font-bold text-white/60">
+              Chwyć i obróć kopułę · dotknij dywanu, aby powiększyć
+            </p>
           </div>
         </section>
 

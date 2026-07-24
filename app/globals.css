@@ -169,16 +169,6 @@
   background-size: 1.5rem 1.5rem, 1.25rem 1.25rem;
 }
 
-.ruggy-carousel-track {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scroll-padding-inline: 0.25rem;
-}
-
-.ruggy-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
 @keyframes ruggy-enter-up {
   from {
     translate: 0 1.5rem;
@@ -313,6 +303,29 @@
     scale: 1;
     translate: 0 0;
     animation: none;
+  }
+}
+
+.ruggy-swatch {
+  transition:
+    transform var(--ruggy-duration-slow) var(--ruggy-ease),
+    box-shadow var(--ruggy-duration-slow) var(--ruggy-ease);
+}
+
+@media (hover: hover) {
+  .ruggy-swatch:hover {
+    transform: translateY(-8px);
+    box-shadow: 12px 15px 0 var(--ruggy-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruggy-swatch {
+    rotate: 0deg !important;
+    transition: box-shadow var(--ruggy-duration-slow) var(--ruggy-ease);
+  }
+  .ruggy-swatch:hover {
+    transform: none;
   }
 }
 
