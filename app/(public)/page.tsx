@@ -9,7 +9,6 @@ import {
   Ruler,
   Scissors,
   Sparkles,
-  Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +16,7 @@ import type { Metadata } from "next";
 import { HomeScrollReveal } from "@/components/home-scroll-reveal";
 import { OrganizationJsonLd } from "@/components/organization-json-ld";
 import heroWorkshop from "@/public/ruggy/hero-workshop.webp";
+import heroRug from "@/public/ruggy/kategorie/dywanyzwierzaki/biale-tlo/IMG_7749-white-bg.jpg";
 import rugDog from "@/public/ruggy/rug-dog.webp";
 import rugVinyl from "@/public/ruggy/rug-vinyl.webp";
 
@@ -137,7 +137,7 @@ export default function HomePage() {
         Darmowa wycena pomysłu <span aria-hidden="true">✦</span> Ręczna robota w Polsce
       </div>
 
-      <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] backdrop-blur">
+      <header className="bg-[var(--ruggy-canvas)]">
         <nav
           aria-label="Główna nawigacja"
           className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:px-10"
@@ -169,81 +169,76 @@ export default function HomePage() {
       </header>
 
       <main id="main-content">
-        <section className="relative isolate overflow-hidden pb-16 pt-12 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
-          <div className="ruggy-blob ruggy-blob-blue absolute -end-24 -top-16 -z-10 size-72 sm:size-96" aria-hidden="true" />
-          <div className="ruggy-blob ruggy-blob-yellow absolute -start-28 bottom-8 -z-10 size-56" aria-hidden="true" />
-
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(26rem,0.96fr)] lg:gap-16 lg:px-10">
-            <div className="ruggy-enter-up max-w-3xl">
-              <h1 className="text-4xl font-black leading-[0.98] sm:text-6xl lg:text-7xl">
-                <span className="block">Twój Wuja Dywaniarz</span>
-                <span className="mt-2 block text-[var(--ruggy-blue)]">
-                  stworzy dla Ciebie
-                </span>
-                <span className="block">wymarzony dywan,</span>
-                <span className="ruggy-underline relative mt-5 inline-block text-2xl leading-tight text-[var(--ruggy-ink)] sm:text-3xl lg:text-4xl">
-                  dokładnie taki jaki chcesz
-                </span>
+        <section className="relative isolate overflow-hidden border-b-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-canvas)]">
+          <div className="mx-auto w-full max-w-7xl px-5 pb-8 pt-2 sm:px-8 sm:pb-10 lg:px-10">
+            <div className="relative grid items-end gap-x-8 gap-y-6 pb-9 pt-3 sm:pt-5 lg:min-h-[520px] lg:grid-cols-12 lg:pb-12">
+              <h1
+                aria-label="Ruggy — Twój Wuja Dywaniarz"
+                className="pointer-events-none relative z-0 col-span-full row-start-1 select-none text-center text-[5rem] font-black uppercase leading-none text-[var(--ruggy-ink)] sm:text-[8rem] lg:absolute lg:inset-x-0 lg:top-4 lg:text-[12rem] xl:text-[14rem]"
+              >
+                Ruggy
               </h1>
 
-              <p className="mt-8 max-w-xl border-s-4 border-[var(--ruggy-coral)] ps-5 text-lg leading-8 text-[var(--ruggy-body)] sm:text-xl">
-                Zamieniam Twoje zdjęcia, historie i dziwne pomysły w ręcznie
-                tuftowane dywany. Bez gotowców. Bez nudy.
-              </p>
+              <div className="ruggy-enter-up relative z-20 col-span-full row-start-1 mx-auto mt-16 h-[270px] w-full max-w-[250px] sm:mt-24 sm:h-[340px] sm:max-w-[310px] lg:col-start-5 lg:col-span-4 lg:mt-16 lg:h-[470px] lg:max-w-[400px]">
+                <Image
+                  src={heroRug}
+                  alt="Ręcznie tuftowany dywan Ruggy przedstawiający kota na wrotkach"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 34vw, (min-width: 640px) 44vw, 74vw"
+                  className="object-contain mix-blend-multiply drop-shadow-[0_18px_14px_rgba(29,29,35,0.22)]"
+                />
+              </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="ruggy-enter-up relative z-30 col-span-full max-w-md lg:col-start-1 lg:col-span-4 lg:row-start-1 lg:mb-10">
+                <p className="text-2xl font-black leading-tight sm:text-3xl">
+                  Twój Wuja Dywaniarz stworzy dla Ciebie wymarzony dywan,
+                  dokładnie taki jaki chcesz.
+                </p>
+                <p className="mt-4 max-w-sm text-base leading-7 text-[var(--ruggy-body)]">
+                  Zamieniam Twoje zdjęcia, historie i dziwne pomysły w ręcznie
+                  tuftowane dywany. Bez gotowców. Bez nudy.
+                </p>
+              </div>
+
+              <div className="ruggy-enter-right relative z-30 col-span-full flex flex-col items-stretch gap-4 sm:flex-row sm:items-center lg:col-start-10 lg:col-span-3 lg:row-start-1 lg:mb-10 lg:items-stretch">
                 <Link
                   href="/zamow"
-                  className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--ruggy-blue)] px-7 text-base font-black text-white shadow-[0_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_0_var(--ruggy-ink)] ${focusClass}`}
+                  className={`inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-[var(--ruggy-blue)] px-6 text-base font-black text-white shadow-[0_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 hover:shadow-[0_9px_0_var(--ruggy-ink)] lg:w-full ${focusClass}`}
                 >
                   Pokaż mi swój pomysł
-                  <ArrowRight className="size-5" aria-hidden="true" />
+                  <ArrowRight className="size-5 shrink-0" aria-hidden="true" />
                 </Link>
                 <Link
                   href="#realizacje"
-                  className={`inline-flex min-h-14 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-7 text-base font-black transition-colors hover:bg-[var(--ruggy-yellow)] ${focusClass}`}
+                  className={`inline-flex min-h-11 items-center justify-center gap-2 font-bold underline decoration-2 underline-offset-4 transition-opacity hover:opacity-60 lg:w-full ${focusClass}`}
                 >
                   Zobacz realizacje
+                  <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
                 </Link>
               </div>
-
-              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t-2 border-[var(--ruggy-border-strong)] pt-5 text-sm font-bold text-[var(--ruggy-body)]">
-                <span className="flex items-center gap-2">
-                  <span className="flex -space-x-2" aria-hidden="true">
-                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-blue)]" />
-                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-coral)]" />
-                    <span className="size-8 rounded-full border-2 border-[var(--ruggy-canvas)] bg-[var(--ruggy-yellow)]" />
-                  </span>
-                  Ponad 10 tys. osób śledzi Ruggy
-                </span>
-                <span className="flex items-center gap-1 text-[var(--ruggy-ink)]">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="size-4 fill-[var(--ruggy-yellow)]" aria-hidden="true" />
-                  ))}
-                  <span className="sr-only">Pięć gwiazdek</span>
-                </span>
-              </div>
             </div>
 
-            <div className="ruggy-enter-right relative pb-4 lg:rotate-[1deg]">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-2 shadow-[10px_12px_0_var(--ruggy-ink)] sm:rounded-[2.5rem] sm:p-3">
-                <Image
-                  src={heroWorkshop}
-                  alt="Ręczne wykańczanie niebieskiego dywanu Ruggy w pracowni"
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 56vw, 100vw"
-                  className="rounded-[2rem] object-cover"
-                />
+            <dl className="grid border-t-2 border-[var(--ruggy-ink)] sm:grid-cols-3">
+              <div className="flex items-center gap-4 border-b border-[var(--ruggy-border-strong)] py-5 sm:border-b-0 sm:border-e sm:pe-6">
+                <dt className="order-2 text-sm font-bold leading-5 text-[var(--ruggy-body)]">
+                  osób obserwuje moje realizacje
+                </dt>
+                <dd className="text-3xl font-black">10K+</dd>
               </div>
-              <div className="absolute -bottom-3 start-4 rotate-[-4deg] rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-5 py-3 text-sm font-black shadow-[4px_4px_0_var(--ruggy-ink)] sm:start-8 sm:text-base">
-                <span className="block text-xs font-bold uppercase tracking-widest">Aktualnie</span>
-                Tuftuję marzenia
+              <div className="flex items-center gap-4 border-b border-[var(--ruggy-border-strong)] py-5 sm:border-b-0 sm:border-e sm:px-6">
+                <dt className="order-2 text-sm font-bold leading-5 text-[var(--ruggy-body)]">
+                  każdy projekt tworzę indywidualnie
+                </dt>
+                <dd className="text-3xl font-black">1/1</dd>
               </div>
-              <div className="absolute -end-2 -top-8 flex size-24 rotate-[7deg] items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-coral)] p-3 text-center text-xs font-black uppercase leading-tight text-white shadow-[4px_4px_0_var(--ruggy-ink)] sm:size-28">
-                Jeden jedyny egzemplarz
+              <div className="flex items-center gap-4 py-5 sm:ps-6">
+                <dt className="order-2 text-sm font-bold leading-5 text-[var(--ruggy-body)]">
+                  ręcznie tuftowane w Polsce
+                </dt>
+                <dd className="text-3xl font-black">PL</dd>
               </div>
-            </div>
+            </dl>
           </div>
         </section>
 
