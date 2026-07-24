@@ -20,6 +20,9 @@
 # production
 /build
 
+# local scratch / temp working files (never commit)
+/tmp/
+
 # local source photos (final web-ready images stay in /public)
 /assets-source/ruggy/oryginaly/
 

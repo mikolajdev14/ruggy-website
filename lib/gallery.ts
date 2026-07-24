@@ -127,11 +127,12 @@ const categoriesBySlug = new Map(
   categories.map((category) => [category.slug, category]),
 );
 
-/** Look up a category by its rug_types slug (e.g. "papadywany"). */
+/** Look up a category by its rug_types slug (e.g. "papadywany").
+ * Slugs are trimmed because some rows carry stray whitespace/newlines. */
 export function getCategory(
   slug: string | null | undefined,
 ): GalleryCategory | undefined {
-  return slug ? categoriesBySlug.get(slug) : undefined;
+  return slug ? categoriesBySlug.get(slug.trim()) : undefined;
 }
 
 /** Cover photo (first realization) for a given category slug, if any. */
