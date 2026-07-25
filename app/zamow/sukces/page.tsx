@@ -25,6 +25,11 @@ export default async function SuccessPage({
     : isPending
       ? Clock3
       : TriangleAlert;
+  const badgeClass = result.success
+    ? "bg-[var(--ruggy-success)] text-white"
+    : isPending
+      ? "bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]"
+      : "bg-[var(--ruggy-error)] text-white";
 
   return (
     <main className="ruggy-thread-bg flex min-h-screen items-center justify-center bg-[var(--ruggy-blue-soft)] px-5 py-12 text-[var(--ruggy-ink)]">
@@ -33,13 +38,7 @@ export default async function SuccessPage({
           ruggy<span className="text-[var(--ruggy-blue)]">.</span>
         </Link>
         <span
-          className={`mt-8 flex size-14 items-center justify-center rounded-2xl ${
-            result.success
-              ? "bg-emerald-100 text-emerald-700"
-              : isPending
-                ? "bg-amber-100 text-amber-700"
-                : "bg-red-100 text-red-700"
-          }`}
+          className={`mt-8 flex size-14 items-center justify-center rounded-2xl border-2 border-[var(--ruggy-ink)] shadow-[3px_4px_0_var(--ruggy-ink)] ${badgeClass}`}
         >
           <Icon size={24} aria-hidden="true" />
         </span>

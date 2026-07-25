@@ -3,7 +3,7 @@ export const bookingSchema = z.object({
   rugTypeId: z.string().min(1),
   rugVariantId: z.number().int().positive().nullable().optional(),
   customerName: z.string().min(2, "Podaj imię i nazwisko"),
-  customerEmail: z.email("Nieprawidlowy email"),
+  customerEmail: z.email("Nieprawidłowy email"),
   customerPhone: z.string().max(500).optional(),
   customerNotes: z.string().max(500).optional(),
   pickedSize: z.number().int().positive().nullable(),

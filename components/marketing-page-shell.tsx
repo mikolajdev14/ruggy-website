@@ -162,7 +162,7 @@ export function MarketingPageShell({
               href="/zamow"
               className="inline-flex min-h-14 shrink-0 items-center gap-3 rounded-full bg-[var(--ruggy-yellow)] px-7 text-base font-black text-[var(--ruggy-ink)] transition-transform hover:-translate-y-1"
             >
-              Przejdź do zamówienia
+              Zamów swój dywan
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
           </div>
@@ -188,9 +188,32 @@ export function MarketingPageShell({
             </a>
           </div>
         </div>
-        <p className="mx-auto w-full max-w-7xl pt-6 text-xs text-white/50">
-          © 2026 Ruggy. Wszystkie prawa zastrzeżone.
-        </p>
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <span>© 2026 Ruggy. Wszystkie prawa zastrzeżone.</span>
+          <nav
+            aria-label="Informacje prawne"
+            className="flex flex-wrap items-center gap-x-5 gap-y-3 font-bold text-white/70"
+          >
+            <Link
+              href="/polityka-prywatnosci"
+              className="transition-colors hover:text-[var(--ruggy-yellow)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Polityka prywatności
+            </Link>
+            <Link
+              href="/zwroty"
+              className="transition-colors hover:text-[var(--ruggy-yellow)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Zwroty
+            </Link>
+            <Link
+              href="/regulamin"
+              className="transition-colors hover:text-[var(--ruggy-yellow)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Regulamin
+            </Link>
+          </nav>
+        </div>
       </footer>
     </div>
   );

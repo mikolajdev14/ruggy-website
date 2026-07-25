@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Check, Layers3, Ruler, Sparkles } from "lucide-react";
+import { Check, Ruler, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   calculateCustomRugPriceCents,
@@ -16,6 +16,12 @@ import {
 } from "@/lib/rug-order-mode";
 import { getPopularRugSizeLabel } from "@/lib/popular-rug-sizes";
 import type { Booking } from "./page";
+import {
+  buildFieldClass,
+  FieldError,
+  fieldErrorId,
+  type FieldErrors,
+} from "./field-error";
 
 type RugSize = {
   id: number;
@@ -45,6 +51,7 @@ type SizePickerProps = {
   id: string;
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
+  fieldErrors?: FieldErrors;
 };
 
 const getActiveSizes = (sizes: RugSize[]) =>
@@ -78,10 +85,12 @@ const findPopularSize = (
     : undefined;
 };
 
-const fieldClass =
-  "h-12 w-full rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]";
-
-export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
+export const SizePicker = ({
+  id,
+  booking,
+  setBooking,
+  fieldErrors = {},
+}: SizePickerProps) => {
   const [sizeData, setSizeData] = useState<SizeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -120,37 +129,9 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
         setLoadError(false);
 
         if (nextSizeData.slug === PAPADYWANY_SLUG) {
-          const variants = getActiveVariants(nextSizeData.rug_variants);
-
-          setBooking((previous) => {
-            const selectedVariant =
-              variants.find(
-                (variant) => variant.id === previous.rugVariantId,
-              ) ?? variants[0];
-            const availableSizes = selectedVariant
-              ? getActiveSizes(selectedVariant.rug_sizes)
-              : [];
-            const previousSizeIsAvailable = availableSizes.some(
-              (size) => size.id === previous.pickedSize,
-            );
-            const defaultSize = selectedVariant
-              ? findPopularSize(
-                  nextSizeData.slug,
-                  selectedVariant.rug_sizes,
-                  selectedVariant.slug,
-                )
-              : undefined;
-
-            return {
-              ...previous,
-              rugVariantId: selectedVariant?.id ?? null,
-              pickedSize: previousSizeIsAvailable
-                ? previous.pickedSize
-                : defaultSize?.id ?? null,
-              customWidthCm: null,
-              customHeightCm: null,
-            };
-          });
+          // The subrodzaj is chosen deliberately in SubcategoryPicker, and the
+          // popular size is defaulted by the effect below once it is picked, so
+          // nothing is auto-selected here.
         } else if (usesDirectCheckout(nextSizeData.slug)) {
           const availableSizes = getActiveSizes(nextSizeData.rug_sizes);
 
@@ -204,19 +185,37 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
     booking.customHeightCm,
   );
 
-  const chooseVariant = (variant: RugVariant) => {
-    const popularSize = sizeData
-      ? findPopularSize(sizeData.slug, variant.rug_sizes, variant.slug)
-      : undefined;
+  // Once a papadywany subrodzaj is chosen (in SubcategoryPicker), default its
+  // size to the popular format — but only while none is picked, so a manual
+  // choice and a subrodzaj switch (which clears the size) both behave correctly.
+  useEffect(() => {
+    if (!isPapadywany || booking.rugVariantId == null) return;
+    if (booking.pickedSize != null || !sizeData) return;
 
-    setBooking((previous) => ({
-      ...previous,
-      rugVariantId: variant.id,
-      pickedSize: popularSize?.id ?? null,
-      customWidthCm: null,
-      customHeightCm: null,
-    }));
-  };
+    const variant = getActiveVariants(sizeData.rug_variants).find(
+      (candidate) => candidate.id === booking.rugVariantId,
+    );
+    if (!variant) return;
+
+    const popular = findPopularSize(
+      sizeData.slug,
+      variant.rug_sizes,
+      variant.slug,
+    );
+    if (!popular) return;
+
+    setBooking((previous) =>
+      previous.rugVariantId === variant.id && previous.pickedSize == null
+        ? { ...previous, pickedSize: popular.id }
+        : previous,
+    );
+  }, [
+    isPapadywany,
+    booking.rugVariantId,
+    booking.pickedSize,
+    sizeData,
+    setBooking,
+  ]);
 
   const choosePresetSize = (sizeId: number) => {
     setBooking((previous) => ({
@@ -302,7 +301,18 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
                   updateCustomDimension("customWidthCm", event.target.value)
                 }
                 placeholder="np. 100"
-                className={fieldClass}
+                data-field="customWidthCm"
+                className={buildFieldClass(Boolean(fieldErrors.customWidthCm))}
+                aria-invalid={fieldErrors.customWidthCm ? true : undefined}
+                aria-describedby={
+                  fieldErrors.customWidthCm
+                    ? fieldErrorId("customWidthCm")
+                    : undefined
+                }
+              />
+              <FieldError
+                id={fieldErrorId("customWidthCm")}
+                message={fieldErrors.customWidthCm}
               />
             </label>
             <label className="space-y-2">
@@ -320,8 +330,19 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
                   updateCustomDimension("customHeightCm", event.target.value)
                 }
                 placeholder="np. 70"
-                className={fieldClass}
+                data-field="customHeightCm"
+                className={buildFieldClass(Boolean(fieldErrors.customHeightCm))}
+                aria-invalid={fieldErrors.customHeightCm ? true : undefined}
+                aria-describedby={
+                  fieldErrors.customHeightCm
+                    ? fieldErrorId("customHeightCm")
+                    : undefined
+                }
                 required
+              />
+              <FieldError
+                id={fieldErrorId("customHeightCm")}
+                message={fieldErrors.customHeightCm}
               />
             </label>
           </div>
@@ -353,45 +374,6 @@ export const SizePicker = ({ id, booking, setBooking }: SizePickerProps) => {
         </div>
       ) : (
         <div className="space-y-5">
-          {isPapadywany ? (
-            <div>
-              <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--ruggy-ink)]">
-                <Layers3
-                  className="size-4 text-[var(--ruggy-blue)]"
-                  aria-hidden="true"
-                />
-                Podrodzaj papadywanu
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {activeVariants.map((variant) => {
-                  const isSelected = booking.rugVariantId === variant.id;
-
-                  return (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => chooseVariant(variant)}
-                      className={`relative min-h-14 rounded-2xl border-2 px-4 py-3 text-start text-sm font-black transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
-                        isSelected
-                          ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] shadow-[3px_4px_0_var(--ruggy-ink)]"
-                          : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
-                      }`}
-                    >
-                      {variant.name}
-                      {isSelected ? (
-                        <Check
-                          className="absolute end-3 top-1/2 size-4 -translate-y-1/2"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-
           {isPapadywany && !selectedVariant ? (
             <div className="rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-5 text-sm font-bold text-[var(--ruggy-muted)]">
               Wybierz podrodzaj, aby zobaczyć dostępne rozmiary.

@@ -6,10 +6,12 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import type { Booking } from "./page";
 import type { Dispatch, SetStateAction } from "react";
+import { FieldError, fieldErrorId, type FieldErrors } from "./field-error";
 
 type DatePickerProps = {
   setBooking: Dispatch<SetStateAction<Booking>>;
   blockedDates: Date[];
+  fieldErrors?: FieldErrors;
 };
 
 const css = `
@@ -59,7 +61,11 @@ const css = `
   }
 `;
 
-export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
+export const DatePicker = ({
+  setBooking,
+  blockedDates,
+  fieldErrors = {},
+}: DatePickerProps) => {
   const [selected, setSelected] = useState<Date | undefined>();
   const [minimumBookingDate] = useState(() => {
     const [year, month, day] = getMinimumBookingDateKey().split("-").map(Number);
@@ -91,7 +97,19 @@ export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
         </div>
       </div>
 
-      <div className="rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-3 sm:p-4">
+      <div
+        data-field="pickupDate"
+        tabIndex={-1}
+        aria-invalid={fieldErrors.pickupDate ? true : undefined}
+        aria-describedby={
+          fieldErrors.pickupDate ? fieldErrorId("pickupDate") : undefined
+        }
+        className={`rounded-2xl border-2 bg-[var(--ruggy-surface)] p-3 outline-none sm:p-4 ${
+          fieldErrors.pickupDate
+            ? "border-[var(--ruggy-error)]"
+            : "border-[var(--ruggy-border-strong)]"
+        }`}
+      >
         <DayPicker
           className="order-calendar"
           disabled={[{ before: minimumBookingDate }, ...blockedDates]}
@@ -103,6 +121,10 @@ export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
           }}
         />
       </div>
+      <FieldError
+        id={fieldErrorId("pickupDate")}
+        message={fieldErrors.pickupDate}
+      />
     </section>
   );
 };

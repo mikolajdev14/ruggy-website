@@ -1,13 +1,13 @@
 import {
   ArrowRight,
-  ArrowUpRight,
   AtSign,
   Camera,
+  CreditCard,
   Heart,
   PackageCheck,
   Palette,
-  Ruler,
   Scissors,
+  Shapes,
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -42,30 +42,31 @@ const benefits = [
 const steps = [
   {
     number: "01",
-    icon: Camera,
-    title: "Pokaż mi pomysł",
+    icon: Shapes,
+    title: "Wybierz bazę pod pomysł",
     description:
-      "Wyślij zdjęcie, szkic albo opisz motyw, który chodzi Ci po głowie.",
+      "Otwórz zamówienie i wybierz wariant dywanu, na którym zbudujemy Twój projekt.",
   },
   {
     number: "02",
-    icon: Ruler,
-    title: "Wybierz wariant",
+    icon: Camera,
+    title: "Dodaj zdjęcie i szczegóły",
     description:
-      "Dobierz rozmiar, termin i sposób dostawy w prostym formularzu.",
+      "W jednym formularzu wgrywasz zdjęcie lub opis inspiracji i ustawiasz rozmiar, termin oraz dostawę.",
   },
   {
     number: "03",
-    icon: Scissors,
-    title: "Wchodzę do pracowni",
-    description: "Tuftuję, docinam i wykańczam każdy detal ręcznie.",
+    icon: CreditCard,
+    title: "Zapłać online albo ustal cenę",
+    description:
+      "Gotowe warianty opłacasz od razu przez Stripe i rezerwujesz termin. Projekty na wymiar zapisuję, a ostateczną cenę dogadujemy na Instagramie.",
   },
   {
     number: "04",
     icon: PackageCheck,
-    title: "Ruggy rusza w drogę",
+    title: "Tuftuję ręcznie i wysyłam",
     description:
-      "Gotowy dywan wysyłam do paczkomatu albo prosto pod Twoje drzwi.",
+      "Robię Twój dywan od zera, wykańczam każdy detal i wysyłam do paczkomatu albo prosto pod Twoje drzwi.",
   },
 ];
 
@@ -148,10 +149,10 @@ export default function HomePage() {
 
           <Link
             href="/zamow"
-            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-ink)] px-5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 ${focusClass}`}
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-transform hover:-translate-y-0.5 ${focusClass}`}
           >
             Zamów dywan
-            <ArrowUpRight className="size-4" aria-hidden="true" />
+            <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </nav>
       </header>

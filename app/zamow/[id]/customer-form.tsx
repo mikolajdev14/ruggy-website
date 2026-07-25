@@ -2,13 +2,24 @@
 
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { Booking } from "./page";
+import {
+  buildFieldClass,
+  FieldError,
+  fieldErrorId,
+  type FieldErrors,
+} from "./field-error";
 
 type CustomerFormProps = {
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
+  fieldErrors?: FieldErrors;
 };
 
-export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
+export const CustomerForm = ({
+  booking,
+  setBooking,
+  fieldErrors = {},
+}: CustomerFormProps) => {
   const updateField =
     (field: keyof Booking) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -18,8 +29,6 @@ export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
       }));
     };
 
-  const inputClassName =
-    "h-12 w-full rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]";
   const labelClassName = "text-sm font-black text-[var(--ruggy-ink)]";
 
   return (
@@ -30,12 +39,23 @@ export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
           <input
             value={booking.customerName}
             onChange={updateField("customerName")}
-            className={inputClassName}
+            className={buildFieldClass(Boolean(fieldErrors.customerName))}
             type="text"
             name="customerName"
+            data-field="customerName"
             autoComplete="name"
             placeholder="Jan Kowalski"
+            aria-invalid={fieldErrors.customerName ? true : undefined}
+            aria-describedby={
+              fieldErrors.customerName
+                ? fieldErrorId("customerName")
+                : undefined
+            }
             required
+          />
+          <FieldError
+            id={fieldErrorId("customerName")}
+            message={fieldErrors.customerName}
           />
         </label>
 
@@ -44,12 +64,23 @@ export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
           <input
             value={booking.customerEmail}
             onChange={updateField("customerEmail")}
-            className={inputClassName}
+            className={buildFieldClass(Boolean(fieldErrors.customerEmail))}
             type="email"
             name="customerEmail"
+            data-field="customerEmail"
             autoComplete="email"
             placeholder="jan@example.com"
+            aria-invalid={fieldErrors.customerEmail ? true : undefined}
+            aria-describedby={
+              fieldErrors.customerEmail
+                ? fieldErrorId("customerEmail")
+                : undefined
+            }
             required
+          />
+          <FieldError
+            id={fieldErrorId("customerEmail")}
+            message={fieldErrors.customerEmail}
           />
         </label>
 
@@ -58,7 +89,7 @@ export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
           <input
             value={booking.customerPhone}
             onChange={updateField("customerPhone")}
-            className={inputClassName}
+            className={buildFieldClass(false)}
             type="tel"
             name="customerPhone"
             autoComplete="tel"
@@ -71,7 +102,7 @@ export const CustomerForm = ({ booking, setBooking }: CustomerFormProps) => {
           <textarea
             value={booking.customerNotes}
             onChange={updateField("customerNotes")}
-            className="min-h-28 w-full resize-y rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-3 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]"
+            className={buildFieldClass(false, true)}
             name="customerNotes"
             placeholder="Kolor, inspiracje, preferowany kontakt lub inne szczegóły"
             maxLength={500}

@@ -3,10 +3,17 @@
 import { Check } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Booking, DeliveryMethod } from "./page";
+import {
+  buildFieldClass,
+  FieldError,
+  fieldErrorId,
+  type FieldErrors,
+} from "./field-error";
 
 type DeliveryPickerProps = {
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
+  fieldErrors?: FieldErrors;
 };
 
 const options: Array<{
@@ -29,6 +36,7 @@ const options: Array<{
 export const DeliveryPicker = ({
   booking,
   setBooking,
+  fieldErrors = {},
 }: DeliveryPickerProps) => {
   const selectMethod = (deliveryMethod: DeliveryMethod) => {
     setBooking((previous) => ({
@@ -41,14 +49,20 @@ export const DeliveryPicker = ({
     }));
   };
 
-  const inputClassName =
-    "h-12 w-full rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]";
   const labelClassName = "text-sm font-black text-[var(--ruggy-ink)]";
+  const methodError = fieldErrors.deliveryMethod;
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        {options.map((option) => {
+      <div
+        className="grid gap-3 sm:grid-cols-2"
+        role="group"
+        aria-label="Sposób dostawy"
+        aria-describedby={
+          methodError ? fieldErrorId("deliveryMethod") : undefined
+        }
+      >
+        {options.map((option, index) => {
           const isSelected = booking.deliveryMethod === option.value;
 
           return (
@@ -56,11 +70,14 @@ export const DeliveryPicker = ({
               key={option.value}
               type="button"
               aria-pressed={isSelected}
+              data-field={index === 0 ? "deliveryMethod" : undefined}
               onClick={() => selectMethod(option.value)}
               className={`relative rounded-2xl border-2 p-4 text-left transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
                 isSelected
                   ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] shadow-[3px_4px_0_var(--ruggy-ink)]"
-                  : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
+                  : methodError
+                    ? "border-[var(--ruggy-error)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-error)]"
+                    : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
               }`}
             >
               <span className="block text-sm font-black text-[var(--ruggy-ink)]">
@@ -79,6 +96,7 @@ export const DeliveryPicker = ({
           );
         })}
       </div>
+      <FieldError id={fieldErrorId("deliveryMethod")} message={methodError} />
 
       {booking.deliveryMethod === "parcel_locker" ? (
         <label className="block space-y-2">
@@ -91,13 +109,24 @@ export const DeliveryPicker = ({
                 parcelLockerCode: event.target.value,
               }))
             }
-            className={inputClassName}
+            className={buildFieldClass(Boolean(fieldErrors.parcelLockerCode))}
             type="text"
             name="parcelLockerCode"
+            data-field="parcelLockerCode"
             autoComplete="off"
             placeholder="np. WAW01A"
             maxLength={100}
+            aria-invalid={fieldErrors.parcelLockerCode ? true : undefined}
+            aria-describedby={
+              fieldErrors.parcelLockerCode
+                ? fieldErrorId("parcelLockerCode")
+                : undefined
+            }
             required
+          />
+          <FieldError
+            id={fieldErrorId("parcelLockerCode")}
+            message={fieldErrors.parcelLockerCode}
           />
         </label>
       ) : null}
@@ -113,12 +142,23 @@ export const DeliveryPicker = ({
                 deliveryAddress: event.target.value,
               }))
             }
-            className="min-h-28 w-full resize-y rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-3 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]"
+            className={buildFieldClass(Boolean(fieldErrors.deliveryAddress), true)}
             name="deliveryAddress"
+            data-field="deliveryAddress"
             autoComplete="street-address"
             placeholder="Ulica i numer, kod pocztowy, miejscowość"
             maxLength={500}
+            aria-invalid={fieldErrors.deliveryAddress ? true : undefined}
+            aria-describedby={
+              fieldErrors.deliveryAddress
+                ? fieldErrorId("deliveryAddress")
+                : undefined
+            }
             required
+          />
+          <FieldError
+            id={fieldErrorId("deliveryAddress")}
+            message={fieldErrors.deliveryAddress}
           />
         </label>
       ) : null}

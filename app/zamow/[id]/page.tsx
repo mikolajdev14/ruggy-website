@@ -8,7 +8,7 @@ import {
   calculateCustomRugPriceCents,
   formatPriceCents,
 } from "@/lib/custom-rug-price";
-import { usesDirectCheckout } from "@/lib/rug-order-mode";
+import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
 import { siteConfig } from "@/lib/site-config";
 import { bookingSchema } from "@/schema/booking";
 import {
@@ -37,8 +37,10 @@ import {
 import { CustomerForm } from "./customer-form";
 import { DatePicker } from "./date-picker";
 import { DeliveryPicker } from "./delivery-picker";
+import { FIELD_FOCUS_ORDER, type FieldErrors } from "./field-error";
 import { ReferenceImageUpload } from "./reference-image-upload";
 import { SizePicker } from "./size-picker";
+import { SubcategoryPicker } from "./subcategory-picker";
 
 export type DeliveryMethod = "parcel_locker" | "courier";
 
@@ -76,6 +78,42 @@ const collectValidationMessages = (error: {
   return unique.length ? unique : ["Nieprawidłowe dane."];
 };
 
+// Map Zod issues onto the form field they belong to (first path segment) so
+// each control can render its own red border and inline message. First message
+// per field wins; deeper paths collapse to their top-level field.
+const collectFieldErrors = (error: {
+  issues: Array<{ path: PropertyKey[]; message: string }>;
+}): FieldErrors => {
+  const fields: FieldErrors = {};
+
+  for (const issue of error.issues) {
+    const key = issue.path[0];
+    if (typeof key === "string" && issue.message && !(key in fields)) {
+      fields[key] = issue.message;
+    }
+  }
+
+  return fields;
+};
+
+// Scroll to and focus the first invalid control, in visual order, so a keyboard
+// or screen-reader user lands on the problem instead of hunting for it. Deferred
+// a frame because delivery sub-fields only mount once a method is chosen.
+const focusFirstInvalidField = (fields: FieldErrors) => {
+  const firstField = FIELD_FOCUS_ORDER.find((field) => field in fields);
+  if (!firstField) return;
+
+  requestAnimationFrame(() => {
+    const control = document.querySelector<HTMLElement>(
+      `[data-field="${firstField}"]`,
+    );
+    if (!control) return;
+
+    control.scrollIntoView({ behavior: "smooth", block: "center" });
+    control.focus({ preventScroll: true });
+  });
+};
+
 export default function ProductPage({
   params,
 }: {
@@ -88,6 +126,7 @@ export default function ProductPage({
     useState(false);
   const [submitMessage, setSubmitMessage] = useState<string>();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isContactComplete, setIsContactComplete] = useState(false);
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,10 +175,16 @@ export default function ProductPage({
     };
   }, [id]);
 
-  const showContentWarning =
-    rugType?.slug === "papadywany" && !hasAcceptedContentWarning;
+  const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
+  const showContentWarning = isPapadywany && !hasAcceptedContentWarning;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
   const category = getCategory(rugType?.slug);
+
+  // Papadywany starts by picking a subrodzaj; the rest of the form only unfolds
+  // once one is chosen, so the choice reads as a deliberate first step.
+  const hasChosenSubcategory = booking.rugVariantId != null;
+  const showDetails = !isPapadywany || hasChosenSubcategory;
+  const stepOffset = isPapadywany ? 1 : 0;
 
   useEffect(() => {
     if (!showContentWarning) return;
@@ -167,13 +212,17 @@ export default function ProductPage({
     const validation = bookingSchema.safeParse(bookingInput);
 
     if (!validation.success) {
+      const fields = collectFieldErrors(validation.error);
       setIsAntiSlipOfferOpen(false);
       setSubmitMessage(undefined);
       setValidationErrors(collectValidationMessages(validation.error));
+      setFieldErrors(fields);
+      focusFirstInvalidField(fields);
       return false;
     }
 
     setValidationErrors([]);
+    setFieldErrors({});
     setIsAntiSlipOfferOpen(false);
     setIsSubmitting(true);
     setSubmitMessage(
@@ -257,13 +306,17 @@ export default function ProductPage({
     });
 
     if (!validation.success) {
+      const fields = collectFieldErrors(validation.error);
       setSubmitMessage(undefined);
       setValidationErrors(collectValidationMessages(validation.error));
+      setFieldErrors(fields);
+      focusFirstInvalidField(fields);
       return;
     }
 
     setSubmitMessage(undefined);
     setValidationErrors([]);
+    setFieldErrors({});
 
     // The anti-slip mat is a paid add-on, so only offer it when the customer
     // is actually paying now. On the quote path we save the request directly.
@@ -390,61 +443,101 @@ export default function ProductPage({
         className="mx-auto w-full max-w-7xl px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8"
       >
         <div className="grid gap-5">
-          <FormPanel
-            number="1"
-            title="Projekt i termin"
-            description="Wybierz rozmiar oraz dzień realizacji"
-          >
-            <div className="grid items-start gap-8 lg:grid-cols-2">
-              <SizePicker id={id} booking={booking} setBooking={setBooking} />
-              <DatePicker blockedDates={blockedDays} setBooking={setBooking} />
-            </div>
-          </FormPanel>
+          {isPapadywany ? (
+            <FormPanel
+              number="1"
+              title="Podrodzaj papadywanu"
+              description="Zacznij od wyboru podrodzaju — od niego zależą dostępne rozmiary"
+            >
+              <SubcategoryPicker
+                id={id}
+                booking={booking}
+                setBooking={setBooking}
+              />
+            </FormPanel>
+          ) : null}
 
-          <FormPanel
-            number="2"
-            title="Dostawa i dane zamawiającego"
-            description="Wybierz sposób dostawy i podaj dane do kontaktu"
-          >
-            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-              <section aria-labelledby="delivery-section-title">
-                <h3
-                  id="delivery-section-title"
-                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
-                >
-                  Sposób dostawy
-                </h3>
-                <DeliveryPicker booking={booking} setBooking={setBooking} />
-              </section>
-
-              <section
-                aria-labelledby="customer-section-title"
-                className="border-t-2 border-[var(--ruggy-border)] pt-7 lg:border-s-2 lg:border-t-0 lg:ps-8 lg:pt-0"
+          {showDetails ? (
+            <>
+              <FormPanel
+                number={String(1 + stepOffset)}
+                title="Projekt i termin"
+                description="Wybierz rozmiar oraz dzień realizacji"
               >
-                <h3
-                  id="customer-section-title"
-                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
-                >
-                  Dane kontaktowe
-                </h3>
-                <CustomerForm booking={booking} setBooking={setBooking} />
-              </section>
-            </div>
-          </FormPanel>
+                <div className="grid items-start gap-8 lg:grid-cols-2">
+                  <SizePicker
+                    id={id}
+                    booking={booking}
+                    setBooking={setBooking}
+                    fieldErrors={fieldErrors}
+                  />
+                  <DatePicker
+                    blockedDates={blockedDays}
+                    setBooking={setBooking}
+                    fieldErrors={fieldErrors}
+                  />
+                </div>
+              </FormPanel>
 
-          <FormPanel
-            number="3"
-            title="Materiał referencyjny"
-            description="Na końcu dodaj zdjęcie, które będzie podstawą projektu"
-          >
-            <ReferenceImageUpload
-              file={referenceImage}
-              setFile={setReferenceImage}
-            />
-          </FormPanel>
+              <FormPanel
+                number={String(2 + stepOffset)}
+                title="Dostawa i dane zamawiającego"
+                description="Wybierz sposób dostawy i podaj dane do kontaktu"
+              >
+                <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+                  <section aria-labelledby="delivery-section-title">
+                    <h3
+                      id="delivery-section-title"
+                      className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
+                    >
+                      Sposób dostawy
+                    </h3>
+                    <DeliveryPicker
+                      booking={booking}
+                      setBooking={setBooking}
+                      fieldErrors={fieldErrors}
+                    />
+                  </section>
+
+                  <section
+                    aria-labelledby="customer-section-title"
+                    className="border-t-2 border-[var(--ruggy-border)] pt-7 lg:border-s-2 lg:border-t-0 lg:ps-8 lg:pt-0"
+                  >
+                    <h3
+                      id="customer-section-title"
+                      className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
+                    >
+                      Dane kontaktowe
+                    </h3>
+                    <CustomerForm
+                      booking={booking}
+                      setBooking={setBooking}
+                      fieldErrors={fieldErrors}
+                    />
+                  </section>
+                </div>
+              </FormPanel>
+
+              <FormPanel
+                number={String(3 + stepOffset)}
+                title="Materiał referencyjny"
+                description="Na końcu dodaj zdjęcie, które będzie podstawą projektu"
+              >
+                <ReferenceImageUpload
+                  file={referenceImage}
+                  setFile={setReferenceImage}
+                />
+              </FormPanel>
+            </>
+          ) : (
+            <p className="rounded-[1.5rem] border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 text-sm font-bold text-[var(--ruggy-muted)]">
+              Wybierz podrodzaj powyżej, aby odblokować rozmiar, termin i dostawę.
+            </p>
+          )}
         </div>
 
-        <div className="sticky bottom-3 z-20 mt-5 rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]/95 p-4 shadow-[0_14px_40px_rgba(31,26,22,0.18)] backdrop-blur sm:p-5">
+        {showDetails ? (
+          <div className="sticky bottom-3 z-20 mt-5 rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]/95 p-4 shadow-[0_14px_40px_rgba(31,26,22,0.18)] backdrop-blur sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               {validationErrors.length ? (
@@ -521,7 +614,8 @@ export default function ProductPage({
                   : "Skontaktuj się ze mną"}
             </button>
           </div>
-        </div>
+          </div>
+        ) : null}
       </form>
     </main>
   );
