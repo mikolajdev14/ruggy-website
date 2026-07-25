@@ -1,5 +1,6 @@
 "use client";
 import { getMinimumBookingDateKey } from "@/lib/booking-date";
+import { CalendarDays } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -70,19 +71,27 @@ export const DatePicker = ({ setBooking, blockedDates }: DatePickerProps) => {
   }, [selected, setBooking]);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5" aria-labelledby="date-picker-title">
       <style>{css}</style>
-      <div>
-        <p className="text-sm font-semibold text-neutral-950">
-          Termin realizacji
-        </p>
-        <p className="mt-1 max-w-md text-xs leading-5 text-neutral-500">
-          To dzień, w którym zaczynam pracę nad Twoim dywanem. Najbliższe 5
-          dni oraz zajęte terminy są wyszarzone i przekreślone.
-        </p>
+      <div className="flex items-start gap-3">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
+          <CalendarDays className="size-5" aria-hidden="true" />
+        </span>
+        <div>
+          <h3
+            id="date-picker-title"
+            className="text-lg font-black text-[var(--ruggy-ink)]"
+          >
+            Termin realizacji
+          </h3>
+          <p className="mt-1 max-w-md text-sm leading-6 text-[var(--ruggy-body)]">
+            To dzień, w którym zaczynam pracę nad Twoim dywanem. Zajęte oraz
+            zbyt bliskie terminy są wyszarzone i przekreślone.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 sm:p-4">
+      <div className="rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-3 sm:p-4">
         <DayPicker
           className="order-calendar"
           disabled={[{ before: minimumBookingDate }, ...blockedDates]}

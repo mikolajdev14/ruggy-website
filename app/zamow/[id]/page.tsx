@@ -14,6 +14,7 @@ import { bookingSchema } from "@/schema/booking";
 import {
   ArrowLeft,
   AtSign,
+  Check,
   CreditCard,
   ShieldCheck,
   TriangleAlert,
@@ -22,6 +23,7 @@ import Link from "next/link";
 import {
   type FormEvent,
   type ReactNode,
+  type RefObject,
   use,
   useEffect,
   useRef,
@@ -63,6 +65,17 @@ type RugTypeSummary = {
   lead_time_days: number | null;
 };
 
+const collectValidationMessages = (error: {
+  issues: Array<{ message: string }>;
+}): string[] => {
+  const messages = error.issues
+    .map((issue) => issue.message)
+    .filter((message): message is string => Boolean(message));
+  const unique = [...new Set(messages)];
+
+  return unique.length ? unique : ["Nieprawidłowe dane."];
+};
+
 export default function ProductPage({
   params,
 }: {
@@ -74,6 +87,8 @@ export default function ProductPage({
   const [hasAcceptedContentWarning, setHasAcceptedContentWarning] =
     useState(false);
   const [submitMessage, setSubmitMessage] = useState<string>();
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isContactComplete, setIsContactComplete] = useState(false);
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAntiSlipOfferOpen, setIsAntiSlipOfferOpen] = useState(false);
@@ -152,12 +167,13 @@ export default function ProductPage({
     const validation = bookingSchema.safeParse(bookingInput);
 
     if (!validation.success) {
-      setSubmitMessage(
-        validation.error.issues[0]?.message ?? "Nieprawidłowe dane.",
-      );
+      setIsAntiSlipOfferOpen(false);
+      setSubmitMessage(undefined);
+      setValidationErrors(collectValidationMessages(validation.error));
       return false;
     }
 
+    setValidationErrors([]);
     setIsAntiSlipOfferOpen(false);
     setIsSubmitting(true);
     setSubmitMessage(
@@ -212,7 +228,9 @@ export default function ProductPage({
         return false;
       }
 
-      window.location.href = siteConfig.instagram;
+      setSubmitMessage(undefined);
+      setIsSubmitting(false);
+      setIsContactComplete(true);
       return true;
     } catch (error) {
       console.error("Nie udało się przygotować zamówienia:", error);
@@ -239,14 +257,21 @@ export default function ProductPage({
     });
 
     if (!validation.success) {
-      setSubmitMessage(
-        validation.error.issues[0]?.message ?? "Nieprawidłowe dane.",
-      );
+      setSubmitMessage(undefined);
+      setValidationErrors(collectValidationMessages(validation.error));
       return;
     }
 
     setSubmitMessage(undefined);
-    setIsAntiSlipOfferOpen(true);
+    setValidationErrors([]);
+
+    // The anti-slip mat is a paid add-on, so only offer it when the customer
+    // is actually paying now. On the quote path we save the request directly.
+    if (isDirectCheckout) {
+      setIsAntiSlipOfferOpen(true);
+    } else {
+      void submitBooking(false);
+    }
   };
 
   const selectedDate = booking.pickupDate
@@ -290,6 +315,7 @@ export default function ProductPage({
           onDecline={() => void submitBooking(false)}
         />
       ) : null}
+      {isContactComplete ? <ContactSuccessDialog /> : null}
 
       <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)]">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
@@ -298,7 +324,7 @@ export default function ProductPage({
           </Link>
           <Link
             href="/zamow"
-            className="inline-flex h-9 items-center gap-2 rounded-md px-2 text-sm font-semibold text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+            className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-ink)]"
           >
             <ArrowLeft size={16} aria-hidden="true" />
             Zmień wariant
@@ -319,6 +345,21 @@ export default function ProductPage({
               {rugType?.description ||
                 "Wybierz szczegóły projektu, termin oraz sposób dostawy."}
             </p>
+            {rugType ? (
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-4 py-2 text-sm font-black text-[var(--ruggy-ink)]">
+                {isDirectCheckout ? (
+                  <>
+                    <CreditCard size={16} aria-hidden="true" />
+                    Płacisz online przez Stripe i rezerwujesz termin
+                  </>
+                ) : (
+                  <>
+                    <AtSign size={16} aria-hidden="true" />
+                    Zapiszę zgłoszenie, a cenę i płatność ustalimy na Instagramie
+                  </>
+                )}
+              </p>
+            ) : null}
           </div>
 
           <div className="border-s-2 border-[var(--ruggy-ink)] ps-4">
@@ -369,7 +410,7 @@ export default function ProductPage({
               <section aria-labelledby="delivery-section-title">
                 <h3
                   id="delivery-section-title"
-                  className="mb-4 text-sm font-semibold text-neutral-950"
+                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
                 >
                   Sposób dostawy
                 </h3>
@@ -378,11 +419,11 @@ export default function ProductPage({
 
               <section
                 aria-labelledby="customer-section-title"
-                className="border-t border-neutral-200 pt-7 lg:border-s lg:border-t-0 lg:ps-8 lg:pt-0"
+                className="border-t-2 border-[var(--ruggy-border)] pt-7 lg:border-s-2 lg:border-t-0 lg:ps-8 lg:pt-0"
               >
                 <h3
                   id="customer-section-title"
-                  className="mb-4 text-sm font-semibold text-neutral-950"
+                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
                 >
                   Dane kontaktowe
                 </h3>
@@ -403,34 +444,50 @@ export default function ProductPage({
           </FormPanel>
         </div>
 
-        <div className="sticky bottom-3 z-20 mt-5 rounded-lg border border-neutral-300 bg-white/95 p-4 shadow-[0_12px_36px_rgba(0,0,0,0.12)] backdrop-blur sm:p-5">
+        <div className="sticky bottom-3 z-20 mt-5 rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]/95 p-4 shadow-[0_14px_40px_rgba(31,26,22,0.18)] backdrop-blur sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              {submitMessage ? (
-                <p className="text-sm font-semibold text-neutral-950">
+              {validationErrors.length ? (
+                <div role="alert" className="space-y-1">
+                  <p className="text-sm font-black text-[var(--ruggy-error)]">
+                    Zanim ruszymy dalej, uzupełnij:
+                  </p>
+                  <ul className="space-y-0.5 text-sm font-bold text-[var(--ruggy-error)]">
+                    {validationErrors.map((message) => (
+                      <li key={message} className="flex items-start gap-1.5">
+                        <span aria-hidden="true">•</span>
+                        <span>{message}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : submitMessage ? (
+                <p className="text-sm font-black text-[var(--ruggy-ink)]" aria-live="polite">
                   {submitMessage}
                 </p>
               ) : (
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-neutral-500">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-[var(--ruggy-muted)]">
                   <span>
                     Rozmiar:{" "}
-                    <strong className="text-neutral-800">
+                    <strong className="font-black text-[var(--ruggy-ink)]">
                       {selectedSize}
                     </strong>
                   </span>
                   <span>
                     Termin:{" "}
-                    <strong className="text-neutral-800">{selectedDate}</strong>
+                    <strong className="font-black text-[var(--ruggy-ink)]">
+                      {selectedDate}
+                    </strong>
                   </span>
                   <span>
                     Dostawa:{" "}
-                    <strong className="text-neutral-800">
+                    <strong className="font-black text-[var(--ruggy-ink)]">
                       {selectedDelivery}
                     </strong>
                   </span>
                 </div>
               )}
-              <p className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
+              <p className="mt-2 flex items-center gap-2 text-xs font-bold text-[var(--ruggy-body)]">
                 {isDirectCheckout ? (
                   <>
                     <ShieldCheck size={14} aria-hidden="true" />
@@ -470,25 +527,38 @@ export default function ProductPage({
   );
 }
 
-function AntiSlipOfferDialog({
-  onAccept,
-  onDecline,
-}: {
-  onAccept: () => void;
-  onDecline: () => void;
+// Shared modal chrome: scroll-lock, initial focus, Tab focus-trap, focus
+// restore, and optional Escape-to-close — so every dialog behaves identically
+// for keyboard and screen-reader users. Escape is opt-in: gate dialogs
+// (content warning) and terminal success screens should not be dismissable.
+function useDialogChrome(options?: {
+  onEscape?: () => void;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }) {
-  const acceptButtonRef = useRef<HTMLButtonElement>(null);
-  const dialogRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
+  const onEscape = options?.onEscape;
+  const initialFocusRef = options?.initialFocusRef;
 
   useEffect(() => {
-    const previouslyFocusedElement = document.activeElement as HTMLElement;
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    acceptButtonRef.current?.focus();
+
+    const getFocusable = () =>
+      Array.from(
+        containerRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+
+    (initialFocusRef?.current ?? getFocusable()[0])?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onDecline();
+        if (onEscape) {
+          event.preventDefault();
+          onEscape();
+        }
         return;
       }
 
@@ -496,11 +566,7 @@ function AntiSlipOfferDialog({
         return;
       }
 
-      const focusableElements = Array.from(
-        dialogRef.current?.querySelectorAll<HTMLElement>(
-          "button:not([disabled]), a[href]",
-        ) ?? [],
-      );
+      const focusableElements = getFocusable();
       const firstElement = focusableElements[0];
       const lastElement = focusableElements.at(-1);
 
@@ -524,7 +590,23 @@ function AntiSlipOfferDialog({
       window.removeEventListener("keydown", handleKeyDown);
       previouslyFocusedElement?.focus();
     };
-  }, [onDecline]);
+  }, [onEscape, initialFocusRef]);
+
+  return containerRef;
+}
+
+function AntiSlipOfferDialog({
+  onAccept,
+  onDecline,
+}: {
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  const acceptButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useDialogChrome({
+    onEscape: onDecline,
+    initialFocusRef: acceptButtonRef,
+  });
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
@@ -573,10 +655,68 @@ function AntiSlipOfferDialog({
   );
 }
 
+function ContactSuccessDialog() {
+  const instagramLinkRef = useRef<HTMLAnchorElement>(null);
+  const dialogRef = useDialogChrome({ initialFocusRef: instagramLinkRef });
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-success-title"
+        aria-describedby="contact-success-description"
+        className="w-full max-w-lg rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-6 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-8"
+      >
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
+          <Check size={24} aria-hidden="true" />
+        </span>
+        <h2
+          id="contact-success-title"
+          className="mt-5 text-2xl font-black leading-tight text-[var(--ruggy-ink)] sm:text-3xl"
+        >
+          Zgłoszenie już u mnie!
+        </h2>
+        <p
+          id="contact-success-description"
+          className="mt-4 text-base leading-7 text-[var(--ruggy-body)]"
+        >
+          Mam Twój projekt i wszystkie szczegóły. Teraz napisz do mnie na
+          Instagramie — dogadamy ostateczną cenę, płatność i resztę. Odpisuję
+          osobiście, więc śmiało.
+        </p>
+        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Link
+            href="/zamow"
+            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
+          >
+            Wróć do wariantów
+          </Link>
+          <a
+            ref={instagramLinkRef}
+            href={siteConfig.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-blue)] px-6 text-sm font-black text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
+          >
+            <AtSign size={17} aria-hidden="true" />
+            Napisz na Instagramie
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
+  const acceptButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useDialogChrome({ initialFocusRef: acceptButtonRef });
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
       <section
+        ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="content-warning-title"
@@ -609,8 +749,8 @@ function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
             Wróć do wariantów
           </Link>
           <button
+            ref={acceptButtonRef}
             type="button"
-            autoFocus
             onClick={onAccept}
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-opacity hover:opacity-85"
           >
@@ -634,14 +774,16 @@ function FormPanel({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-neutral-200 bg-white p-5 sm:p-6">
-      <div className="mb-6 flex items-center gap-3 border-b border-neutral-200 pb-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-xs font-black text-[var(--ruggy-ink)]">
+    <section className="rounded-[1.5rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-5 shadow-[3px_4px_0_var(--ruggy-border)] sm:p-6">
+      <div className="mb-6 flex items-center gap-3 border-b-2 border-[var(--ruggy-border)] pb-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] text-sm font-black text-[var(--ruggy-ink)]">
           {number}
         </span>
         <div>
-          <h2 className="text-base font-semibold text-neutral-950">{title}</h2>
-          <p className="text-xs text-neutral-500">{description}</p>
+          <h2 className="text-lg font-black text-[var(--ruggy-ink)]">{title}</h2>
+          <p className="text-xs font-bold text-[var(--ruggy-muted)]">
+            {description}
+          </p>
         </div>
       </div>
       {children}

@@ -1,8 +1,32 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { CUSTOM_RUG_MIN_PRICE_CENTS } from "@/lib/custom-rug-price";
+import { usesDirectCheckout } from "@/lib/rug-order-mode";
 import { ArrowLeft, ArrowRight, CreditCard, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RugCard } from "./rug-card";
+
+type RugSizeRow = { price_cents: number | string; is_active: boolean | null };
+
+const minActivePriceCents = (
+  sizes: RugSizeRow[] | null | undefined,
+  variants:
+    | Array<{ is_active: boolean | null; rug_sizes: RugSizeRow[] | null }>
+    | null
+    | undefined,
+): number | null => {
+  const prices = [
+    ...(sizes ?? []),
+    ...(variants ?? [])
+      .filter((variant) => variant.is_active !== false)
+      .flatMap((variant) => variant.rug_sizes ?? []),
+  ]
+    .filter((size) => size.is_active !== false)
+    .map((size) => Number(size.price_cents))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  return prices.length ? Math.min(...prices) : null;
+};
 
 export const metadata: Metadata = {
   title: "Zamów personalizowany dywan",
@@ -17,7 +41,9 @@ export default async function ZamowPage() {
   const supabase = createPublicClient();
   const { data: rugTypes, error } = await supabase
     .from("rug_types")
-    .select("id, name, slug, description, lead_time_days")
+    .select(
+      "id, name, slug, description, lead_time_days, rug_sizes(price_cents, is_active), rug_variants(is_active, rug_sizes(price_cents, is_active))",
+    )
     .eq("is_active", true);
 
   return (
@@ -84,17 +110,27 @@ export default async function ZamowPage() {
           </div>
         ) : rugTypes?.length ? (
           <ul className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {rugTypes.map((rug) => (
-              <li key={rug.id}>
-                <RugCard
-                  id={rug.id}
-                  slug={rug.slug}
-                  name={rug.name}
-                  description={rug.description}
-                  leadDays={rug.lead_time_days}
-                />
-              </li>
-            ))}
+            {rugTypes.map((rug) => {
+              const isCheckout = usesDirectCheckout(rug.slug);
+
+              return (
+                <li key={rug.id}>
+                  <RugCard
+                    id={rug.id}
+                    slug={rug.slug}
+                    name={rug.name}
+                    description={rug.description}
+                    leadDays={rug.lead_time_days}
+                    mode={isCheckout ? "checkout" : "quote"}
+                    fromPriceCents={
+                      isCheckout
+                        ? minActivePriceCents(rug.rug_sizes, rug.rug_variants)
+                        : CUSTOM_RUG_MIN_PRICE_CENTS
+                    }
+                  />
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <div className="mt-10 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-8 text-center">

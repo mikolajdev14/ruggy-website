@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Booking, DeliveryMethod } from "./page";
 
@@ -41,7 +42,8 @@ export const DeliveryPicker = ({
   };
 
   const inputClassName =
-    "h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-neutral-950 focus:ring-2 focus:ring-neutral-950/10";
+    "h-12 w-full rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]";
+  const labelClassName = "text-sm font-black text-[var(--ruggy-ink)]";
 
   return (
     <section className="space-y-4">
@@ -55,20 +57,24 @@ export const DeliveryPicker = ({
               type="button"
               aria-pressed={isSelected}
               onClick={() => selectMethod(option.value)}
-              className={`rounded-md border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${
+              className={`relative rounded-2xl border-2 p-4 text-left transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
                 isSelected
-                  ? "border-neutral-950 bg-neutral-950 text-white"
-                  : "border-neutral-300 bg-white text-neutral-950 hover:border-neutral-500"
+                  ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] shadow-[3px_4px_0_var(--ruggy-ink)]"
+                  : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
               }`}
             >
-              <span className="block text-sm font-semibold">{option.title}</span>
-              <span
-                className={`mt-1 block text-xs ${
-                  isSelected ? "text-neutral-300" : "text-neutral-500"
-                }`}
-              >
+              <span className="block text-sm font-black text-[var(--ruggy-ink)]">
+                {option.title}
+              </span>
+              <span className="mt-1 block text-xs font-bold text-[var(--ruggy-body)]">
                 {option.description}
               </span>
+              {isSelected ? (
+                <Check
+                  className="absolute end-3 top-3 size-4 text-[var(--ruggy-ink)]"
+                  aria-hidden="true"
+                />
+              ) : null}
             </button>
           );
         })}
@@ -76,9 +82,7 @@ export const DeliveryPicker = ({
 
       {booking.deliveryMethod === "parcel_locker" ? (
         <label className="block space-y-2">
-          <span className="text-sm font-medium text-neutral-700">
-            Kod paczkomatu InPost *
-          </span>
+          <span className={labelClassName}>Kod paczkomatu InPost *</span>
           <input
             value={booking.parcelLockerCode}
             onChange={(event) =>
@@ -90,6 +94,7 @@ export const DeliveryPicker = ({
             className={inputClassName}
             type="text"
             name="parcelLockerCode"
+            autoComplete="off"
             placeholder="np. WAW01A"
             maxLength={100}
             required
@@ -99,9 +104,7 @@ export const DeliveryPicker = ({
 
       {booking.deliveryMethod === "courier" ? (
         <label className="block space-y-2">
-          <span className="text-sm font-medium text-neutral-700">
-            Adres dostawy *
-          </span>
+          <span className={labelClassName}>Adres dostawy *</span>
           <textarea
             value={booking.deliveryAddress}
             onChange={(event) =>
@@ -110,8 +113,9 @@ export const DeliveryPicker = ({
                 deliveryAddress: event.target.value,
               }))
             }
-            className="min-h-28 w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-3 text-sm text-neutral-950 outline-none transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-neutral-950 focus:ring-2 focus:ring-neutral-950/10"
+            className="min-h-28 w-full resize-y rounded-xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-3 text-base font-bold text-[var(--ruggy-ink)] outline-none transition-colors placeholder:text-[var(--ruggy-muted)] hover:border-[var(--ruggy-ink)] focus:border-[var(--ruggy-blue)] focus:ring-4 focus:ring-[var(--ruggy-blue-soft)]"
             name="deliveryAddress"
+            autoComplete="street-address"
             placeholder="Ulica i numer, kod pocztowy, miejscowość"
             maxLength={500}
             required

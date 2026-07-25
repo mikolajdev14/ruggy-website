@@ -17,10 +17,88 @@ const focusClass =
 const focusLightClass =
   "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
 
+type LegalBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "list"; items: string[] };
+
+type LegalSection = {
+  id: string;
+  heading: string | null;
+  blocks: LegalBlock[];
+};
+
+// Legal copy arrives as a flat string: "§N. Title" lines start sections, every
+// other line is a paragraph, and clause runs ending in ";" are enumerated
+// lists. Parsing it into real structure gives headings to navigate by, lists a
+// screen reader can announce, and a scannable page instead of one wall of text.
+const HEADING_PATTERN = /^§\s*(\d+)\.?\s+.*$/;
+const STARTS_LOWERCASE = /^[a-ząćęłńóśźż]/;
+
+function parseLegalContent(content: string): LegalSection[] {
+  const sections: LegalSection[] = [];
+  let current: LegalSection = { id: "wstep", heading: null, blocks: [] };
+  let openList: Extract<LegalBlock, { type: "list" }> | null = null;
+  let listAcceptsContinuation = false;
+
+  const commitSection = () => {
+    if (current.heading !== null || current.blocks.length > 0) {
+      sections.push(current);
+    }
+  };
+
+  for (const rawLine of content.trim().split("\n")) {
+    const line = rawLine.trim();
+    const headingMatch = line.match(HEADING_PATTERN);
+
+    if (headingMatch) {
+      commitSection();
+      current = { id: `sekcja-${headingMatch[1]}`, heading: line, blocks: [] };
+      openList = null;
+      listAcceptsContinuation = false;
+      continue;
+    }
+
+    if (!line) {
+      openList = null;
+      listAcceptsContinuation = false;
+      continue;
+    }
+
+    const endsWithSemicolon = line.endsWith(";");
+    const isListItem =
+      endsWithSemicolon ||
+      (listAcceptsContinuation && STARTS_LOWERCASE.test(line));
+
+    if (isListItem) {
+      if (!openList) {
+        openList = { type: "list", items: [] };
+        current.blocks.push(openList);
+      }
+      openList.items.push(line);
+      // The clause that closes a list ends in "." — keep accepting only while
+      // items still end in ";".
+      listAcceptsContinuation = endsWithSemicolon;
+    } else {
+      openList = null;
+      listAcceptsContinuation = false;
+      current.blocks.push({ type: "paragraph", text: line });
+    }
+  }
+
+  commitSection();
+  return sections;
+}
+
 export function LegalDocumentPage({
   title,
   content,
 }: LegalDocumentPageProps) {
+  const sections = parseLegalContent(content);
+  const tableOfContents = sections.filter(
+    (section): section is LegalSection & { heading: string } =>
+      section.heading !== null,
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
       <header className="border-b border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)]">
@@ -49,10 +127,68 @@ export function LegalDocumentPage({
           {title}
         </h1>
 
-        <article className="mt-10 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] py-8 sm:py-12">
-          <p className="whitespace-pre-wrap text-base leading-8 text-[var(--ruggy-body)] sm:text-lg">
-            {content.trim()}
-          </p>
+        {tableOfContents.length > 1 ? (
+          <nav
+            aria-label="Spis treści"
+            className="mt-8 rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-5 sm:p-6"
+          >
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]">
+              Spis treści
+            </p>
+            <ol className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+              {tableOfContents.map((section) => (
+                <li key={section.id}>
+                  <a
+                    href={`#${section.id}`}
+                    className={`text-sm font-bold text-[var(--ruggy-body)] underline decoration-[var(--ruggy-border-strong)] decoration-2 underline-offset-4 transition-colors hover:text-[var(--ruggy-blue)] hover:decoration-[var(--ruggy-blue)] ${focusClass}`}
+                  >
+                    {section.heading}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        ) : null}
+
+        <article className="mt-8 space-y-10 border-y-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] py-8 sm:py-12">
+          {sections.map((section, sectionIndex) => (
+            <section
+              key={section.heading ? section.id : `wstep-${sectionIndex}`}
+              id={section.heading ? section.id : undefined}
+              className="max-w-[70ch] scroll-mt-8 space-y-4"
+            >
+              {section.heading ? (
+                <h2 className="text-xl font-black leading-snug text-[var(--ruggy-ink)] sm:text-2xl">
+                  {section.heading}
+                </h2>
+              ) : null}
+              {section.blocks.map((block, blockIndex) =>
+                block.type === "paragraph" ? (
+                  <p
+                    key={blockIndex}
+                    className="text-base leading-8 text-[var(--ruggy-body)] sm:text-[1.05rem]"
+                  >
+                    {block.text}
+                  </p>
+                ) : (
+                  <ul key={blockIndex} className="space-y-2.5">
+                    {block.items.map((item, itemIndex) => (
+                      <li
+                        key={itemIndex}
+                        className="flex gap-3 text-base leading-8 text-[var(--ruggy-body)] sm:text-[1.05rem]"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="mt-3 size-1.5 shrink-0 rounded-full bg-[var(--ruggy-blue)]"
+                        />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              )}
+            </section>
+          ))}
         </article>
 
         <nav

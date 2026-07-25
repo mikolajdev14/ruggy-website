@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import DomeGallery from "@/components/DomeGallery";
+import { RugMarquee } from "@/components/rug-marquee";
 import { ExperimentalHero } from "@/components/experimental-hero";
 import { HomeScrollReveal } from "@/components/home-scroll-reveal";
 import { MagneticCta } from "@/components/magnetic-cta";
@@ -150,7 +150,7 @@ export default function HomePage() {
             href="/zamow"
             className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--ruggy-ink)] px-5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 ${focusClass}`}
           >
-            Wyceń dywan
+            Zamów dywan
             <ArrowUpRight className="size-4" aria-hidden="true" />
           </Link>
         </nav>
@@ -269,18 +269,8 @@ export default function HomePage() {
               </a>
             </div>
 
-            <div
-              data-scroll-reveal
-              className="relative mt-12 h-[90vh] min-h-[640px] w-full touch-none overflow-hidden rounded-[2rem]"
-            >
-              <DomeGallery
-                images={allRugPhotos}
-                grayscale={false}
-                overlayBlurColor="#142033"
-                fit={0.62}
-                openedImageWidth="380px"
-                openedImageHeight="380px"
-              />
+            <div data-scroll-reveal className="mt-12">
+              <RugMarquee photos={allRugPhotos} />
             </div>
           </div>
         </section>
@@ -404,7 +394,7 @@ export default function HomePage() {
           <MagneticCta
             title="Masz zdjęcie, pomysł albo bardzo konkretną fazę?"
             subtitle="Super. To dokładnie tyle, ile potrzebuję, żeby zacząć."
-            ctaLabel="Wyceń swój dywan"
+            ctaLabel="Zamów swój dywan"
             ctaHref="/zamow"
           />
         </section>
