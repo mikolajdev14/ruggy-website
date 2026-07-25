@@ -20,6 +20,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   type FormEvent,
   type ReactNode,
@@ -40,7 +41,6 @@ import { DeliveryPicker } from "./delivery-picker";
 import { FIELD_FOCUS_ORDER, type FieldErrors } from "./field-error";
 import { ReferenceImageUpload } from "./reference-image-upload";
 import { SizePicker } from "./size-picker";
-import { SubcategoryPicker } from "./subcategory-picker";
 
 export type DeliveryMethod = "parcel_locker" | "courier";
 
@@ -120,6 +120,11 @@ export default function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const variantParam = searchParams.get("variant");
+  const preselectedVariantId =
+    variantParam && /^\d+$/.test(variantParam) ? Number(variantParam) : null;
   const [blockedDays, setBlockedDays] = useState<Date[]>([]);
   const [rugType, setRugType] = useState<RugTypeSummary | null>(null);
   const [hasAcceptedContentWarning, setHasAcceptedContentWarning] =
@@ -131,9 +136,10 @@ export default function ProductPage({
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAntiSlipOfferOpen, setIsAntiSlipOfferOpen] = useState(false);
+  const [prevVariantParam, setPrevVariantParam] = useState(preselectedVariantId);
   const [booking, setBooking] = useState<Booking>({
     rugTypeId: id,
-    rugVariantId: null,
+    rugVariantId: preselectedVariantId,
     pickedSize: null,
     customWidthCm: null,
     customHeightCm: null,
@@ -180,11 +186,32 @@ export default function ProductPage({
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
   const category = getCategory(rugType?.slug);
 
-  // Papadywany starts by picking a subrodzaj; the rest of the form only unfolds
-  // once one is chosen, so the choice reads as a deliberate first step.
-  const hasChosenSubcategory = booking.rugVariantId != null;
-  const showDetails = !isPapadywany || hasChosenSubcategory;
-  const stepOffset = isPapadywany ? 1 : 0;
+  // Papadywany picks its subrodzaj on a separate page (/zamow/[id]/podrodzaj)
+  // that hands the choice back as ?variant=. Mirror that param into the booking
+  // so the size step is scoped to it; if it is missing, send them to pick one.
+  const redirectingToSubcategory = isPapadywany && preselectedVariantId == null;
+
+  // When the ?variant= changes (e.g. "Zmień podrodzaj" then a different pick),
+  // mirror it into the booking and clear the size — adjusting state during
+  // render, the recommended alternative to a setState-in-effect.
+  if (preselectedVariantId !== prevVariantParam) {
+    setPrevVariantParam(preselectedVariantId);
+    if (preselectedVariantId != null) {
+      setBooking((previous) => ({
+        ...previous,
+        rugVariantId: preselectedVariantId,
+        pickedSize: null,
+        customWidthCm: null,
+        customHeightCm: null,
+      }));
+    }
+  }
+
+  useEffect(() => {
+    if (redirectingToSubcategory) {
+      router.replace(`/zamow/${id}/podrodzaj`);
+    }
+  }, [redirectingToSubcategory, id, router]);
 
   useEffect(() => {
     if (!showContentWarning) return;
@@ -355,6 +382,19 @@ export default function ProductPage({
         } · ${formatPriceCents(customPriceCents)}`
       : "Nie wybrano";
 
+  if (redirectingToSubcategory) {
+    return (
+      <main
+        className="flex min-h-screen items-center justify-center bg-[var(--ruggy-canvas)] px-5 text-[var(--ruggy-ink)]"
+        role="status"
+      >
+        <p className="text-sm font-black text-[var(--ruggy-muted)]">
+          Przenoszę do wyboru podrodzaju…
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
       {showContentWarning ? (
@@ -375,13 +415,25 @@ export default function ProductPage({
           <Link href="/" className="ruggy-wordmark text-4xl text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]">
             ruggy<span className="text-[var(--ruggy-blue)]">.</span>
           </Link>
-          <Link
-            href="/zamow"
-            className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-ink)]"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            Zmień wariant
-          </Link>
+          <div className="flex items-center gap-1">
+            {isPapadywany ? (
+              <Link
+                href={`/zamow/${id}/podrodzaj`}
+                className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-ink)]"
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+                Zmień podrodzaj
+              </Link>
+            ) : (
+              <Link
+                href="/zamow"
+                className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-ink)]"
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+                Zmień wariant
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -443,101 +495,78 @@ export default function ProductPage({
         className="mx-auto w-full max-w-7xl px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8"
       >
         <div className="grid gap-5">
-          {isPapadywany ? (
-            <FormPanel
-              number="1"
-              title="Podrodzaj papadywanu"
-              description="Zacznij od wyboru podrodzaju — od niego zależą dostępne rozmiary"
-            >
-              <SubcategoryPicker
+          <FormPanel
+            number="1"
+            title="Projekt i termin"
+            description="Wybierz rozmiar oraz dzień realizacji"
+          >
+            <div className="grid items-start gap-8 lg:grid-cols-2">
+              <SizePicker
                 id={id}
                 booking={booking}
                 setBooking={setBooking}
+                fieldErrors={fieldErrors}
               />
-            </FormPanel>
-          ) : null}
+              <DatePicker
+                blockedDates={blockedDays}
+                setBooking={setBooking}
+                fieldErrors={fieldErrors}
+              />
+            </div>
+          </FormPanel>
 
-          {showDetails ? (
-            <>
-              <FormPanel
-                number={String(1 + stepOffset)}
-                title="Projekt i termin"
-                description="Wybierz rozmiar oraz dzień realizacji"
-              >
-                <div className="grid items-start gap-8 lg:grid-cols-2">
-                  <SizePicker
-                    id={id}
-                    booking={booking}
-                    setBooking={setBooking}
-                    fieldErrors={fieldErrors}
-                  />
-                  <DatePicker
-                    blockedDates={blockedDays}
-                    setBooking={setBooking}
-                    fieldErrors={fieldErrors}
-                  />
-                </div>
-              </FormPanel>
-
-              <FormPanel
-                number={String(2 + stepOffset)}
-                title="Dostawa i dane zamawiającego"
-                description="Wybierz sposób dostawy i podaj dane do kontaktu"
-              >
-                <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-                  <section aria-labelledby="delivery-section-title">
-                    <h3
-                      id="delivery-section-title"
-                      className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
-                    >
-                      Sposób dostawy
-                    </h3>
-                    <DeliveryPicker
-                      booking={booking}
-                      setBooking={setBooking}
-                      fieldErrors={fieldErrors}
-                    />
-                  </section>
-
-                  <section
-                    aria-labelledby="customer-section-title"
-                    className="border-t-2 border-[var(--ruggy-border)] pt-7 lg:border-s-2 lg:border-t-0 lg:ps-8 lg:pt-0"
-                  >
-                    <h3
-                      id="customer-section-title"
-                      className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
-                    >
-                      Dane kontaktowe
-                    </h3>
-                    <CustomerForm
-                      booking={booking}
-                      setBooking={setBooking}
-                      fieldErrors={fieldErrors}
-                    />
-                  </section>
-                </div>
-              </FormPanel>
-
-              <FormPanel
-                number={String(3 + stepOffset)}
-                title="Materiał referencyjny"
-                description="Na końcu dodaj zdjęcie, które będzie podstawą projektu"
-              >
-                <ReferenceImageUpload
-                  file={referenceImage}
-                  setFile={setReferenceImage}
+          <FormPanel
+            number="2"
+            title="Dostawa i dane zamawiającego"
+            description="Wybierz sposób dostawy i podaj dane do kontaktu"
+          >
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+              <section aria-labelledby="delivery-section-title">
+                <h3
+                  id="delivery-section-title"
+                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
+                >
+                  Sposób dostawy
+                </h3>
+                <DeliveryPicker
+                  booking={booking}
+                  setBooking={setBooking}
+                  fieldErrors={fieldErrors}
                 />
-              </FormPanel>
-            </>
-          ) : (
-            <p className="rounded-[1.5rem] border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 text-sm font-bold text-[var(--ruggy-muted)]">
-              Wybierz podrodzaj powyżej, aby odblokować rozmiar, termin i dostawę.
-            </p>
-          )}
+              </section>
+
+              <section
+                aria-labelledby="customer-section-title"
+                className="border-t-2 border-[var(--ruggy-border)] pt-7 lg:border-s-2 lg:border-t-0 lg:ps-8 lg:pt-0"
+              >
+                <h3
+                  id="customer-section-title"
+                  className="mb-4 text-sm font-black uppercase tracking-[0.14em] text-[var(--ruggy-muted)]"
+                >
+                  Dane kontaktowe
+                </h3>
+                <CustomerForm
+                  booking={booking}
+                  setBooking={setBooking}
+                  fieldErrors={fieldErrors}
+                />
+              </section>
+            </div>
+          </FormPanel>
+
+          <FormPanel
+            number="3"
+            title="Materiał referencyjny"
+            description="Na końcu dodaj zdjęcie, które będzie podstawą projektu"
+          >
+            <ReferenceImageUpload
+              file={referenceImage}
+              setFile={setReferenceImage}
+            />
+          </FormPanel>
         </div>
 
-        {showDetails ? (
-          <div className="sticky bottom-3 z-20 mt-5 rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]/95 p-4 shadow-[0_14px_40px_rgba(31,26,22,0.18)] backdrop-blur sm:p-5">
+        <div className="sticky bottom-3 z-20 mt-5 rounded-[1.5rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]/95 p-4 shadow-[0_14px_40px_rgba(31,26,22,0.18)] backdrop-blur sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               {validationErrors.length ? (
@@ -614,8 +643,7 @@ export default function ProductPage({
                   : "Skontaktuj się ze mną"}
             </button>
           </div>
-          </div>
-        ) : null}
+        </div>
       </form>
     </main>
   );

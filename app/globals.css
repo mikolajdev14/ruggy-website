@@ -252,6 +252,100 @@
   background: var(--ruggy-yellow);
 }
 
+/* Kinetic editorial poster — papadywany subrodzaj hero. A faint oversized
+   marquee of the word runs behind headline type that rises in on load, with a
+   cobalt stitch that sews itself under the key word. */
+@keyframes ruggy-poster-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes ruggy-poster-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+}
+
+@keyframes ruggy-poster-sew {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.ruggy-poster-ribbon {
+  overflow: hidden;
+}
+
+.ruggy-poster-ribbon-track {
+  display: flex;
+  width: max-content;
+  animation: ruggy-poster-marquee 42s linear infinite;
+  will-change: transform;
+}
+
+.ruggy-poster-ribbon-half {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: lowercase;
+  color: color-mix(in srgb, var(--ruggy-ink) 7%, transparent);
+}
+
+.ruggy-poster-ribbon-star {
+  color: color-mix(in srgb, var(--ruggy-blue) 24%, transparent);
+}
+
+.ruggy-poster-title {
+  font-size: clamp(2.75rem, 8vw, 6rem);
+}
+
+.ruggy-poster-word {
+  position: relative;
+  display: inline-block;
+}
+
+.ruggy-poster-word-text {
+  display: inline-block;
+  animation: ruggy-poster-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ruggy-poster-word:nth-child(1) .ruggy-poster-word-text {
+  animation-delay: 0.12s;
+}
+
+.ruggy-poster-word:nth-child(2) .ruggy-poster-word-text {
+  animation-delay: 0.22s;
+}
+
+.ruggy-poster-word:nth-child(3) .ruggy-poster-word-text {
+  animation-delay: 0.32s;
+}
+
+.ruggy-poster-chip {
+  animation: ruggy-poster-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ruggy-poster-sub {
+  animation: ruggy-poster-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.44s both;
+}
+
+.ruggy-poster-stitch {
+  position: absolute;
+  left: -0.05em;
+  bottom: -0.18em;
+  width: calc(100% + 0.1em);
+  height: 0.32em;
+  overflow: visible;
+  clip-path: inset(0 100% 0 0);
+  animation: ruggy-poster-sew 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.62s both;
+}
+
 .ruggy-underline::after {
   position: absolute;
   inset-inline: 0;

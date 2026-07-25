@@ -129,9 +129,10 @@ export const SizePicker = ({
         setLoadError(false);
 
         if (nextSizeData.slug === PAPADYWANY_SLUG) {
-          // The subrodzaj is chosen deliberately in SubcategoryPicker, and the
-          // popular size is defaulted by the effect below once it is picked, so
-          // nothing is auto-selected here.
+          // The subrodzaj is chosen on /zamow/[id]/podrodzaj and arrives as the
+          // ?variant= param (mirrored into booking.rugVariantId by the page);
+          // the popular size is defaulted by the effect below, so nothing is
+          // auto-selected here.
         } else if (usesDirectCheckout(nextSizeData.slug)) {
           const availableSizes = getActiveSizes(nextSizeData.rug_sizes);
 
@@ -185,7 +186,7 @@ export const SizePicker = ({
     booking.customHeightCm,
   );
 
-  // Once a papadywany subrodzaj is chosen (in SubcategoryPicker), default its
+  // Once a papadywany subrodzaj is set (via the ?variant= param), default its
   // size to the popular format — but only while none is picked, so a manual
   // choice and a subrodzaj switch (which clears the size) both behave correctly.
   useEffect(() => {

@@ -87,6 +87,9 @@ export default async function ZamowPage() {
           <ul className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
             {rugTypes.map((rug) => {
               const isCheckout = usesDirectCheckout(rug.slug);
+              const hasSubcategories = (rug.rug_variants ?? []).some(
+                (variant) => variant.is_active !== false,
+              );
 
               return (
                 <li key={rug.id}>
@@ -97,6 +100,7 @@ export default async function ZamowPage() {
                     description={rug.description}
                     leadDays={rug.lead_time_days}
                     mode={isCheckout ? "checkout" : "quote"}
+                    hasSubcategories={hasSubcategories}
                     fromPriceCents={
                       isCheckout
                         ? minActivePriceCents(rug.rug_sizes, rug.rug_variants)

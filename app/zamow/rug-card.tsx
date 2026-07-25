@@ -14,15 +14,21 @@ interface RugProps {
   leadDays: number;
   mode: RugOrderMode;
   fromPriceCents: number | null;
+  hasSubcategories?: boolean;
 }
 
 export const RugCard = (props: RugProps) => {
   const cover = getCategoryCover(props.slug);
   const isCheckout = props.mode === "checkout";
+  // Types with subrodzajs (papadywany) pick one on a dedicated page first;
+  // everything else goes straight to the details form.
+  const href = props.hasSubcategories
+    ? `/zamow/${props.id}/podrodzaj`
+    : `/zamow/${props.id}`;
 
   return (
     <Link
-      href={`/zamow/${props.id}`}
+      href={href}
       className="group flex h-full flex-col overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] shadow-[5px_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-white">
