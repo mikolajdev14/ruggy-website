@@ -9,6 +9,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import Link from "next/link";
+import { PosterHero } from "@/components/poster-hero";
 import { type FormEvent, use, useState } from "react";
 import { createAgreedProjectCheckout } from "./actions";
 
@@ -95,17 +96,20 @@ export default function AgreedProjectPaymentPage({
 
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-9 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--ruggy-yellow)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em]">
-            <CreditCard className="size-4" aria-hidden="true" />
-            Uzgodniony projekt
-          </span>
-          <h1 className="mt-5 max-w-2xl text-3xl font-black tracking-[-0.03em] sm:text-5xl">
-            Zapłać ustaloną kwotę za swój dywan.
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--ruggy-body)]">
-            Ta płatność jest przeznaczona dla projektu, którego szczegóły i cenę
-            ustaliłem już z Tobą wcześniej.
-          </p>
+          <PosterHero
+            icon={CreditCard}
+            eyebrow="Uzgodniony projekt"
+            words={[
+              { text: "Zapłać" },
+              { text: "ustaloną" },
+              { text: "kwotę", emphasis: true },
+              { text: "za" },
+              { text: "swój" },
+              { text: "dywan." },
+            ]}
+            description="Ta płatność jest przeznaczona dla projektu, którego szczegóły i cenę ustaliłem już z Tobą wcześniej."
+            ribbonWord="dywan"
+          />
 
           <form
             onSubmit={handleSubmit}

@@ -4,6 +4,7 @@ import { usesDirectCheckout } from "@/lib/rug-order-mode";
 import { ArrowLeft, ArrowRight, CreditCard, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PosterHero } from "@/components/poster-hero";
 import { RugCard } from "./rug-card";
 
 type RugSizeRow = { price_cents: number | string; is_active: boolean | null };
@@ -61,18 +62,19 @@ export default async function ZamowPage() {
       </header>
 
       <section className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
-        <div className="ruggy-thread-bg rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] p-7 shadow-[7px_8px_0_var(--ruggy-ink)] sm:p-10">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--ruggy-yellow)] px-4 py-2 text-xs font-black uppercase tracking-[0.16em]">
-            <Sparkles className="size-4" aria-hidden="true" />
-            Krok pierwszy
-          </span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">
-            Wybierz bazę dla swojego pomysłu.
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--ruggy-body)] sm:text-lg">
-            Przejrzyj dostępne warianty. Rozmiar, inspirację, termin i dostawę ustawisz spokojnie w kolejnym kroku.
-          </p>
-        </div>
+        <PosterHero
+          icon={Sparkles}
+          eyebrow="Krok pierwszy"
+          words={[
+            { text: "Wybierz" },
+            { text: "bazę", emphasis: true },
+            { text: "dla" },
+            { text: "swojego" },
+            { text: "pomysłu." },
+          ]}
+          description="Przejrzyj dostępne warianty. Rozmiar, inspirację, termin i dostawę ustawisz spokojnie w kolejnym kroku."
+          ribbonWord="dywany"
+        />
 
         {error ? (
           <div className="mt-10 rounded-2xl border-2 border-[var(--ruggy-error)] bg-[var(--ruggy-surface)] p-6">

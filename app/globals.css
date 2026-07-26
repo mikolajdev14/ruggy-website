@@ -302,7 +302,7 @@
 }
 
 .ruggy-poster-title {
-  font-size: clamp(2.75rem, 8vw, 6rem);
+  font-size: clamp(2.75rem, 9.5vw, 7.5rem);
 }
 
 .ruggy-poster-word {
@@ -312,38 +312,50 @@
 
 .ruggy-poster-word-text {
   display: inline-block;
+  /* per-word animation-delay is set inline so any word count staggers cleanly */
   animation: ruggy-poster-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.ruggy-poster-word:nth-child(1) .ruggy-poster-word-text {
-  animation-delay: 0.12s;
-}
-
-.ruggy-poster-word:nth-child(2) .ruggy-poster-word-text {
-  animation-delay: 0.22s;
-}
-
-.ruggy-poster-word:nth-child(3) .ruggy-poster-word-text {
-  animation-delay: 0.32s;
-}
-
-.ruggy-poster-chip {
+.ruggy-poster-kicker {
   animation: ruggy-poster-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .ruggy-poster-sub {
-  animation: ruggy-poster-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.44s both;
+  animation: ruggy-poster-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
 }
 
-.ruggy-poster-stitch {
+/* Hand-swiped sunflower highlight behind the key word — wipes in after it lands. */
+.ruggy-poster-mark {
   position: absolute;
-  left: -0.05em;
-  bottom: -0.18em;
-  width: calc(100% + 0.1em);
-  height: 0.32em;
-  overflow: visible;
+  inset-inline: -0.08em;
+  top: 0.44em;
+  bottom: 0.08em;
+  border-radius: 0.16em 0.24em 0.13em 0.2em;
+  background: var(--ruggy-yellow);
+  transform: rotate(-1.3deg);
   clip-path: inset(0 100% 0 0);
-  animation: ruggy-poster-sew 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.62s both;
+  animation: ruggy-poster-sew 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.55s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruggy-poster-ribbon-track,
+  .ruggy-poster-word-text,
+  .ruggy-poster-kicker,
+  .ruggy-poster-sub,
+  .ruggy-poster-mark {
+    animation: none !important;
+  }
+
+  .ruggy-poster-word-text,
+  .ruggy-poster-kicker,
+  .ruggy-poster-sub {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ruggy-poster-mark {
+    clip-path: none;
+  }
 }
 
 .ruggy-underline::after {
