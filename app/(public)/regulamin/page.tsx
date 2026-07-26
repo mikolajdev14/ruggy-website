@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/regulamin" },
 };
 
-const documentContent = `Szanowny Kliencie, niniejszy Regulamin reguluje sposób zawierania umów sprzedaży za pośrednictwem wyżej wymienionej strony internetowej, zasady realizacji tych umów, w tym dostawy, prawa i obowiązki wynikające z obowiązującego prawa oraz tryb odstąpienia od umowy i postępowania reklamacyjnego. Regulamin składa się z czterech głównych części:
+const documentContent = `Sprzedawcą prowadzącym niniejszy sklep internetowy oraz Administratorem danych osobowych Klientów jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt ze Sprzedawcą: e-mail kontakt@rugsly.eu oraz Instagram @ruggy.pl (https://www.instagram.com/ruggy.pl/).
+
+Szanowny Kliencie, niniejszy Regulamin reguluje sposób zawierania umów sprzedaży za pośrednictwem wyżej wymienionej strony internetowej, zasady realizacji tych umów, w tym dostawy, prawa i obowiązki wynikające z obowiązującego prawa oraz tryb odstąpienia od umowy i postępowania reklamacyjnego. Regulamin składa się z czterech głównych części:
 
 w § od 1 do 3 — znajdują się ogólne uregulowania niniejszego Regulaminu;
 w § od 4 do 7 — został opisany proces nabycia Towaru/Usług;
@@ -15,8 +17,8 @@ w § od 8 do 12 — zawarto regulacje związane ze stwierdzeniem wadliwości Tow
 w § od 13 do 14 — zawarto wszystkie pozostałe uregulowania.
 §1. Podstawowe definicje
 Sklep internetowy – sklep znajdujący się pod adresem niniejszej strony internetowej.
-Sprzedawca – właściciel strony internetowej. Konsument dokonuje nabycia towaru/usługi od przedsiębiorcy, którego dane zostały wskazane w zakładce kontakt.
-Adres Sprzedawcy – ilekroć w Regulaminie jest mowa o adresie Sprzedawcy, rozumie się przez to siedzibę oraz adres mailowy wskazane w zakładce kontakt.
+Sprzedawca – RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, właściciel niniejszej strony internetowej i sklepu internetowego, od którego Klient nabywa Towar/Usługę.
+Adres Sprzedawcy – adres siedziby: Dorohucza 26A, 21-044 Trawniki, oraz adres poczty elektronicznej: kontakt@rugsly.eu.
 Klient – osoba fizyczna posiadająca pełną zdolność do czynności prawnych, a w wypadkach przewidzianych przez przepisy powszechnie obowiązujące także osoba fizyczna posiadająca ograniczoną zdolność do czynności prawnych, osoba prawna albo jednostka organizacyjna nieposiadająca osobowości prawnej, której ustawa przyznaje zdolność prawną, która zawarła lub zamierza zawrzeć umowę sprzedaży.
 Konsument – art. 22(1) KC: osoba fizyczna dokonująca ze Sprzedawcą czynności prawnej niezwiązanej bezpośrednio z jej działalnością gospodarczą lub zawodową.
 Umowa sprzedaży – umowa sprzedaży Produktu zamieszczonego na stronie w/w Sklepu internetowego, zawierana albo zawarta między Klientem a Sprzedawcą za pośrednictwem Sklepu internetowego.
@@ -25,7 +27,7 @@ Zamówienie – oświadczenie woli Klienta, złożone za pośrednictwem Sklepu i
 Formularz zamówienia – elektroniczna usługa, formularz na nośniku elektronicznym dostępny w Sklepie internetowym, umożliwiający złożenie i realizację Zamówienia, między innymi za pomocą dodawania Produktów do elektronicznego koszyka oraz określający warunki Umowy Sprzedaży, w tym sposób dostawy i płatności.
 Czas realizacji zamówienia – czas, w jakim zamówienie złożone przez Klienta Sklepu internetowego zostanie skompletowane, zapakowane, opieczętowane przez Sprzedawcę i przekazane do doręczenia wybraną przez Klienta formą dostawy.
 Dzień roboczy – jeden dzień od poniedziałku do piątku, z wyłączeniem dni ustawowo wolnych od pracy.
-Obniżki cen – ewentualne rabaty, promocje i obniżki cen można sprawdzić na wykresie przy wyświetlanej cenie produktu. Historia ceny możliwa będzie do obejrzenia przez 30 dni wstecz. Zapis cen następuje w sposób weryfikowalny i automatyczny.
+Obniżki cen – w przypadku ogłoszenia obniżki ceny Towaru Sprzedawca podaje obok aktualnej ceny również najniższą cenę tego Towaru, jaka obowiązywała w okresie 30 dni przed wprowadzeniem obniżki, zgodnie z obowiązującymi przepisami (tzw. dyrektywa Omnibus).
 Ceny – ceny produktów w e-sklepie są stałe w danym czasie i nie wpływają na nie żadne algorytmy ustalania cen, niezależnie od tego, jak klient trafia na stronę i jakich przeglądarek używa. Nie ma też znaczenia płeć, wiek itp.
 Ustawa o prawach Konsumenta, ustawa – ustawa z dnia 30 maja 2014 r. o prawach Konsumenta (Dz.U. z 2014 r. poz. 827 z późniejszymi zmianami).
 §2. Postanowienia ogólne

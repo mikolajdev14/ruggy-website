@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Booking, DeliveryMethod } from "./page";
+import { radioTabIndex, useRadioGroupKeys } from "@/components/use-radio-group";
 import {
   buildFieldClass,
   FieldError,
@@ -51,12 +52,23 @@ export const DeliveryPicker = ({
 
   const labelClassName = "text-sm font-black text-[var(--ruggy-ink)]";
   const methodError = fieldErrors.deliveryMethod;
+  const anyChecked = booking.deliveryMethod !== "";
+  const selectedIndex = options.findIndex(
+    (option) => option.value === booking.deliveryMethod,
+  );
+  const { containerRef, onKeyDown } = useRadioGroupKeys(
+    options.map((option) => option.value),
+    selectedIndex,
+    (value) => selectMethod(value),
+  );
 
   return (
     <section className="space-y-4">
       <div
+        ref={containerRef}
+        onKeyDown={onKeyDown}
         className="grid gap-3 sm:grid-cols-2"
-        role="group"
+        role="radiogroup"
         aria-label="Sposób dostawy"
         aria-describedby={
           methodError ? fieldErrorId("deliveryMethod") : undefined
@@ -69,10 +81,12 @@ export const DeliveryPicker = ({
             <button
               key={option.value}
               type="button"
-              aria-pressed={isSelected}
+              role="radio"
+              aria-checked={isSelected}
+              tabIndex={radioTabIndex(isSelected, index === 0, anyChecked)}
               data-field={index === 0 ? "deliveryMethod" : undefined}
               onClick={() => selectMethod(option.value)}
-              className={`relative rounded-2xl border-2 p-4 text-left transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
+              className={`relative rounded-2xl border-2 p-4 text-start transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
                 isSelected
                   ? "border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] shadow-[3px_4px_0_var(--ruggy-ink)]"
                   : methodError

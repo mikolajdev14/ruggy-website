@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { PosterHero } from "@/components/poster-hero";
+import { radioTabIndex, useRadioGroupKeys } from "@/components/use-radio-group";
 import { type FormEvent, use, useState } from "react";
 import { createAgreedProjectCheckout } from "./actions";
 
@@ -44,6 +45,13 @@ export default function AgreedProjectPaymentPage({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const parsedAmount = amount === "" ? null : Number(amount);
+  const selectedAmountIndex = suggestedAmounts.findIndex(
+    (suggestedAmount) => parsedAmount === suggestedAmount,
+  );
+  const { containerRef: amountGroupRef, onKeyDown: onAmountKeyDown } =
+    useRadioGroupKeys(suggestedAmounts, selectedAmountIndex, (value) =>
+      setAmount(String(value)),
+    );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -117,15 +125,27 @@ export default function AgreedProjectPaymentPage({
           >
             <fieldset>
               <legend className="text-base font-black">Ustalona kwota</legend>
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {suggestedAmounts.map((suggestedAmount) => {
+              <div
+                ref={amountGroupRef}
+                onKeyDown={onAmountKeyDown}
+                className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6"
+                role="radiogroup"
+                aria-label="Sugerowana kwota"
+              >
+                {suggestedAmounts.map((suggestedAmount, index) => {
                   const isSelected = parsedAmount === suggestedAmount;
 
                   return (
                     <button
                       key={suggestedAmount}
                       type="button"
-                      aria-pressed={isSelected}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={radioTabIndex(
+                        isSelected,
+                        index === 0,
+                        selectedAmountIndex !== -1,
+                      )}
                       onClick={() => setAmount(String(suggestedAmount))}
                       className={`relative min-h-11 rounded-xl border-2 px-2 text-sm font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-blue)] ${
                         isSelected

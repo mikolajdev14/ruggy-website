@@ -67,6 +67,15 @@ type RugTypeSummary = {
   lead_time_days: number | null;
 };
 
+// The size label/price and the chosen papadywany subrodzaj are fetched inside
+// SizePicker; it reports the resolved selection back up so the sticky summary
+// and hero can confirm exactly what the customer is buying before checkout.
+export type ResolvedSelection = {
+  sizeLabel: string | null;
+  sizePriceCents: number | null;
+  variantName: string | null;
+};
+
 const collectValidationMessages = (error: {
   issues: Array<{ message: string }>;
 }): string[] => {
@@ -136,6 +145,11 @@ export default function ProductPage({
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAntiSlipOfferOpen, setIsAntiSlipOfferOpen] = useState(false);
+  const [resolvedSelection, setResolvedSelection] = useState<ResolvedSelection>({
+    sizeLabel: null,
+    sizePriceCents: null,
+    variantName: null,
+  });
   const [prevVariantParam, setPrevVariantParam] = useState(preselectedVariantId);
   const [booking, setBooking] = useState<Booking>({
     rugTypeId: id,
@@ -373,7 +387,13 @@ export default function ProductPage({
     booking.customHeightCm,
   );
   const selectedSize = booking.pickedSize
-    ? "Gotowy rozmiar"
+    ? resolvedSelection.sizeLabel
+      ? resolvedSelection.sizePriceCents != null
+        ? `${resolvedSelection.sizeLabel} · ${formatPriceCents(
+            resolvedSelection.sizePriceCents,
+          )}`
+        : resolvedSelection.sizeLabel
+      : "Gotowy rozmiar"
     : customPriceCents
       ? `${
           booking.customWidthCm != null
@@ -469,11 +489,18 @@ export default function ProductPage({
 
           <div className="border-s-2 border-[var(--ruggy-ink)] ps-4">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--ruggy-muted)]">
-              Wybrany wariant
+              {isPapadywany ? "Wybrany podrodzaj" : "Wybrany wariant"}
             </p>
             <p className="mt-1 text-base font-black text-[var(--ruggy-ink)]">
-              {rugType?.name || `Wariant #${id}`}
+              {isPapadywany && resolvedSelection.variantName
+                ? resolvedSelection.variantName
+                : rugType?.name || `Wariant #${id}`}
             </p>
+            {isPapadywany && resolvedSelection.variantName ? (
+              <p className="mt-0.5 text-xs font-bold text-[var(--ruggy-muted)]">
+                {rugType?.name}
+              </p>
+            ) : null}
             {rugType?.lead_time_days ? (
               <p className="mt-0.5 text-xs text-[var(--ruggy-muted)]">
                 Około {rugType.lead_time_days} dni realizacji
@@ -506,6 +533,7 @@ export default function ProductPage({
                 booking={booking}
                 setBooking={setBooking}
                 fieldErrors={fieldErrors}
+                onSelectionResolved={setResolvedSelection}
               />
               <DatePicker
                 blockedDates={blockedDays}
@@ -866,7 +894,7 @@ function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
         <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Link
             href="/zamow"
-            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)]"
+            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
           >
             Wróć do wariantów
           </Link>
@@ -874,7 +902,7 @@ function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
             ref={acceptButtonRef}
             type="button"
             onClick={onAccept}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-opacity hover:opacity-85"
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
           >
             Rozumiem, przechodzę dalej
           </button>

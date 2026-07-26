@@ -56,7 +56,7 @@ const css = `
 
   .order-calendar .my-disabled .rdp-day_button,
   .order-calendar .rdp-disabled .rdp-day_button {
-    color: var(--ruggy-border-strong);
+    color: var(--ruggy-muted);
     text-decoration: line-through;
   }
 `;

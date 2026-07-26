@@ -15,7 +15,8 @@ import {
   usesDirectCheckout,
 } from "@/lib/rug-order-mode";
 import { getPopularRugSizeLabel } from "@/lib/popular-rug-sizes";
-import type { Booking } from "./page";
+import { radioTabIndex, useRadioGroupKeys } from "@/components/use-radio-group";
+import type { Booking, ResolvedSelection } from "./page";
 import {
   buildFieldClass,
   FieldError,
@@ -52,6 +53,7 @@ type SizePickerProps = {
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
   fieldErrors?: FieldErrors;
+  onSelectionResolved?: Dispatch<SetStateAction<ResolvedSelection>>;
 };
 
 const getActiveSizes = (sizes: RugSize[]) =>
@@ -90,6 +92,7 @@ export const SizePicker = ({
   booking,
   setBooking,
   fieldErrors = {},
+  onSelectionResolved,
 }: SizePickerProps) => {
   const [sizeData, setSizeData] = useState<SizeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -186,6 +189,38 @@ export const SizePicker = ({
     booking.customHeightCm,
   );
 
+  // Report the resolved selection (real size label/price + chosen subrodzaj) up
+  // so the sticky summary and hero confirm what is being bought. The functional
+  // update bails out when nothing changed, so a stable setState setter here can
+  // never loop.
+  const selectedSize = availableSizes.find(
+    (size) => size.id === booking.pickedSize,
+  );
+  const resolvedSizeLabel = selectedSize?.label ?? null;
+  const resolvedSizePriceCents = selectedSize
+    ? Number(selectedSize.price_cents)
+    : null;
+  const resolvedVariantName = selectedVariant?.name ?? null;
+
+  useEffect(() => {
+    onSelectionResolved?.((previous) =>
+      previous.sizeLabel === resolvedSizeLabel &&
+      previous.sizePriceCents === resolvedSizePriceCents &&
+      previous.variantName === resolvedVariantName
+        ? previous
+        : {
+            sizeLabel: resolvedSizeLabel,
+            sizePriceCents: resolvedSizePriceCents,
+            variantName: resolvedVariantName,
+          },
+    );
+  }, [
+    resolvedSizeLabel,
+    resolvedSizePriceCents,
+    resolvedVariantName,
+    onSelectionResolved,
+  ]);
+
   // Once a papadywany subrodzaj is set (via the ?variant= param), default its
   // size to the popular format — but only while none is picked, so a manual
   // choice and a subrodzaj switch (which clears the size) both behave correctly.
@@ -226,6 +261,16 @@ export const SizePicker = ({
       customHeightCm: null,
     }));
   };
+
+  const selectedSizeIndex = availableSizes.findIndex(
+    (size) => size.id === booking.pickedSize,
+  );
+  const { containerRef: sizeGroupRef, onKeyDown: onSizeKeyDown } =
+    useRadioGroupKeys(
+      availableSizes.map((size) => size.id),
+      selectedSizeIndex,
+      (sizeId) => choosePresetSize(sizeId),
+    );
 
   const updateCustomDimension = (
     field: "customWidthCm" | "customHeightCm",
@@ -380,8 +425,14 @@ export const SizePicker = ({
               Wybierz podrodzaj, aby zobaczyć dostępne rozmiary.
             </div>
           ) : availableSizes.length ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {availableSizes.map((size) => {
+            <div
+              ref={sizeGroupRef}
+              onKeyDown={onSizeKeyDown}
+              className="grid gap-3 sm:grid-cols-2"
+              role="radiogroup"
+              aria-labelledby="size-picker-title"
+            >
+              {availableSizes.map((size, index) => {
                 const isSelected = booking.pickedSize === size.id;
                 const isPopular =
                   sizeData != null &&
@@ -395,7 +446,13 @@ export const SizePicker = ({
                   <button
                     key={size.id}
                     type="button"
-                    aria-pressed={isSelected}
+                    role="radio"
+                    aria-checked={isSelected}
+                    tabIndex={radioTabIndex(
+                      isSelected,
+                      index === 0,
+                      booking.pickedSize != null,
+                    )}
                     onClick={() => choosePresetSize(size.id)}
                     className={`relative flex min-h-20 items-center justify-between gap-4 rounded-2xl border-2 p-4 text-start transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)] ${
                       isSelected
