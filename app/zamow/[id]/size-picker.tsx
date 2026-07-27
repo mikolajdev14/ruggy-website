@@ -431,6 +431,7 @@ export const SizePicker = ({
               className="grid gap-3 sm:grid-cols-2"
               role="radiogroup"
               aria-labelledby="size-picker-title"
+              aria-describedby="size-longer-side-note"
             >
               {availableSizes.map((size, index) => {
                 const isSelected = booking.pickedSize === size.id;
@@ -468,6 +469,12 @@ export const SizePicker = ({
                     <span>
                       <span className="block text-base font-black text-[var(--ruggy-ink)]">
                         {size.label}
+                        <span
+                          aria-hidden="true"
+                          className="ms-0.5 align-super text-xs text-(--ruggy-blue)"
+                        >
+                          *
+                        </span>
                       </span>
                       <span className="mt-1 block text-sm font-bold text-[var(--ruggy-body)]">
                         Gotowy format Ruggy
@@ -490,6 +497,15 @@ export const SizePicker = ({
               Brak dostępnych rozmiarów dla tego wariantu.
             </div>
           )}
+
+          {availableSizes.length ? (
+            <p
+              id="size-longer-side-note"
+              className="text-xs leading-5 text-(--ruggy-body)"
+            >
+              * Podany wymiar to dłuższy bok dywanu.
+            </p>
+          ) : null}
         </div>
       )}
     </section>
