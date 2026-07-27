@@ -264,15 +264,8 @@
   background: var(--ruggy-yellow);
 }
 
-/* Kinetic editorial poster — papadywany subrodzaj hero. A faint oversized
-   marquee of the word runs behind headline type that rises in on load, with a
-   cobalt stitch that sews itself under the key word. */
-@keyframes ruggy-poster-marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
+/* Kinetic editorial poster — headline type that rises in on load, with a cobalt
+   stitch that sews itself under the key word. */
 @keyframes ruggy-poster-rise {
   from {
     opacity: 0;
@@ -284,33 +277,6 @@
   to {
     clip-path: inset(0 0 0 0);
   }
-}
-
-.ruggy-poster-ribbon {
-  overflow: hidden;
-}
-
-.ruggy-poster-ribbon-track {
-  display: flex;
-  width: max-content;
-  animation: ruggy-poster-marquee 42s linear infinite;
-  will-change: transform;
-}
-
-.ruggy-poster-ribbon-half {
-  display: flex;
-  flex: none;
-  white-space: nowrap;
-  font-size: clamp(3rem, 10vw, 7rem);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  text-transform: lowercase;
-  color: color-mix(in srgb, var(--ruggy-ink) 7%, transparent);
-}
-
-.ruggy-poster-ribbon-star {
-  color: color-mix(in srgb, var(--ruggy-blue) 24%, transparent);
 }
 
 .ruggy-poster-title {
@@ -350,7 +316,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ruggy-poster-ribbon-track,
   .ruggy-poster-word-text,
   .ruggy-poster-kicker,
   .ruggy-poster-sub,
@@ -367,6 +332,49 @@
 
   .ruggy-poster-mark {
     clip-path: none;
+  }
+}
+
+/* Diabełek na ramieniu — a faint marquee of excuses drifting behind the
+   masthead headline, where the single repeated word used to run. Set far
+   enough back to stay texture rather than something to read; the emoji gets
+   its own opacity because a full-colour glyph would punch through the ghosted
+   ink the words are set in. */
+@keyframes ruggy-whisper-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ruggy-whisper {
+  overflow: hidden;
+}
+
+.ruggy-whisper-track {
+  display: flex;
+  width: max-content;
+  animation: ruggy-whisper-marquee 64s linear infinite;
+  will-change: transform;
+}
+
+.ruggy-whisper-half {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  font-size: clamp(1.75rem, 5vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--ruggy-ink) 8%, transparent);
+}
+
+.ruggy-whisper-devil {
+  opacity: 0.16;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruggy-whisper-track {
+    animation: none !important;
   }
 }
 

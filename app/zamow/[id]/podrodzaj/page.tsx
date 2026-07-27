@@ -99,7 +99,6 @@ export default async function PodrodzajPage({
             { text: "papadywanu." },
           ]}
           description="Każdy motyw ma swój charakter i cenę. Wybierz ten, który do Ciebie mówi — rozmiar, termin i dostawę ustawisz w kolejnym kroku."
-          ribbonWord="papadywany"
         />
 
         {variants.length ? (

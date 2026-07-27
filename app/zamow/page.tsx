@@ -73,7 +73,6 @@ export default async function ZamowPage() {
             { text: "pomysłu." },
           ]}
           description="Przejrzyj dostępne warianty. Rozmiar, inspirację, termin i dostawę ustawisz spokojnie w kolejnym kroku."
-          ribbonWord="dywany"
         />
 
         {error ? (

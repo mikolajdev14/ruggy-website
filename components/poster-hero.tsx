@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import type { LucideIcon } from "lucide-react";
+import { TemptationWhisper } from "@/components/temptation-whisper";
 
 type PosterWord = { text: string; emphasis?: boolean };
 
@@ -8,41 +9,23 @@ interface PosterHeroProps {
   eyebrow: string;
   words: PosterWord[];
   description: string;
-  ribbonWord: string;
 }
 
 // Colossal canvas masthead: no container, no badge — the headline itself is the
 // hero, set at full-bleed editorial scale straight on the canvas. A faint
-// oversized marquee of `ribbonWord` ghosts behind it, the words rise in one by
-// one, and a hand-swiped sunflower highlight wipes in under the emphasised word.
-// A small inline kicker carries the step label. Motion is CSS-only (globals.css)
-// and fully disabled under prefers-reduced-motion.
+// marquee of temptations ghosts behind it, the words rise in one by one, and a
+// hand-swiped sunflower highlight wipes in under the emphasised word. A small
+// inline kicker carries the step label. Motion is CSS-only (globals.css) and
+// fully disabled under prefers-reduced-motion.
 export function PosterHero({
   icon: Icon,
   eyebrow,
   words,
   description,
-  ribbonWord,
 }: PosterHeroProps) {
   return (
     <div className="ruggy-masthead relative isolate overflow-hidden py-2 sm:py-4">
-      <div
-        aria-hidden="true"
-        className="ruggy-poster-ribbon pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 select-none"
-      >
-        <div className="ruggy-poster-ribbon-track">
-          {[0, 1].map((half) => (
-            <div key={half} className="ruggy-poster-ribbon-half">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <span key={index}>
-                  {ribbonWord}{" "}
-                  <span className="ruggy-poster-ribbon-star">✷</span>{" "}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      <TemptationWhisper />
 
       <div className="relative z-10">
         <p className="ruggy-poster-kicker flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.22em] text-[var(--ruggy-blue)]">

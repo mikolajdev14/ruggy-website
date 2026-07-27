@@ -116,7 +116,6 @@ export default function AgreedProjectPaymentPage({
               { text: "dywan." },
             ]}
             description="Ta płatność jest przeznaczona dla projektu, którego szczegóły i cenę ustaliłem już z Tobą wcześniej."
-            ribbonWord="dywan"
           />
 
           <form
