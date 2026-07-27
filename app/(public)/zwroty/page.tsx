@@ -7,13 +7,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/zwroty" },
 };
 
-const documentContent = `§1. Prawo do odstąpienia od umowy
+const documentContent = `Sprzedawcą jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt w sprawie zwrotów i reklamacji: e-mail kontakt@rugsly.eu.
+
+§1. Prawo do odstąpienia od umowy
 Klient będący konsumentem ma prawo odstąpić od umowy zawartej na odległość bez podawania przyczyny w terminie 14 dni od dnia otrzymania produktu (art. 27 Ustawy z dnia 30 maja 2014 r. o prawach konsumenta).
 Termin 14 dni liczony jest od dnia, w którym Klient (lub wskazana przez niego osoba inna niż przewoźnik) objął produkt w posiadanie. Dla zamówień obejmujących wiele produktów dostarczanych osobno — od objęcia w posiadanie ostatniego produktu.
 Do zachowania terminu wystarczy wysłanie oświadczenia o odstąpieniu przed jego upływem.
 §2. Wyłączenia — produkty na zamówienie
 Zgodnie z art. 38 pkt 3 Ustawy o prawach konsumenta, prawo odstąpienia NIE przysługuje w odniesieniu do produktów wykonanych według specyfikacji Konsumenta lub wyraźnie spersonalizowanych — dotyczy to dywanów tworzonych na indywidualne zamówienie (custom).
-Prawo odstąpienia nie przysługuje również w przypadku biletów na warsztaty z oznaczonym terminem (świadczenie usługi w określonym dniu — art. 38 pkt 12 Ustawy).
 Produkty gotowe, dostępne w sklepie „od ręki” (nie personalizowane), podlegają standardowemu prawu zwrotu opisanemu w §1.
 W razie wątpliwości, czy dany produkt podlega zwrotowi, prosimy o kontakt przed złożeniem zamówienia: kontakt@rugsly.eu.
 §3. Jak dokonać zwrotu — krok po kroku

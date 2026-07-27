@@ -51,6 +51,18 @@
   }
 }
 
+/* The home wrapper clips its horizontal overflow rather than hiding it.
+   `overflow-x: hidden` resolves overflow-y to `auto`, which turns the wrapper
+   into a scroll container and silently breaks `position: sticky` for every
+   descendant. `clip` contains the same overflow without that side effect.
+   Browsers without `clip` keep the old behaviour: no sticky, but no
+   horizontal scrollbar either. */
+@supports not (overflow: clip) {
+  [data-ruggy-home] {
+    overflow-x: hidden;
+  }
+}
+
 .font-lobster {
   font-family: var(--font-lobster);
 }
@@ -356,6 +368,296 @@
   .ruggy-poster-mark {
     clip-path: none;
   }
+}
+
+/* Cztery kroki — a cobalt thread stitched down the process as the visitor
+   scrolls. Every value below is a resting state: with no JS and no
+   [data-rail-live], the thread reads as fully drawn and all four steps sit in
+   one calm, legible state. */
+.ruggy-rail {
+  --rail-gutter: 1.75rem;
+  --rail-stitch: 0.8125rem;
+  --rail-progress: 1;
+  --rail-top: 0px;
+  /* Spans the whole rail until the controller measures the real stitch
+     positions, so the thread is drawn even when no script ever runs. */
+  --rail-span: 100%;
+}
+
+@media (min-width: 640px) {
+  .ruggy-rail {
+    --rail-gutter: 3rem;
+    --rail-stitch: 0.9375rem;
+  }
+}
+
+.ruggy-rail-list {
+  padding-inline-start: var(--rail-gutter);
+}
+
+/* Guide line: the dashed run of a tufting stitch waiting to be filled. */
+.ruggy-rail-thread {
+  position: absolute;
+  top: var(--rail-top);
+  left: calc(var(--rail-gutter) / 2 - 1px);
+  width: 2px;
+  height: var(--rail-span);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--ruggy-border-strong) 0 0.375rem,
+    transparent 0.375rem 0.75rem
+  );
+}
+
+.ruggy-rail-yarn {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ruggy-radius-full);
+  background: var(--ruggy-blue);
+  transform: scaleY(var(--rail-progress));
+  transform-origin: top center;
+  will-change: transform;
+}
+
+/* The needle knot riding the tip of the thread. The one place sunflower is
+   allowed in this section, so it always reads as the live element. */
+.ruggy-rail-knot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--rail-stitch);
+  height: var(--rail-stitch);
+  margin-top: calc(var(--rail-stitch) / -2);
+  margin-left: calc(var(--rail-stitch) / -2);
+  border: 0.125rem solid var(--ruggy-ink);
+  border-radius: var(--ruggy-radius-full);
+  background: var(--ruggy-yellow);
+  opacity: 0;
+  /* Rides over the stitches it passes, so the needle never disappears behind
+     the step it has just reached. */
+  z-index: 1;
+  transform: translateY(calc(var(--rail-progress) * var(--rail-span)));
+  will-change: transform;
+}
+
+.ruggy-rail[data-rail-live] .ruggy-rail-knot {
+  opacity: 1;
+}
+
+.ruggy-rail-stitch {
+  position: absolute;
+  top: 50%;
+  left: calc((var(--rail-gutter) + var(--rail-stitch)) / -2);
+  width: var(--rail-stitch);
+  height: var(--rail-stitch);
+  margin-top: calc(var(--rail-stitch) / -2);
+  border: 0.125rem solid var(--ruggy-blue);
+  border-radius: var(--ruggy-radius-full);
+  background: var(--ruggy-blue);
+  transition:
+    background-color var(--ruggy-duration-slow) var(--ruggy-ease),
+    border-color var(--ruggy-duration-slow) var(--ruggy-ease),
+    transform var(--ruggy-duration-slow) var(--ruggy-ease);
+}
+
+.ruggy-rail-card {
+  border-color: var(--ruggy-border-strong);
+  background: var(--ruggy-surface);
+  transition:
+    border-color var(--ruggy-duration-slow) var(--ruggy-ease),
+    background-color var(--ruggy-duration-slow) var(--ruggy-ease),
+    box-shadow var(--ruggy-duration-slow) var(--ruggy-ease),
+    transform var(--ruggy-duration-slow) var(--ruggy-ease);
+}
+
+.ruggy-rail-number {
+  color: var(--ruggy-blue-soft-strong);
+  transition: color var(--ruggy-duration-slow) var(--ruggy-ease);
+}
+
+.ruggy-rail-icon {
+  background: var(--ruggy-blue-soft);
+  color: var(--ruggy-blue);
+  transition:
+    background-color var(--ruggy-duration-slow) var(--ruggy-ease),
+    color var(--ruggy-duration-slow) var(--ruggy-ease);
+}
+
+/* Steps the thread has not reached yet settle back into the canvas. Only the
+   chrome recedes — copy keeps its full contrast at every state. */
+.ruggy-rail[data-rail-live] [data-rail-state="ahead"] {
+  border-color: var(--ruggy-border);
+  background: color-mix(in srgb, var(--ruggy-surface) 45%, var(--ruggy-canvas));
+}
+
+.ruggy-rail[data-rail-live] [data-rail-state="ahead"] .ruggy-rail-stitch {
+  border-color: var(--ruggy-border-strong);
+  background: var(--ruggy-canvas);
+}
+
+/* Three tiers down the rail: neutral ahead, cobalt on the step you are on,
+   soft blue once the thread has passed it. */
+.ruggy-rail[data-rail-live] [data-rail-state="ahead"] .ruggy-rail-number {
+  color: color-mix(in srgb, var(--ruggy-border-strong) 55%, var(--ruggy-surface));
+}
+
+.ruggy-rail[data-rail-live] [data-rail-state="active"] {
+  border-color: var(--ruggy-ink);
+  box-shadow: 6px 6px 0 var(--ruggy-ink);
+  transform: translate3d(0, -0.25rem, 0);
+}
+
+.ruggy-rail[data-rail-live] [data-rail-state="active"] .ruggy-rail-stitch {
+  border-color: var(--ruggy-ink);
+  background: var(--ruggy-ink);
+  transform: scale(1.3);
+}
+
+.ruggy-rail[data-rail-live] [data-rail-state="active"] .ruggy-rail-number {
+  color: var(--ruggy-blue);
+}
+
+.ruggy-rail[data-rail-live] [data-rail-state="active"] .ruggy-rail-icon {
+  background: var(--ruggy-blue);
+  color: #ffffff;
+}
+
+/* Live step readout beside the section kicker. Decorative — the ordered list
+   already carries the sequence for assistive technology. */
+.ruggy-rail-counter-window {
+  display: block;
+  height: 1.75rem;
+  overflow: hidden;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+.ruggy-rail-counter-track {
+  display: block;
+  transform: translateY(calc(var(--rail-step, 0) * -1.75rem));
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ruggy-rail-counter-track > span {
+  display: block;
+  height: 1.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruggy-rail-counter {
+    display: none;
+  }
+}
+
+/* FAQ — "Pytania mają miękkie lądowanie." The answer descends onto its resting
+   place and the ink shadow arrives underneath as it touches down. One curve,
+   one duration family, carried through panel, copy, shadow and icon.
+   Everything here is a transition off a visible default, so a disclosure that
+   is open without JS stays open and readable. */
+.ruggy-faq-item {
+  box-shadow: 0 0 0 var(--ruggy-ink);
+  transition: box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ruggy-faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ruggy-faq-panel > * {
+  overflow: hidden;
+}
+
+.ruggy-faq-answer {
+  opacity: 0;
+  /* Starts raised so it comes down into place rather than sliding out. */
+  transform: translateY(-0.5rem);
+  transition:
+    opacity 260ms ease-out,
+    transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ruggy-faq-icon {
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* No JS and reduced motion: `open` alone is the expanded state. */
+.ruggy-faq-item[open] .ruggy-faq-panel {
+  grid-template-rows: 1fr;
+}
+
+.ruggy-faq-item[open] .ruggy-faq-answer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ruggy-faq-item[open] {
+  box-shadow: 5px 5px 0 var(--ruggy-ink);
+}
+
+.ruggy-faq-item[open] .ruggy-faq-icon {
+  transform: rotate(135deg);
+}
+
+/* With the controller running, expansion is driven by data-faq-open instead.
+   `open` on its own now means "rendered but still collapsed" — the frame the
+   controller flushes before it opens, so the browser has a real starting value
+   to animate from. Keyed off `open` alone, the first open of each disclosure
+   jumped: the panel had never been styled, so there was nothing to move from. */
+[data-faq-live] .ruggy-faq-item[open] .ruggy-faq-panel {
+  grid-template-rows: 0fr;
+}
+
+[data-faq-live] .ruggy-faq-item[open] .ruggy-faq-answer {
+  opacity: 0;
+  transform: translateY(-0.5rem);
+}
+
+[data-faq-live] .ruggy-faq-item[open] {
+  box-shadow: 0 0 0 var(--ruggy-ink);
+}
+
+[data-faq-live] .ruggy-faq-item[open] .ruggy-faq-icon {
+  transform: rotate(0deg);
+}
+
+[data-faq-live] .ruggy-faq-item[data-faq-open] .ruggy-faq-panel {
+  grid-template-rows: 1fr;
+}
+
+[data-faq-live] .ruggy-faq-item[data-faq-open] .ruggy-faq-answer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-faq-live] .ruggy-faq-item[data-faq-open] {
+  box-shadow: 5px 5px 0 var(--ruggy-ink);
+}
+
+[data-faq-live] .ruggy-faq-item[data-faq-open] .ruggy-faq-icon {
+  transform: rotate(135deg);
+}
+
+/* Leaving is quicker than arriving, but it is a retraction, not a snap. The
+   arrival curve is heavily front-loaded, so reusing it on the way out would
+   collapse the panel almost instantly; the exit gets an even curve instead. */
+[data-faq-live] .ruggy-faq-item[open]:not([data-faq-open]) .ruggy-faq-panel {
+  transition: grid-template-rows 260ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+[data-faq-live] .ruggy-faq-item[open]:not([data-faq-open]) .ruggy-faq-answer {
+  transition:
+    opacity 140ms ease-out,
+    transform 260ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+[data-faq-live] .ruggy-faq-item[open]:not([data-faq-open]) {
+  transition: box-shadow 260ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+[data-faq-live] .ruggy-faq-item[open]:not([data-faq-open]) .ruggy-faq-icon {
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .ruggy-underline::after {

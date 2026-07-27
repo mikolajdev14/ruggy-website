@@ -13,9 +13,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { RugMarquee } from "@/components/rug-marquee";
 import { ExperimentalHero } from "@/components/experimental-hero";
+import { FaqAccordion } from "@/components/faq-accordion";
 import { HomeScrollReveal } from "@/components/home-scroll-reveal";
 import { MagneticCta } from "@/components/magnetic-cta";
 import { OrganizationJsonLd } from "@/components/organization-json-ld";
+import { ProcessRail } from "@/components/process-rail";
 import { TuftedField } from "@/components/tufted-field";
 import { allRugPhotos } from "@/lib/gallery";
 
@@ -106,9 +108,11 @@ export default function HomePage() {
   return (
     <div
       data-ruggy-home
-      className="overflow-x-hidden bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]"
+      className="overflow-x-clip bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]"
     >
       <HomeScrollReveal />
+      <ProcessRail />
+      <FaqAccordion />
       <OrganizationJsonLd />
       <a
         href="#main-content"
@@ -285,9 +289,27 @@ export default function HomePage() {
               data-scroll-reveal
               className="lg:sticky lg:top-28 lg:self-start"
             >
-              <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
-                Cztery kroki
-              </p>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
+                  Cztery kroki
+                </p>
+                <p
+                  data-process-counter
+                  aria-hidden="true"
+                  className="ruggy-rail-counter flex shrink-0 items-baseline gap-1 font-black leading-none tracking-[-0.05em]"
+                >
+                  <span className="ruggy-rail-counter-window text-[var(--ruggy-blue)]">
+                    <span className="ruggy-rail-counter-track">
+                      {steps.map((step) => (
+                        <span key={step.number}>{step.number}</span>
+                      ))}
+                    </span>
+                  </span>
+                  <span className="text-sm text-[var(--ruggy-muted)]">
+                    / {steps.length.toString().padStart(2, "0")}
+                  </span>
+                </p>
+              </div>
               <h2 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">
                 Od{" "}
                 <span className="relative inline-block whitespace-nowrap text-[var(--ruggy-blue)]">
@@ -320,33 +342,41 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <ol data-scroll-stagger className="space-y-4">
-              {steps.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <li
-                    key={step.number}
-                    data-scroll-reveal="right"
-                    className="group grid gap-5 rounded-[2rem] border-2 border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-6 transition-colors hover:border-[var(--ruggy-ink)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
-                  >
-                    <span className="text-5xl font-black tracking-[-0.07em] text-[var(--ruggy-blue-soft-strong)] group-hover:text-[var(--ruggy-yellow)] sm:text-7xl">
-                      {step.number}
-                    </span>
-                    <div>
-                      <h3 className="text-2xl font-black tracking-tight">
-                        {step.title}
-                      </h3>
-                      <p className="mt-2 max-w-xl text-base leading-7 text-[var(--ruggy-body)]">
-                        {step.description}
-                      </p>
-                    </div>
-                    <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-blue)]">
-                      <Icon className="size-6" aria-hidden="true" />
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
+            <div data-process-rail data-scroll-reveal className="ruggy-rail relative">
+              <span className="ruggy-rail-thread" aria-hidden="true">
+                <span className="ruggy-rail-yarn" />
+                <span className="ruggy-rail-knot" />
+              </span>
+
+              <ol className="ruggy-rail-list space-y-4">
+                {steps.map((step) => {
+                  const Icon = step.icon;
+                  return (
+                    <li
+                      key={step.number}
+                      data-rail-step
+                      className="ruggy-rail-card relative grid gap-5 rounded-[2rem] border-2 p-6 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-7"
+                    >
+                      <span className="ruggy-rail-stitch" aria-hidden="true" />
+                      <span className="ruggy-rail-number text-5xl font-black tracking-[-0.07em] sm:text-7xl">
+                        {step.number}
+                      </span>
+                      <div>
+                        <h3 className="text-2xl font-black tracking-tight">
+                          {step.title}
+                        </h3>
+                        <p className="mt-2 max-w-xl text-base leading-7 text-[var(--ruggy-body)]">
+                          {step.description}
+                        </p>
+                      </div>
+                      <span className="ruggy-rail-icon flex size-12 items-center justify-center rounded-2xl">
+                        <Icon className="size-6" aria-hidden="true" />
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           </div>
         </section>
 
@@ -364,27 +394,32 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div data-scroll-stagger className="space-y-3">
+            <div data-faq-accordion data-scroll-stagger className="space-y-3">
               {faqs.map((faq) => (
                 <details
                   key={faq.question}
+                  data-faq-item
                   data-scroll-reveal
-                  className="group rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] open:shadow-[5px_5px_0_var(--ruggy-ink)]"
+                  className="ruggy-faq-item rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)]"
                 >
                   <summary
                     className={`flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-lg font-black [&::-webkit-details-marker]:hidden ${focusClass}`}
                   >
                     {faq.question}
                     <span
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-ink)] text-white transition-transform group-open:rotate-45"
+                      className="ruggy-faq-icon flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ruggy-ink)] text-white"
                       aria-hidden="true"
                     >
                       +
                     </span>
                   </summary>
-                  <p className="max-w-2xl px-5 pb-5 text-base leading-7 text-[var(--ruggy-body)]">
-                    {faq.answer}
-                  </p>
+                  <div data-faq-panel className="ruggy-faq-panel">
+                    <div>
+                      <p className="ruggy-faq-answer max-w-2xl px-5 pb-5 text-base leading-7 text-[var(--ruggy-body)]">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
                 </details>
               ))}
             </div>
