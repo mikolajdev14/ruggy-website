@@ -15,6 +15,7 @@ const focusClass =
 
 export function ExperimentalHero() {
   const heroRef = useRef<HTMLElement>(null);
+  const arcVideoRef = useRef<HTMLVideoElement>(null);
   const frameRef = useRef<number | null>(null);
   const pointerRef = useRef({ x: 0, y: 0 });
   const motionEnabledRef = useRef(false);
@@ -25,6 +26,17 @@ export function ExperimentalHero() {
 
     const updateMotionPreference = () => {
       motionEnabledRef.current = !reducedMotion.matches && finePointer.matches;
+
+      const arcVideo = arcVideoRef.current;
+      if (!arcVideo) {
+        return;
+      }
+
+      if (reducedMotion.matches) {
+        arcVideo.pause();
+      } else {
+        void arcVideo.play().catch(() => {});
+      }
     };
 
     updateMotionPreference();
@@ -94,7 +106,21 @@ export function ExperimentalHero() {
         className="absolute inset-x-0 top-0 z-0 h-[400px] overflow-hidden text-[var(--ruggy-ink)] sm:h-[560px] lg:h-[700px]"
       >
         <div className="ruggy-thread-bg absolute inset-0 opacity-70" />
-        <div className="ruggy-thread-bg absolute bottom-0 left-1/2 h-[74%] w-[min(82vw,600px)] -translate-x-1/2 rounded-t-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] shadow-[10px_-10px_0_var(--ruggy-blue-soft-strong)]" />
+        <div className="absolute bottom-0 left-1/2 h-[74%] w-[min(82vw,600px)] -translate-x-1/2 overflow-hidden rounded-t-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] shadow-[10px_-10px_0_var(--ruggy-blue-soft-strong)]">
+          <video
+            ref={arcVideoRef}
+            className="size-full object-cover opacity-80"
+            poster="/ruggy/hero-arc-poster.jpg"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            tabIndex={-1}
+          >
+            <source src="/ruggy/hero-arc.mp4" type="video/mp4" />
+          </video>
+          <div className="ruggy-thread-bg absolute inset-0 bg-(--ruggy-blue-soft)/45" />
+        </div>
       </div>
 
       <div className="relative z-40 mx-auto w-full max-w-[90rem]">
