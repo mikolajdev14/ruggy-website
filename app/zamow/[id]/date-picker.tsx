@@ -1,7 +1,10 @@
 "use client";
-import { getMinimumBookingDateKey } from "@/lib/booking-date";
+import {
+  formatLocalDateKey,
+  getMinimumBookingDateKey,
+} from "@/lib/booking-date";
 import { CalendarDays } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import type { Booking } from "./page";
@@ -72,6 +75,36 @@ export const DatePicker = ({
     return new Date(year, month - 1, day);
   });
 
+  // The first day that is both past the lead time and not blocked. Whole months
+  // can be taken, so without this the calendar would open on a month where
+  // every day is crossed out and the visitor has to page forward by hand.
+  const firstAvailableDate = useMemo(() => {
+    const blockedKeys = new Set(blockedDates.map(formatLocalDateKey));
+    const candidate = new Date(minimumBookingDate);
+
+    for (let dayOffset = 0; dayOffset < 366; dayOffset += 1) {
+      if (!blockedKeys.has(formatLocalDateKey(candidate))) {
+        return candidate;
+      }
+      candidate.setDate(candidate.getDate() + 1);
+    }
+
+    return minimumBookingDate;
+  }, [blockedDates, minimumBookingDate]);
+
+  // Blocked dates arrive from Supabase after the first render, so `defaultMonth`
+  // would be stale by the time we know which month is open. Drive the month
+  // instead, and only re-snap when the target month itself changes — that way a
+  // visitor who has already paged around is never yanked back.
+  const firstAvailableMonthKey = `${firstAvailableDate.getFullYear()}-${firstAvailableDate.getMonth()}`;
+  const [visibleMonth, setVisibleMonth] = useState(firstAvailableDate);
+  const [snappedMonthKey, setSnappedMonthKey] = useState(firstAvailableMonthKey);
+
+  if (snappedMonthKey !== firstAvailableMonthKey) {
+    setSnappedMonthKey(firstAvailableMonthKey);
+    setVisibleMonth(firstAvailableDate);
+  }
+
   useEffect(() => {
     setBooking((prev) => ({ ...prev, pickupDate: selected ?? null }));
   }, [selected, setBooking]);
@@ -114,6 +147,9 @@ export const DatePicker = ({
           className="order-calendar"
           disabled={[{ before: minimumBookingDate }, ...blockedDates]}
           mode="single"
+          month={visibleMonth}
+          onMonthChange={setVisibleMonth}
+          startMonth={firstAvailableDate}
           onSelect={setSelected}
           selected={selected}
           modifiersClassNames={{

@@ -7,12 +7,15 @@ import { TriangleAlert } from "lucide-react";
 // Visual, top-to-bottom order of the form controls. The parent walks this to
 // decide which invalid field to scroll to and focus first on a failed submit.
 export const FIELD_FOCUS_ORDER = [
-  "customWidthCm",
   "customHeightCm",
+  "customWidthCm",
   "pickupDate",
   "deliveryMethod",
   "parcelLockerCode",
-  "deliveryAddress",
+  "deliveryStreet",
+  "deliveryBuildingNumber",
+  "deliveryPostalCode",
+  "deliveryCity",
   "customerName",
   "customerEmail",
 ] as const;

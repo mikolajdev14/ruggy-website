@@ -18,6 +18,10 @@ import {
   ANTI_SLIP_MAT_PRICE_CENTS,
   appendAntiSlipMatLabel,
 } from "@/lib/order-addons";
+import {
+  formatDeliveryAddress,
+  formatParcelLocker,
+} from "@/lib/delivery-address";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -314,8 +318,8 @@ export async function createCheckoutSession(input: unknown) {
       customerPhone: booking.customerPhone ?? "",
       customerNotes: booking.customerNotes ?? "",
       deliveryMethod: booking.deliveryMethod,
-      parcelLockerCode: booking.parcelLockerCode ?? "",
-      deliveryAddress: booking.deliveryAddress ?? "",
+      parcelLockerCode: formatParcelLocker(booking),
+      deliveryAddress: formatDeliveryAddress(booking),
       referenceImagePath: booking.referenceImagePath ?? "",
       antiSlipMat: String(booking.antiSlipMat),
     },
@@ -427,8 +431,8 @@ export async function createContactBooking(input: unknown) {
       stripe_payment_intent_id: null,
       expires_at: null,
       delivery_method: booking.deliveryMethod,
-      parcel_locker_code: booking.parcelLockerCode?.trim() || null,
-      delivery_address: booking.deliveryAddress?.trim() || null,
+      parcel_locker_code: formatParcelLocker(booking) || null,
+      delivery_address: formatDeliveryAddress(booking) || null,
       reference_image_path: booking.referenceImagePath ?? null,
       updated_at: new Date().toISOString(),
     })

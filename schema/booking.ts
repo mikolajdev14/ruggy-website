@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { POSTAL_CODE_PATTERN } from "@/lib/delivery-address";
 export const bookingSchema = z.object({
   rugTypeId: z.string().min(1),
   rugVariantId: z.number().int().positive().nullable().optional(),
@@ -16,7 +17,11 @@ export const bookingSchema = z.object({
     error: "Wybierz metodę wysyłki",
   }),
   parcelLockerCode: z.string().max(100).optional(),
-  deliveryAddress: z.string().max(500).optional(),
+  parcelLockerAddress: z.string().max(300).optional(),
+  deliveryStreet: z.string().max(200).optional(),
+  deliveryBuildingNumber: z.string().max(20).optional(),
+  deliveryPostalCode: z.string().max(10).optional(),
+  deliveryCity: z.string().max(100).optional(),
   referenceImagePath: z.string().max(300).optional(),
   antiSlipMat: z.boolean().optional().default(false),
 }).superRefine((booking, context) => {
@@ -38,11 +43,32 @@ export const bookingSchema = z.object({
     });
   }
 
-  if (booking.deliveryMethod === "courier" && !booking.deliveryAddress?.trim()) {
-    context.addIssue({
-      code: "custom",
-      path: ["deliveryAddress"],
-      message: "Podaj adres dostawy",
-    });
+  if (booking.deliveryMethod === "courier") {
+    const requiredAddressParts = [
+      ["deliveryStreet", booking.deliveryStreet, "Podaj ulicę"],
+      [
+        "deliveryBuildingNumber",
+        booking.deliveryBuildingNumber,
+        "Podaj numer domu lub lokalu",
+      ],
+      ["deliveryPostalCode", booking.deliveryPostalCode, "Podaj kod pocztowy"],
+      ["deliveryCity", booking.deliveryCity, "Podaj miejscowość"],
+    ] as const;
+
+    for (const [path, value, message] of requiredAddressParts) {
+      if (!value?.trim()) {
+        context.addIssue({ code: "custom", path: [path], message });
+      }
+    }
+
+    const postalCode = booking.deliveryPostalCode?.trim();
+
+    if (postalCode && !POSTAL_CODE_PATTERN.test(postalCode)) {
+      context.addIssue({
+        code: "custom",
+        path: ["deliveryPostalCode"],
+        message: "Kod pocztowy w formacie 00-000",
+      });
+    }
   }
 });

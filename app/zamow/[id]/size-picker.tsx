@@ -8,7 +8,7 @@ import {
   calculateCustomRugPriceCents,
   CUSTOM_RUG_MAX_DIMENSION_CM,
   CUSTOM_RUG_MIN_DIMENSION_CM,
-  formatPriceCents,
+  formatCustomRugPriceRange,
 } from "@/lib/custom-rug-price";
 import {
   PAPADYWANY_SLUG,
@@ -331,36 +331,9 @@ export const SizePicker = ({
             </div>
           </div>
 
+          {/* Required dimension first: the optional one leading the pair read
+              as if the whole size were optional. */}
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm font-black text-[var(--ruggy-ink)]">
-                Szerokość (cm, opcjonalnie)
-              </span>
-              <input
-                type="number"
-                min={CUSTOM_RUG_MIN_DIMENSION_CM}
-                max={CUSTOM_RUG_MAX_DIMENSION_CM}
-                step="1"
-                inputMode="numeric"
-                value={booking.customWidthCm ?? ""}
-                onChange={(event) =>
-                  updateCustomDimension("customWidthCm", event.target.value)
-                }
-                placeholder="np. 100"
-                data-field="customWidthCm"
-                className={buildFieldClass(Boolean(fieldErrors.customWidthCm))}
-                aria-invalid={fieldErrors.customWidthCm ? true : undefined}
-                aria-describedby={
-                  fieldErrors.customWidthCm
-                    ? fieldErrorId("customWidthCm")
-                    : undefined
-                }
-              />
-              <FieldError
-                id={fieldErrorId("customWidthCm")}
-                message={fieldErrors.customWidthCm}
-              />
-            </label>
             <label className="space-y-2">
               <span className="text-sm font-black text-[var(--ruggy-ink)]">
                 Wysokość (cm) *
@@ -391,6 +364,35 @@ export const SizePicker = ({
                 message={fieldErrors.customHeightCm}
               />
             </label>
+            <label className="space-y-2">
+              <span className="text-sm font-black text-[var(--ruggy-ink)]">
+                Szerokość (cm, opcjonalnie)
+              </span>
+              <input
+                type="number"
+                min={CUSTOM_RUG_MIN_DIMENSION_CM}
+                max={CUSTOM_RUG_MAX_DIMENSION_CM}
+                step="1"
+                inputMode="numeric"
+                value={booking.customWidthCm ?? ""}
+                onChange={(event) =>
+                  updateCustomDimension("customWidthCm", event.target.value)
+                }
+                placeholder="np. 100"
+                data-field="customWidthCm"
+                className={buildFieldClass(Boolean(fieldErrors.customWidthCm))}
+                aria-invalid={fieldErrors.customWidthCm ? true : undefined}
+                aria-describedby={
+                  fieldErrors.customWidthCm
+                    ? fieldErrorId("customWidthCm")
+                    : undefined
+                }
+              />
+              <FieldError
+                id={fieldErrorId("customWidthCm")}
+                message={fieldErrors.customWidthCm}
+              />
+            </label>
           </div>
 
           <div className="mt-5 flex flex-col gap-3 rounded-2xl border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -407,15 +409,13 @@ export const SizePicker = ({
                 Cena orientacyjna
               </p>
               <p className="mt-1 text-2xl font-black text-[var(--ruggy-blue)]" aria-live="polite">
-                {formatPriceCents(customPriceCents)}
+                {formatCustomRugPriceRange(customPriceCents)}
               </p>
             </div>
           </div>
 
           <p className="mt-4 text-xs leading-5 text-[var(--ruggy-body)]">
-            Wzór: 249 zł opłaty bazowej plus 4,20 zł za każdy centymetr
-            wysokości, zaokrąglone w górę do pełnych 10 zł. Ostateczną cenę
-            ustalę z Tobą na Instagramie.
+            Ostateczną cenę ustalę z Tobą na Instagramie.
           </p>
         </div>
       ) : (

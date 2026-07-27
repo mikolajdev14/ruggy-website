@@ -12,6 +12,8 @@ Jak obliczać cenę typu „Inne”, gdy wysokość jest obowiązkowa, a szeroko
 
 Cena wynosi 249 zł opłaty bazowej plus 4,20 zł za każdy centymetr wysokości. Wynik jest zaokrąglany w górę do pełnych 10 zł. Szerokość jest opcjonalną informacją o projekcie i nie wpływa na cenę.
 
+Klientowi nie pokazujemy ani wzoru, ani pojedynczej kwoty — checkout podaje zakres ±20% wokół tej ceny (granice rozsuwane do pełnych 10 zł, żeby przedział nigdy nie był węższy niż deklarowane 20%). Do bazy i do wyceny trafia nadal pojedyncza wartość z wzoru.
+
 ## Code area
 
 `lib/custom-rug-price.ts`, `schema/booking.ts`, `app/zamow/[id]/`

@@ -22,6 +22,31 @@ export function calculateCustomRugPriceCents(
   return Math.ceil(rawPriceCents / 1000) * 1000;
 }
 
+/**
+ * A custom rug is quoted, not priced off a shelf, so the checkout shows a band
+ * around the list price instead of a single number that would read like a firm
+ * offer. Bounds are widened to full 10 zł — the same step the list price is
+ * rounded to — so the range is never narrower than the ±20% it promises.
+ */
+export const CUSTOM_RUG_PRICE_RANGE_RATIO = 0.2;
+
+const PRICE_ROUNDING_STEP_CENTS = 1000;
+
+export function calculateCustomRugPriceRangeCents(priceCents: number | null) {
+  if (priceCents == null) return null;
+
+  const spread = priceCents * CUSTOM_RUG_PRICE_RANGE_RATIO;
+
+  return {
+    fromCents:
+      Math.floor((priceCents - spread) / PRICE_ROUNDING_STEP_CENTS) *
+      PRICE_ROUNDING_STEP_CENTS,
+    toCents:
+      Math.ceil((priceCents + spread) / PRICE_ROUNDING_STEP_CENTS) *
+      PRICE_ROUNDING_STEP_CENTS,
+  };
+}
+
 export function formatPriceCents(priceCents: number | null) {
   if (priceCents == null) return "Cena pojawi się po wpisaniu wysokości";
 
@@ -30,6 +55,18 @@ export function formatPriceCents(priceCents: number | null) {
     currency: "PLN",
     maximumFractionDigits: 0,
   }).format(priceCents / 100);
+}
+
+export function formatCustomRugPriceRange(priceCents: number | null) {
+  const range = calculateCustomRugPriceRangeCents(priceCents);
+
+  if (!range) return formatPriceCents(null);
+
+  const amount = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 });
+
+  return `${amount.format(range.fromCents / 100)}–${formatPriceCents(
+    range.toCents,
+  )}`;
 }
 
 export function formatCustomRugSizeLabel(

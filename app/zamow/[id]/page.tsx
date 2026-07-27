@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatLocalDateKey } from "@/lib/booking-date";
 import {
   calculateCustomRugPriceCents,
+  formatCustomRugPriceRange,
   formatPriceCents,
 } from "@/lib/custom-rug-price";
 import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
@@ -57,7 +58,11 @@ export type Booking = {
   customerNotes: string;
   deliveryMethod: DeliveryMethod | "";
   parcelLockerCode: string;
-  deliveryAddress: string;
+  parcelLockerAddress: string;
+  deliveryStreet: string;
+  deliveryBuildingNumber: string;
+  deliveryPostalCode: string;
+  deliveryCity: string;
 };
 
 type RugTypeSummary = {
@@ -162,7 +167,11 @@ export default function ProductPage({
     customerNotes: "",
     deliveryMethod: "",
     parcelLockerCode: "",
-    deliveryAddress: "",
+    parcelLockerAddress: "",
+    deliveryStreet: "",
+    deliveryBuildingNumber: "",
+    deliveryPostalCode: "",
+    deliveryCity: "",
   });
 
   useEffect(() => {
@@ -385,7 +394,7 @@ export default function ProductPage({
           booking.customWidthCm != null
             ? `${booking.customWidthCm} × ${booking.customHeightCm} cm`
             : `wysokość ${booking.customHeightCm} cm`
-        } · ${formatPriceCents(customPriceCents)}`
+        } · ${formatCustomRugPriceRange(customPriceCents)}`
       : "Nie wybrano";
 
   if (redirectingToSubcategory) {
@@ -687,12 +696,9 @@ function AntiSlipOfferDialog({
         aria-describedby="anti-slip-offer-description"
         className="w-full max-w-lg rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-6 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-8"
       >
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
-          <ShieldCheck size={24} aria-hidden="true" />
-        </span>
         <h2
           id="anti-slip-offer-title"
-          className="mt-5 text-2xl font-black leading-tight text-[var(--ruggy-ink)] sm:text-3xl"
+          className="text-2xl font-black leading-tight text-[var(--ruggy-ink)] sm:text-3xl"
         >
           A weź se dorzuć podkład antypoślizgowy
         </h2>
