@@ -5,6 +5,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ContentWarningGate } from "../content-warning-gate";
 import { SubcategoryCard } from "../subcategory-card";
 
 type VariantSize = { price_cents: number | string; is_active: boolean | null };
@@ -66,6 +67,10 @@ export default async function PodrodzajPage({
 
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
+      {/* This page is papadywany-only (guarded above), so the warning always
+          applies — it now lands here, before any subrodzaj is visible. */}
+      <ContentWarningGate />
+
       <header className="border-b border-[var(--ruggy-border)]">
         <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
           <Link

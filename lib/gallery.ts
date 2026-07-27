@@ -107,7 +107,7 @@ export const categories: GalleryCategory[] = [
   },
   {
     slug: "piwodywany",
-    label: "Piwodywany",
+    label: "Alkodywany",
     tagline: "Ulubione marki w formie dywanu.",
     photos: [
       "IMG_3329",
@@ -117,8 +117,8 @@ export const categories: GalleryCategory[] = [
       "IMG_7727",
     ].map((id) => ({
       src: `${BASE}/piwodywany/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Piwodywany", "Dywan inspirowany ulubioną marką"),
-      category: "Piwodywany",
+      alt: alt("Alkodywany", "Dywan inspirowany ulubioną marką"),
+      category: "Alkodywany",
     })),
   },
 ];

@@ -25,19 +25,20 @@ const benefits = [
   {
     icon: Heart,
     title: "Prezent, którego nie da się powtórzyć",
-    description: "Twój pomysł zamieniam w miękki obiekt z własnym charakterem.",
+    description:
+      "Twój pomysł zamieniam w coś, co wywoła zazdrość wśród Twoich znajomych",
   },
   {
     icon: Palette,
-    title: "Projekt w Twoim stylu",
+    title: "Projekt taki jak chcesz",
     description:
-      "Kolor, forma i detal powstają wokół tego, co naprawdę lubisz.",
+      "Wszystko wyszyte konkretnie pod Twoje widzimisię - bez kompromisów",
   },
   {
     icon: Scissors,
     title: "Ręczna robota od początku do końca",
     description:
-      "Każdy fragment przechodzi przez prawdziwą pracownię, nie taśmę produkcyjną.",
+      " Każdy proces, od tworzenia projektu, po szycie i obróbkę robię ja - Tomek ",
   },
 ];
 
@@ -47,7 +48,7 @@ const steps = [
     icon: Shapes,
     title: "Wybierz bazę pod pomysł",
     description:
-      "Otwórz zamówienie i wybierz wariant dywanu, na którym zbudujemy Twój projekt.",
+      "Otwórz zamówienie i wybierz wariant dywanu, na którym zbuduję Twój projekt.",
   },
   {
     number: "02",
@@ -61,37 +62,32 @@ const steps = [
     icon: CreditCard,
     title: "Zapłać online albo ustal cenę",
     description:
-      "Gotowe warianty opłacasz od razu przez Stripe i rezerwujesz termin. Projekty na wymiar zapisuję, a ostateczną cenę dogadujemy na Instagramie.",
+      "Gotowe warianty opłacasz od razu i rezerwujesz termin. Projekty na wymiar zapisuję, a ostateczną cenę dogadujemy na Instagramie.",
   },
   {
     number: "04",
     icon: PackageCheck,
     title: "Tuftuję ręcznie i wysyłam",
     description:
-      "Robię Twój dywan od zera, wykańczam każdy detal i wysyłam do paczkomatu albo prosto pod Twoje drzwi.",
+      "Wuja Dywaniarz zabiera się do roboty - Wykonuję Twój dywan od zera, przenoszę projekt na płótno, wyszywam detale, a na koniec obrabiam je maszynką.",
   },
 ];
 
 const faqs = [
   {
-    question: "Ile kosztuje zrobienie dywanu?",
+    question: "Ile kosztuje taki customowy dywan?",
     answer:
-      "Cena zależy od wybranego wariantu, rozmiaru i złożoności wzoru. Dokładną kwotę zobaczysz podczas składania zamówienia.",
+      "Cena zależy głównie od dwóch czynników: wielkość dywanu i stopień skomplikowania wzoru. Najprościej będzie jeśli podeślesz mi jakieś zdjęcie lub grafikę, zobacze co da się z tym zrobić",
   },
   {
     question: "Co jeśli nie mam gotowego projektu?",
     answer:
-      "Wystarczy inspiracja, zdjęcie albo krótki opis. Pomogę Ci przełożyć pomysł na formę, która dobrze zadziała jako dywan.",
+      "Wystarczy inspiracja, zdjęcie albo krótki opis. Pomogę Ci ogarnąć wszystko po kolei, aby efekt finalny był więcej niż zadowalający ",
   },
   {
     question: "Czy mogę zamówić dowolny kształt?",
     answer:
-      "Tak. Lubię nieregularne formy, ale ostateczny kształt zależy od możliwości wykonania konkretnego wzoru.",
-  },
-  {
-    question: "Jak długo trwa realizacja?",
-    answer:
-      "Aktualny czas wykonania jest podany przy każdym wariancie. Termin wybierasz przed opłaceniem zamówienia.",
+      "Tak. Nieregularne formy są jak najbardziej ok, ale ostateczny kształt zależy od możliwości wykonania konkretnego wzoru.",
   },
 ];
 
@@ -172,13 +168,6 @@ export default function HomePage() {
 
           <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-10">
             <div data-scroll-reveal className="mx-auto max-w-3xl text-center">
-              <p className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
-                <span
-                  aria-hidden="true"
-                  className="h-2 w-8 rounded-full bg-[repeating-linear-gradient(90deg,var(--ruggy-blue)_0_6px,transparent_6px_11px)]"
-                />
-                Więcej niż dekoracja
-              </p>
               <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.04em] sm:text-6xl">
                 Kawałek Ciebie,{" "}
                 <span className="relative inline-block whitespace-nowrap">
@@ -256,9 +245,6 @@ export default function HomePage() {
               className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"
             >
               <div className="max-w-3xl">
-                <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-yellow)]">
-                  Pomysł nie zna kształtu
-                </p>
                 <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-6xl">
                   Galeria rzeczy, które nie chciały być zwykłe.
                 </h2>
@@ -284,10 +270,10 @@ export default function HomePage() {
           id="jak-to-dziala"
           className="scroll-mt-24 bg-[var(--ruggy-canvas)]"
         >
-          <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-10">
+          <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-10 xl:gap-20">
             <div
               data-scroll-reveal
-              className="lg:sticky lg:top-28 lg:self-start"
+              className="lg:sticky lg:top-28 lg:min-w-0 lg:self-start"
             >
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--ruggy-blue)]">
@@ -310,7 +296,7 @@ export default function HomePage() {
                   </span>
                 </p>
               </div>
-              <h2 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">
+              <h2 className="mt-4 text-4xl font-black leading-[1.06] tracking-[-0.05em] sm:text-5xl lg:text-[clamp(2.5rem,3.6vw,3.5rem)]">
                 Od{" "}
                 <span className="relative inline-block whitespace-nowrap text-[var(--ruggy-blue)]">
                   <span
@@ -319,19 +305,21 @@ export default function HomePage() {
                   />
                   <span className="relative">„hej, mam pomysł”</span>
                 </span>
-                <span className="my-3 block text-[var(--ruggy-body)] sm:my-5">
+                <span className="my-3 block text-[var(--ruggy-body)] sm:my-4">
                   do
                 </span>
-                <span className="relative inline-block whitespace-nowrap text-[var(--ruggy-ink)]">
-                  <span
-                    className="absolute inset-x-0 bottom-0 h-3 rotate-1 rounded-full bg-[var(--ruggy-blue-soft-strong)] sm:h-4"
-                    aria-hidden="true"
-                  />
-                  <span className="relative">„hej, mam dywan”.</span>
+                {/* Ten cytat jest za długi na jedną linię, więc zamiast paska
+                    pozycjonowanego absolutnie używamy tła klonowanego na każdy
+                    wiersz — zawija się bez rozjeżdżania podkreślenia. */}
+                <span className="bg-[linear-gradient(to_top,var(--ruggy-blue-soft-strong)_0.75rem,transparent_0.75rem)] text-[var(--ruggy-ink)] [-webkit-box-decoration-break:clone] [box-decoration-break:clone] sm:bg-[linear-gradient(to_top,var(--ruggy-blue-soft-strong)_1rem,transparent_1rem)]">
+                  „Siema, dostałem dywan - zaje***ty!”
                 </span>
               </h2>
-              <p className="mt-5 max-w-md text-lg leading-8 text-[var(--ruggy-body)]">
-                Formularz zajmie chwilę. Ręczne wykonanie trochę dłużej. Warto.
+              <p className="mt-6 text-lg leading-8 text-[var(--ruggy-body)]">
+                <span className="block xl:whitespace-nowrap">
+                  Formularz zajmie chwilę. Ręczne wykonanie trochę dłużej.
+                </span>
+                <span className="block">Warto.</span>
               </p>
               <Link
                 href="/zamow"
@@ -342,7 +330,11 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div data-process-rail data-scroll-reveal className="ruggy-rail relative">
+            <div
+              data-process-rail
+              data-scroll-reveal
+              className="ruggy-rail relative"
+            >
               <span className="ruggy-rail-thread" aria-hidden="true">
                 <span className="ruggy-rail-yarn" />
                 <span className="ruggy-rail-knot" />

@@ -78,9 +78,9 @@ export default async function AgreedProjectPaymentSuccessPage({
 
         <p className="mt-5 text-base leading-7 text-[var(--ruggy-body)]">
           {result.success
-            ? `Dziękuję, ${result.customerName}. Płatność widzę w Stripe i mogę przejść do dalszej realizacji ustalonego projektu.`
+            ? `Dziękuję, ${result.customerName}. Płatność już widzę i mogę przejść do dalszej realizacji ustalonego projektu.`
             : isPending
-              ? "Po potwierdzeniu przez Stripe płatność będzie widoczna automatycznie."
+              ? "Po potwierdzeniu przez operatora płatności będzie ona widoczna automatycznie."
               : "Wróć do formularza albo skontaktuj się ze mną, podając identyfikator płatności."}
         </p>
 

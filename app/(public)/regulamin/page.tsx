@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/regulamin" },
 };
 
-const documentContent = `Sprzedawcą prowadzącym niniejszy sklep internetowy oraz Administratorem danych osobowych Klientów jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt ze Sprzedawcą: e-mail kontakt@rugsly.eu oraz Instagram @ruggy.pl (https://www.instagram.com/ruggy.pl/).
+const documentContent = `Sprzedawcą prowadzącym niniejszy sklep internetowy oraz Administratorem danych osobowych Klientów jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt ze Sprzedawcą: e-mail sklep@ruggy.pl oraz Instagram @ruggy.pl (https://www.instagram.com/ruggy.pl/).
 
 Szanowny Kliencie, niniejszy Regulamin reguluje sposób zawierania umów sprzedaży za pośrednictwem wyżej wymienionej strony internetowej, zasady realizacji tych umów, w tym dostawy, prawa i obowiązki wynikające z obowiązującego prawa oraz tryb odstąpienia od umowy i postępowania reklamacyjnego. Regulamin składa się z czterech głównych części:
 
@@ -18,7 +18,7 @@ w § od 13 do 14 — zawarto wszystkie pozostałe uregulowania.
 §1. Podstawowe definicje
 Sklep internetowy – sklep znajdujący się pod adresem niniejszej strony internetowej.
 Sprzedawca – RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, właściciel niniejszej strony internetowej i sklepu internetowego, od którego Klient nabywa Towar/Usługę.
-Adres Sprzedawcy – adres siedziby: Dorohucza 26A, 21-044 Trawniki, oraz adres poczty elektronicznej: kontakt@rugsly.eu.
+Adres Sprzedawcy – adres siedziby: Dorohucza 26A, 21-044 Trawniki, oraz adres poczty elektronicznej: sklep@ruggy.pl.
 Klient – osoba fizyczna posiadająca pełną zdolność do czynności prawnych, a w wypadkach przewidzianych przez przepisy powszechnie obowiązujące także osoba fizyczna posiadająca ograniczoną zdolność do czynności prawnych, osoba prawna albo jednostka organizacyjna nieposiadająca osobowości prawnej, której ustawa przyznaje zdolność prawną, która zawarła lub zamierza zawrzeć umowę sprzedaży.
 Konsument – art. 22(1) KC: osoba fizyczna dokonująca ze Sprzedawcą czynności prawnej niezwiązanej bezpośrednio z jej działalnością gospodarczą lub zawodową.
 Umowa sprzedaży – umowa sprzedaży Produktu zamieszczonego na stronie w/w Sklepu internetowego, zawierana albo zawarta między Klientem a Sprzedawcą za pośrednictwem Sklepu internetowego.
@@ -35,7 +35,7 @@ Sprzedawca oświadcza, że przestrzega wszelkich wymaganych zasad ochrony danych
 Sprzedawca oświadcza, że towar/usługa jest zgodna z umową w aspektach takich jak opis, rodzaj, ilość, jakość, kompletność i funkcjonalność, a w odniesieniu do towarów z elementami cyfrowymi – również kompatybilność, interoperacyjność i dostępność aktualizacji, jak również przydatność do szczególnego celu, do którego jest potrzebny konsumentowi, o którym konsument powiadomił przedsiębiorcę najpóźniej w momencie zawarcia umowy i który przedsiębiorca zaakceptował.
 Składając zamówienia w Sklepie, Klient ma możliwość zapoznania się z Regulaminem, akceptując jego treść poprzez oznaczenie odpowiedniego pola w formularzu. Do realizacji zamówienia konieczna jest akceptacja postanowień Regulaminu. Informujemy, że zawarcie Umowy sprzedaży za pośrednictwem Internetu i akceptacja Regulaminu pociąga za sobą obowiązek zapłaty za zamówiony Towar.
 Administrator danych stosuje odpowiednie środki techniczne i organizacyjne zapewniające ochronę danych osobowych, miarodajnie do zagrożeń oraz kategorii danych objętych ochroną. Przede wszystkim chroni dane przed ich udostępnieniem, zabraniem, przetwarzaniem, utratą, zmianą, uszkodzeniem lub zniszczeniem przez osoby do tego nieuprawnione.
-Administratorem Państwa danych osobowych jest Sprzedawca, tj. RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, e-mail: kontakt@rugsly.eu.
+Administratorem Państwa danych osobowych jest Sprzedawca, tj. RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, e-mail: sklep@ruggy.pl.
 Klient korzystający z Usług Sprzedawcy realizowanych za pośrednictwem Sklepu internetowego zobowiązany jest do przestrzegania niniejszego Regulaminu w zakresie, jaki jest niezbędny do realizacji złożonego zamówienia i nie jest sprzeczny z obowiązującym prawem oraz z zasadami współżycia społecznego.
 Sprzedawca Sklepu internetowego oświadcza, że Towary dostępne i sprzedawane w jego Sklepie internetowym są Towarami nowymi, bezpiecznymi i wolnymi od wad fizycznych oraz prawnych. Każdy dywan jest produktem rzemieślniczym, wykonywanym ręcznie — mogą wystąpić nieznaczne różnice kolorystyczne i wymiarowe w stosunku do zdjęć prezentowanych na stronie, co nie stanowi wady Towaru.
 Sprzedawca realizuje zamówienia na terytorium Polski oraz zamówienia składane przez Konsumentów w Europie, a po uprzednim ustaleniu warunków dostawy także w innych krajach.
@@ -70,10 +70,10 @@ Towar zawsze zapakowany jest w sposób odpowiadający jego właściwościom, tak
 Klient na bieżąco jest informowany o kosztach dostawy — są one podawane w trakcie wypełniania formularza zamówienia. Wysokość kosztów wysyłki zależy od kraju, do którego wysyłane jest zamówienie, oraz wybranego sposobu nadania przesyłki.
 Klient jest zobowiązany do sprawdzenia przesyłki przy odbiorze. W razie stwierdzenia uszkodzeń mechanicznych zaleca się sporządzenie protokołu szkody z przewoźnikiem.
 §7. Metody płatności
-Sklep obsługuje płatności elektroniczne za pośrednictwem operatora Stripe Payments Europe Limited (1 Grand Canal Street Lower, Dublin 2, Irlandia).
-Akceptowane metody płatności: karty płatnicze (Visa, Mastercard, American Express), BLIK oraz portfele cyfrowe (Google Pay / Apple Pay) — w zakresie udostępnianym przez interfejs Stripe.
+Sklep obsługuje płatności elektroniczne za pośrednictwem zewnętrznego operatora płatności elektronicznych.
+Akceptowane metody płatności: karty płatnicze (Visa, Mastercard, American Express), BLIK oraz portfele cyfrowe (Google Pay / Apple Pay) — w zakresie udostępnianym przez interfejs operatora płatności.
 Płatność należy uiścić niezwłocznie po złożeniu zamówienia. Zamówienie nieopłacone może zostać anulowane.
-Dane karty płatniczej są szyfrowane i przetwarzane wyłącznie przez operatora Stripe — Sprzedawca nie przechowuje danych kart płatniczych.
+Dane karty płatniczej są szyfrowane i przetwarzane wyłącznie przez operatora płatności — Sprzedawca nie przechowuje danych kart płatniczych.
 Sprzedawca dokumentuje sprzedaż Towaru zgodnie z żądaniem Klienta. Fakturę VAT Klient może otrzymać na życzenie zgłoszone w uwagach do zamówienia lub drogą e-mailową.
 §8. Rękojmia
 Dostarczenie Towaru w ramach realizacji uprawnień wynikających z rękojmi za wady odbywa się na koszt Sprzedawcy.
@@ -83,7 +83,7 @@ nie ma właściwości, które rzecz tego rodzaju powinna mieć ze względu na ce
 nie ma właściwości, o których istnieniu Sprzedawca zapewnił Kupującego, w tym przedstawiając próbkę lub wzór;
 nie nadaje się do celu, o którym Kupujący poinformował Sprzedawcę przy zawarciu umowy, a Sprzedawca nie zgłosił zastrzeżenia co do takiego jej przeznaczenia;
 została Kupującemu wydana w stanie niezupełnym.
-Zgłoszenie o wadach Towaru należy przesłać drogą elektroniczną na adres mailowy Sprzedawcy lub w formie pisemnej na adres pocztowy Sprzedawcy (patrz §1: „Adres Sprzedawcy”). Jeśli konsument ma trudności ze skonstruowaniem zgłoszenia, może skorzystać z formularza stanowiącego załącznik nr 2 do Regulaminu — co stanowi jedynie ułatwienie, a nie wymóg skuteczności reklamacji.
+Zgłoszenie o wadach Towaru należy przesłać drogą elektroniczną na adres mailowy Sprzedawcy lub w formie pisemnej na adres pocztowy Sprzedawcy (patrz §1: „Adres Sprzedawcy”). Zgłoszenie nie wymaga zachowania szczególnej formy ani posłużenia się jakimkolwiek wzorem; wystarczy, że zawiera dane wskazane w §10 pkt 1 Regulaminu, pozwalające rozpatrzyć reklamację.
 Jeżeli jest to niezbędne dla prawidłowej oceny wad fizycznych Towaru, na prośbę i po ustaleniach wstępnych ze Sprzedawcą Towar należy dostarczyć na adres siedziby Sprzedawcy, gdy tylko właściwości Produktu na to pozwalają.
 Sprzedawca odpowiada na zgłoszenie Konsumenta niezwłocznie, nie później niż w terminie 14 dni kalendarzowych od dnia jego otrzymania. Nierozpatrzenie zgłoszenia w zakreślonym terminie jest równoznaczne z jego uwzględnieniem.
 W wypadku pierwszej reklamacji klient może liczyć na naprawę towaru albo wymianę. Dopiero gdy przedsiębiorca odmówi usunięcia wady albo wymiany — albo gdy naprawa lub wymiana będą nieskuteczne — konsument może żądać obniżenia ceny lub odstąpić od umowy.
@@ -92,7 +92,7 @@ Sprzedawca pokrywa koszty odebrania Towaru, dostawy, usunięcia wady oraz wymian
 Zgodnie z art. 27 ustawy z dnia 30 maja 2014 r. o prawach Konsumenta, Klientowi będącemu Konsumentem przysługuje prawo do odstąpienia od umowy zawartej na odległość bez podawania przyczyny.
 Prawo do odstąpienia od umowy przysługuje w terminie 14 dni kalendarzowych od momentu objęcia Towaru w posiadanie przez Klienta będącego Konsumentem lub osobę trzecią przez niego wskazaną, inną niż przewoźnik.
 Gdy Klient będący Konsumentem odstąpi od umowy, umowa jest uważana za niezawartą, a Konsument jest zwolniony z wszelkich zobowiązań. To, co strony świadczyły sobie nawzajem, podlega zwrotowi w stanie niezmienionym, chyba że zmiana była konieczna w granicach zwykłego zarządu.
-Klient będący Konsumentem może odstąpić od umowy, składając oświadczenie na formularzu stanowiącym załącznik nr 1 do Regulaminu, przesyłając je drogą elektroniczną lub na adres pocztowy Sprzedawcy. Załącznik nr 1 stanowi jedynie pomoc — dla skutecznego odstąpienia wystarczy przesłanie oświadczenia na piśmie na adres Sprzedawcy. Do zachowania terminu wystarczy wysłanie oświadczenia przed jego upływem.
+Klient będący Konsumentem odstępuje od umowy, składając Sprzedawcy jednoznaczne oświadczenie o odstąpieniu — drogą elektroniczną na adres e-mail Sprzedawcy albo w formie pisemnej na jego adres pocztowy (patrz §1: „Adres Sprzedawcy”). Oświadczenie nie wymaga zachowania szczególnej formy ani posłużenia się jakimkolwiek wzorem; wystarczy, że jednoznacznie wskazuje wolę odstąpienia od umowy oraz zamówienie, którego dotyczy. Do zachowania terminu wystarczy wysłanie oświadczenia przed jego upływem.
 Sprzedawca niezwłocznie potwierdzi Klientowi otrzymanie oświadczenia o odstąpieniu od umowy i poinformuje o dalszym postępowaniu, w tym o sposobie zwrotu Towaru.
 Sprzedawca niezwłocznie, w terminie nie dłuższym niż 14 dni kalendarzowych od dnia otrzymania oświadczenia o odstąpieniu, zwróci Klientowi wszelkie otrzymane od niego płatności, w tym koszty dostarczenia rzeczy. Zwrot następuje przy użyciu takiego samego sposobu płatności, jakiego użył Klient, chyba że Klient wyraźnie zgodził się na inny sposób, który nie wiąże się dla niego z żadnymi kosztami.
 Sprzedawca może wstrzymać się ze zwrotem płatności do chwili otrzymania Towaru z powrotem lub dostarczenia przez Klienta dowodu jego odesłania — w zależności od tego, które zdarzenie nastąpi wcześniej.
@@ -149,7 +149,7 @@ Osobie, której dane są przetwarzane, przysługuje prawo wniesienia skargi do U
 W pozostałych kwestiach nieuregulowanych zapisami niniejszego Regulaminu mają zastosowanie odpowiednie przepisy prawa polskiego.
 Sprzedawca zastrzega sobie prawo do dokonywania zmian Regulaminu z ważnych przyczyn, tj.: zmiany przepisów prawa, zmiany sposobów płatności i dostaw, zmiany kursu walut, zmiany sposobu świadczenia usług drogą elektroniczną oraz zmiany danych Sprzedawcy. Zmiany nie mają wpływu na złożone i realizowane już zamówienia. O zamierzonej zmianie Sprzedawca informuje na stronie Sklepu co najmniej na 30 dni wcześniej.
 Spory powstałe w wyniku świadczenia usług na podstawie niniejszego Regulaminu zostaną poddane pod rozstrzygnięcie Sądowi Powszechnemu według wyboru Klienta będącego jednocześnie konsumentem, zgodnie z właściwymi przepisami prawa polskiego.
-Załączniki do Regulaminu stanowią jego integralną część. Umowa sprzedaży zawierana jest w języku polskim, o treści zgodnej z Regulaminem.
+Polityka prywatności stanowi załącznik do niniejszego Regulaminu i jego integralną część. Umowa sprzedaży zawierana jest w języku polskim, o treści zgodnej z Regulaminem.
 §15. Ochrona danych osobowych
 Szczegółowe informacje dotyczące przetwarzania danych osobowych, w tym praw Klienta (dostęp, sprostowanie, usunięcie, ograniczenie przetwarzania, przenośność, sprzeciw), znajdują się w Polityce Prywatności.`;
 

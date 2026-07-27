@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/zwroty" },
 };
 
-const documentContent = `Sprzedawcą jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt w sprawie zwrotów i reklamacji: e-mail kontakt@rugsly.eu.
+const documentContent = `Sprzedawcą jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt w sprawie zwrotów i reklamacji: e-mail sklep@ruggy.pl.
 
 §1. Prawo do odstąpienia od umowy
 Klient będący konsumentem ma prawo odstąpić od umowy zawartej na odległość bez podawania przyczyny w terminie 14 dni od dnia otrzymania produktu (art. 27 Ustawy z dnia 30 maja 2014 r. o prawach konsumenta).
@@ -16,9 +16,9 @@ Do zachowania terminu wystarczy wysłanie oświadczenia o odstąpieniu przed jeg
 §2. Wyłączenia — produkty na zamówienie
 Zgodnie z art. 38 pkt 3 Ustawy o prawach konsumenta, prawo odstąpienia NIE przysługuje w odniesieniu do produktów wykonanych według specyfikacji Konsumenta lub wyraźnie spersonalizowanych — dotyczy to dywanów tworzonych na indywidualne zamówienie (custom).
 Produkty gotowe, dostępne w sklepie „od ręki” (nie personalizowane), podlegają standardowemu prawu zwrotu opisanemu w §1.
-W razie wątpliwości, czy dany produkt podlega zwrotowi, prosimy o kontakt przed złożeniem zamówienia: kontakt@rugsly.eu.
+W razie wątpliwości, czy dany produkt podlega zwrotowi, prosimy o kontakt przed złożeniem zamówienia: sklep@ruggy.pl.
 §3. Jak dokonać zwrotu — krok po kroku
-Poinformuj nas o decyzji o odstąpieniu, wysyłając wiadomość na adres kontakt@rugsly.eu. Możesz skorzystać ze wzoru formularza zamieszczonego na końcu tej strony (nie jest to obowiązkowe).
+Poinformuj nas o decyzji o odstąpieniu, wysyłając wiadomość na adres sklep@ruggy.pl. Oświadczenie nie wymaga żadnej szczególnej formy ani wzoru — wystarczy jednoznaczna informacja, że odstępujesz od umowy.
 W zgłoszeniu podaj numer zamówienia, datę otrzymania produktu oraz numer rachunku bankowego do zwrotu płatności.
 Otrzymasz od nas potwierdzenie zgłoszenia oraz adres, na który należy odesłać produkt.
 Zapakuj produkt w sposób zabezpieczający go przed uszkodzeniem w transporcie i odeślij go w ciągu 14 dni od złożenia oświadczenia o odstąpieniu.
@@ -35,7 +35,7 @@ Klient ponosi odpowiedzialność za zmniejszenie wartości produktu wynikające 
 Produkt powinien zostać zwrócony w stanie kompletnym, bez śladów użytkowania wykraczających poza zwykłe sprawdzenie.
 Dywany rzemieślnicze mogą wykazywać nieznaczne różnice kolorystyczne i wymiarowe względem zdjęć — nie stanowi to wady ani podstawy do reklamacji.
 §7. Reklamacje (wady produktu)
-Zwrot z tytułu odstąpienia od umowy to nie to samo co reklamacja. Jeżeli produkt ma wadę, Klientowi przysługują uprawnienia z tytułu rękojmi. Szczegółowe zasady reklamacji opisane są w Regulaminie sklepu. Reklamacje przyjmujemy na adres: kontakt@rugsly.eu.
+Zwrot z tytułu odstąpienia od umowy to nie to samo co reklamacja. Jeżeli produkt ma wadę, Klientowi przysługują uprawnienia z tytułu rękojmi. Szczegółowe zasady reklamacji opisane są w Regulaminie sklepu. Reklamacje przyjmujemy na adres: sklep@ruggy.pl.
 
 `;
 

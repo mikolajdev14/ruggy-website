@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const documentContent = `§1 Postanowienia ogólne
-Administratorem danych osobowych Klientów jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, prowadzący sklep internetowy pod niniejszą stroną internetową. Kontakt w sprawach ochrony danych: e-mail kontakt@rugsly.eu.
+Administratorem danych osobowych Klientów jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342, prowadzący sklep internetowy pod niniejszą stroną internetową. Kontakt w sprawach ochrony danych: e-mail sklep@ruggy.pl.
 
 Niniejsza Polityka prywatności stanowi załącznik do Regulaminu i wyjaśnia, jakie dane osobowe zbieramy, w jakim celu, na jakiej podstawie prawnej, komu je powierzamy oraz jakie prawa przysługują osobom, których dane dotyczą.
 
@@ -33,7 +33,7 @@ Podanie danych jest dobrowolne, jednak niezbędne do złożenia i realizacji zam
 
 §3 Odbiorcy danych
 Powierzamy dane osobowe wyłącznie zaufanym podmiotom i tylko w zakresie niezbędnym do realizacji zamówienia:
-Stripe Payments Europe, Limited (1 Grand Canal Street Lower, Dublin 2, Irlandia) — obsługa płatności online;
+zewnętrzny operator płatności elektronicznych — obsługa płatności online;
 InPost S.A. — dostawa Towaru do Paczkomatu InPost lub kurierem;
 dostawca infrastruktury bazodanowej i hostingu (Supabase), na której przechowywane są dane zamówień oraz przesłane zdjęcia referencyjne;
 Meta Platforms Ireland Limited — wyłącznie wtedy, gdy Klient samodzielnie kontaktuje się ze Sprzedawcą przez Instagram w celu indywidualnej wyceny; dane przekazane w takiej wiadomości podlegają dodatkowo polityce prywatności Meta.
@@ -56,7 +56,7 @@ ograniczenia przetwarzania w przypadkach wskazanych w art. 18 RODO;
 przenoszenia danych przetwarzanych na podstawie umowy lub zgody;
 wniesienia sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie;
 cofnięcia zgody w dowolnym momencie, jeżeli przetwarzanie odbywa się na jej podstawie (bez wpływu na zgodność z prawem przetwarzania sprzed cofnięcia).
-W celu skorzystania z powyższych praw prosimy o kontakt na adres kontakt@rugsly.eu. Klientowi przysługuje również prawo wniesienia skargi do organu nadzorczego — Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).
+W celu skorzystania z powyższych praw prosimy o kontakt na adres sklep@ruggy.pl. Klientowi przysługuje również prawo wniesienia skargi do organu nadzorczego — Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).
 
 §7 Pliki „Cookies”
 Sklep wykorzystuje wyłącznie pliki cookies niezbędne do prawidłowego i bezpiecznego działania serwisu (m.in. utrzymanie sesji, w tym sesji w panelu administracyjnym Sprzedawcy). Pliki te są konieczne do działania strony i nie wymagają zgody.

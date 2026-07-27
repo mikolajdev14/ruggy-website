@@ -17,14 +17,12 @@ import {
   Check,
   CreditCard,
   ShieldCheck,
-  TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type FormEvent,
   type ReactNode,
-  type RefObject,
   use,
   useEffect,
   useRef,
@@ -35,9 +33,11 @@ import {
   createContactBooking,
   uploadReferenceImage,
 } from "./actions";
+import { ContentWarningGate } from "./content-warning-gate";
 import { CustomerForm } from "./customer-form";
 import { DatePicker } from "./date-picker";
 import { DeliveryPicker } from "./delivery-picker";
+import { useDialogChrome } from "./use-dialog-chrome";
 import { FIELD_FOCUS_ORDER, type FieldErrors } from "./field-error";
 import { ReferenceImageUpload } from "./reference-image-upload";
 import { SizePicker } from "./size-picker";
@@ -136,8 +136,6 @@ export default function ProductPage({
     variantParam && /^\d+$/.test(variantParam) ? Number(variantParam) : null;
   const [blockedDays, setBlockedDays] = useState<Date[]>([]);
   const [rugType, setRugType] = useState<RugTypeSummary | null>(null);
-  const [hasAcceptedContentWarning, setHasAcceptedContentWarning] =
-    useState(false);
   const [submitMessage, setSubmitMessage] = useState<string>();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -196,7 +194,6 @@ export default function ProductPage({
   }, [id]);
 
   const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
-  const showContentWarning = isPapadywany && !hasAcceptedContentWarning;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
   const category = getCategory(rugType?.slug);
 
@@ -226,17 +223,6 @@ export default function ProductPage({
       router.replace(`/zamow/${id}/podrodzaj`);
     }
   }, [redirectingToSubcategory, id, router]);
-
-  useEffect(() => {
-    if (!showContentWarning) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showContentWarning]);
 
   const submitBooking = async (antiSlipMat: boolean) => {
     if (isSubmitting) return;
@@ -417,11 +403,7 @@ export default function ProductPage({
 
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
-      {showContentWarning ? (
-        <ContentWarningDialog
-          onAccept={() => setHasAcceptedContentWarning(true)}
-        />
-      ) : null}
+      {isPapadywany ? <ContentWarningGate /> : null}
       {isAntiSlipOfferOpen ? (
         <AntiSlipOfferDialog
           onAccept={() => void submitBooking(true)}
@@ -475,7 +457,7 @@ export default function ProductPage({
                 {isDirectCheckout ? (
                   <>
                     <CreditCard size={16} aria-hidden="true" />
-                    Płacisz online przez Stripe i rezerwujesz termin
+                    Płacisz online i rezerwujesz termin
                   </>
                 ) : (
                   <>
@@ -641,7 +623,7 @@ export default function ProductPage({
                 {isDirectCheckout ? (
                   <>
                     <ShieldCheck size={14} aria-hidden="true" />
-                    Bezpieczna płatność online przez Stripe
+                    Bezpieczna płatność online
                   </>
                 ) : (
                   <>
@@ -681,69 +663,6 @@ export default function ProductPage({
 // restore, and optional Escape-to-close — so every dialog behaves identically
 // for keyboard and screen-reader users. Escape is opt-in: gate dialogs
 // (content warning) and terminal success screens should not be dismissable.
-function useDialogChrome(options?: {
-  onEscape?: () => void;
-  initialFocusRef?: RefObject<HTMLElement | null>;
-}) {
-  const containerRef = useRef<HTMLElement>(null);
-  const onEscape = options?.onEscape;
-  const initialFocusRef = options?.initialFocusRef;
-
-  useEffect(() => {
-    const previouslyFocusedElement = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const getFocusable = () =>
-      Array.from(
-        containerRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ) ?? [],
-      );
-
-    (initialFocusRef?.current ?? getFocusable()[0])?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (onEscape) {
-          event.preventDefault();
-          onEscape();
-        }
-        return;
-      }
-
-      if (event.key !== "Tab") {
-        return;
-      }
-
-      const focusableElements = getFocusable();
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements.at(-1);
-
-      if (!firstElement || !lastElement) {
-        return;
-      }
-
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-      previouslyFocusedElement?.focus();
-    };
-  }, [onEscape, initialFocusRef]);
-
-  return containerRef;
-}
 
 function AntiSlipOfferDialog({
   onAccept,
@@ -859,58 +778,6 @@ function ContactSuccessDialog() {
   );
 }
 
-function ContentWarningDialog({ onAccept }: { onAccept: () => void }) {
-  const acceptButtonRef = useRef<HTMLButtonElement>(null);
-  const dialogRef = useDialogChrome({ initialFocusRef: acceptButtonRef });
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--ruggy-ink)]/70 p-4 backdrop-blur-sm">
-      <section
-        ref={dialogRef}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="content-warning-title"
-        aria-describedby="content-warning-description"
-        className="w-full max-w-xl rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-6 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-8"
-      >
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)]">
-          <TriangleAlert size={24} aria-hidden="true" />
-        </span>
-        <h2
-          id="content-warning-title"
-          className="mt-5 text-2xl font-black text-[var(--ruggy-ink)] sm:text-3xl"
-        >
-          Uwaga dotycząca treści
-        </h2>
-        <p
-          id="content-warning-description"
-          className="mt-4 text-base leading-7 text-[var(--ruggy-body)]"
-        >
-          Serwis nie ma na celu urażania niczyich przekonań religijnych, ale
-          zawarte tu materiały mogą okazać się kontrowersyjne. Osobom wierzącym
-          uprzejmie sugeruję rozważenie opuszczenia strony. Dziękuję za
-          wyrozumiałość.
-        </p>
-        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Link
-            href="/zamow"
-            className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[var(--ruggy-ink)] px-5 text-sm font-black transition-colors hover:bg-[var(--ruggy-blue-soft)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
-          >
-            Wróć do wariantów
-          </Link>
-          <button
-            ref={acceptButtonRef}
-            type="button"
-            onClick={onAccept}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--ruggy-blue)] px-5 text-sm font-black text-white transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-ink)]"
-          >
-            Rozumiem, przechodzę dalej
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
 
 function FormPanel({
   number,

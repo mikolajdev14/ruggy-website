@@ -55,7 +55,9 @@ export function MagneticCta({
     const btn = btnRef.current;
     if (!card || !svg || !stitch || !mask || !tail || !btn) return;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     let perim = 0;
     let drawn = false;
@@ -65,7 +67,13 @@ export function MagneticCta({
       const w = rect.width;
       const h = rect.height;
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-      const d = roundedRectPath(INSET, INSET, w - INSET * 2, h - INSET * 2, RADIUS);
+      const d = roundedRectPath(
+        INSET,
+        INSET,
+        w - INSET * 2,
+        h - INSET * 2,
+        RADIUS,
+      );
       stitch.setAttribute("d", d);
       mask.setAttribute("d", d);
       const innerW = Math.max(0, w - INSET * 2 - RADIUS * 2);
@@ -122,7 +130,10 @@ export function MagneticCta({
       if (dist > 1.5) {
         const midX = (restX + cx) / 2;
         const midY = (restY + cy) / 2 + Math.min(22, dist * 0.7);
-        tail.setAttribute("d", `M ${restX} ${restY} Q ${midX} ${midY} ${cx} ${cy}`);
+        tail.setAttribute(
+          "d",
+          `M ${restX} ${restY} Q ${midX} ${midY} ${cx} ${cy}`,
+        );
         tail.style.opacity = `${Math.min(1, dist / 7)}`;
       } else {
         tail.style.opacity = "0";
@@ -226,16 +237,16 @@ export function MagneticCta({
         />
       </svg>
 
-      <span className="relative flex size-14 items-center justify-center rounded-full bg-[var(--ruggy-yellow)] text-[var(--ruggy-ink)] shadow-[3px_3px_0_var(--ruggy-ink)]">
-        <Sparkles className="size-7" aria-hidden="true" />
-      </span>
       <h2 className="relative mt-7 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">
         {title}
       </h2>
       <p className="relative mt-5 max-w-2xl text-lg leading-8 text-white/85">
         {subtitle}
       </p>
-      <span ref={btnRef} className="relative mt-8 inline-block will-change-transform">
+      <span
+        ref={btnRef}
+        className="relative mt-8 inline-block will-change-transform"
+      >
         <Link
           href={ctaHref}
           className={`inline-flex min-h-14 items-center gap-3 rounded-full bg-[var(--ruggy-yellow)] px-7 text-base font-black text-[var(--ruggy-ink)] shadow-[4px_4px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 ${focusClass}`}

@@ -239,7 +239,7 @@ export default function AgreedProjectPaymentPage({
                 <LockKeyhole className="size-5" aria-hidden="true" />
               )}
               {isSubmitting
-                ? "Przekierowuję do Stripe..."
+                ? "Przekierowuję do płatności..."
                 : `Zapłać ${formatAmount(parsedAmount)}`}
             </button>
           </form>
@@ -259,13 +259,15 @@ export default function AgreedProjectPaymentPage({
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-[var(--ruggy-body)]">Operator</dt>
-              <dd className="font-black">Stripe</dd>
+              <dt className="text-[var(--ruggy-body)]">Sposób płatności</dt>
+              <dd className="text-right font-black">
+                Karta, BLIK, Google / Apple Pay
+              </dd>
             </div>
           </dl>
           <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-[var(--ruggy-body)]">
             <LockKeyhole className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            Dane płatnicze podasz bezpośrednio na zabezpieczonej stronie Stripe.
+            Dane płatnicze podasz bezpośrednio na zabezpieczonej stronie operatora płatności.
           </p>
         </aside>
       </section>

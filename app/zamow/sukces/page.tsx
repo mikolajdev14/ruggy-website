@@ -54,7 +54,7 @@ export default async function SuccessPage({
           {result.success
             ? "Twój pomysł jest już po mojej stronie. Odezwę się, jeśli będę potrzebował dodatkowych informacji. Do zobaczenia w pracowni!"
             : isPending
-              ? "Stripe nie potwierdził jeszcze płatności. Zamówienie zostanie zapisane automatycznie po otrzymaniu potwierdzenia."
+              ? "Operator płatności nie potwierdził jeszcze płatności. Zamówienie zostanie zapisane automatycznie po otrzymaniu potwierdzenia."
               : "Płatność mogła zostać przyjęta, ale zapis zamówienia wymaga sprawdzenia. Zachowaj identyfikator sesji widoczny poniżej."}
         </p>
 
