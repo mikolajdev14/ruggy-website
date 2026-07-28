@@ -1,7 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { PAPADYWANY_SLUG } from "@/lib/rug-order-mode";
 import { PosterHero } from "@/components/poster-hero";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -91,8 +91,6 @@ export default async function PodrodzajPage({
 
       <section className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
         <PosterHero
-          icon={Sparkles}
-          eyebrow="Krok pierwszy"
           words={[
             { text: "Wybierz" },
             { text: "podrodzaj", emphasis: true },

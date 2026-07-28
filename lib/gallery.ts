@@ -30,10 +30,10 @@ export const categories: GalleryCategory[] = [
     label: "Zwierzaki",
     tagline: "Twój pupil w miękkiej, tuftowanej wersji.",
     photos: [
+      "IMG_6559",
       "IMG_0857",
       "IMG_3439",
       "IMG_4803",
-      "IMG_6559",
       "IMG_7746",
     ].map((id) => ({
       src: `${BASE}/dywanyzwierzaki/biale-tlo/${id}-white-bg.jpg`,
@@ -46,7 +46,7 @@ export const categories: GalleryCategory[] = [
     label: "Custom",
     tagline: "Każdy pomysł, dowolny kształt i kolor.",
     photos: [
-      "IMG_1001",
+      "IMG_1287",
       "IMG_3002",
       "IMG_3628",
       "IMG_4217",
@@ -62,7 +62,7 @@ export const categories: GalleryCategory[] = [
     label: "Autodywany",
     tagline: "Motoryzacja, którą chcesz mieć pod stopami.",
     photos: [
-      "IMG_0995",
+      "IMG_9064",
       "IMG_2899",
       "IMG_3389",
       "IMG_3860",
@@ -94,11 +94,11 @@ export const categories: GalleryCategory[] = [
     label: "Herbowe",
     tagline: "Herby i symbole w miękkiej odsłonie.",
     photos: [
+      "IMG_5607",
       "IMG_0509",
       "IMG_3515",
       "IMG_4284",
       "IMG_5213",
-      "IMG_5607",
     ].map((id) => ({
       src: `${BASE}/herbodywany/biale-tlo/${id}-white-bg.jpg`,
       alt: alt("Herbowe", "Dywan z herbem lub symbolem"),
@@ -110,9 +110,9 @@ export const categories: GalleryCategory[] = [
     label: "Alkodywany",
     tagline: "Ulubione marki w formie dywanu.",
     photos: [
+      "IMG_6653",
       "IMG_3329",
       "IMG_5523",
-      "IMG_6653",
       "IMG_7201",
       "IMG_7727",
     ].map((id) => ({

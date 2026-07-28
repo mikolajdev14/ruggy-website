@@ -5,8 +5,9 @@ import { TemptationWhisper } from "@/components/temptation-whisper";
 type PosterWord = { text: string; emphasis?: boolean };
 
 interface PosterHeroProps {
-  icon: LucideIcon;
-  eyebrow: string;
+  /** Optional kicker above the headline — omit both to let the title lead. */
+  icon?: LucideIcon;
+  eyebrow?: string;
   words: PosterWord[];
   description: string;
 }
@@ -28,12 +29,18 @@ export function PosterHero({
       <TemptationWhisper />
 
       <div className="relative z-10">
-        <p className="ruggy-poster-kicker flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.22em] text-[var(--ruggy-blue)]">
-          <Icon className="size-4" aria-hidden="true" />
-          {eyebrow}
-        </p>
+        {Icon && eyebrow ? (
+          <p className="ruggy-poster-kicker flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.22em] text-[var(--ruggy-blue)]">
+            <Icon className="size-4" aria-hidden="true" />
+            {eyebrow}
+          </p>
+        ) : null}
 
-        <h1 className="ruggy-poster-title mt-5 max-w-5xl font-black leading-[0.88] tracking-[-0.05em] text-[var(--ruggy-ink)]">
+        <h1
+          className={`ruggy-poster-title max-w-5xl font-black leading-[0.88] tracking-[-0.05em] text-[var(--ruggy-ink)]${
+            Icon && eyebrow ? " mt-5" : ""
+          }`}
+        >
           {words.map((word, index) => (
             <Fragment key={index}>
               <span className="ruggy-poster-word">

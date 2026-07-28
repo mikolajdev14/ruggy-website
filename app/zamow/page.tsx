@@ -1,7 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { CUSTOM_RUG_MIN_PRICE_CENTS } from "@/lib/custom-rug-price";
 import { usesDirectCheckout } from "@/lib/rug-order-mode";
-import { ArrowLeft, ArrowRight, CreditCard, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PosterHero } from "@/components/poster-hero";
@@ -63,8 +63,6 @@ export default async function ZamowPage() {
 
       <section className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
         <PosterHero
-          icon={Sparkles}
-          eyebrow="Krok pierwszy"
           words={[
             { text: "Wybierz" },
             { text: "bazę", emphasis: true },
