@@ -15,35 +15,53 @@ const focusClass =
 
 export function ExperimentalHero() {
   const heroRef = useRef<HTMLElement>(null);
-  const arcVideoRef = useRef<HTMLVideoElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
   const frameRef = useRef<number | null>(null);
   const pointerRef = useRef({ x: 0, y: 0 });
   const motionEnabledRef = useRef(false);
+  const inViewRef = useRef(true);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const finePointer = window.matchMedia("(pointer: fine)");
 
-    const updateMotionPreference = () => {
-      motionEnabledRef.current = !reducedMotion.matches && finePointer.matches;
-
-      const arcVideo = arcVideoRef.current;
-      if (!arcVideo) {
+    const syncPlayback = () => {
+      const video = bgVideoRef.current;
+      if (!video) {
         return;
       }
 
-      if (reducedMotion.matches) {
-        arcVideo.pause();
+      if (reducedMotion.matches || !inViewRef.current) {
+        video.pause();
       } else {
-        void arcVideo.play().catch(() => {});
+        void video.play().catch(() => {});
       }
+    };
+
+    const updateMotionPreference = () => {
+      motionEnabledRef.current = !reducedMotion.matches && finePointer.matches;
+      syncPlayback();
     };
 
     updateMotionPreference();
     reducedMotion.addEventListener("change", updateMotionPreference);
     finePointer.addEventListener("change", updateMotionPreference);
 
+    // Pełnoekranowe tło nie musi dekodować klatek, gdy hero zjedzie z widoku.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = entry.isIntersecting;
+        syncPlayback();
+      },
+      { rootMargin: "120px" },
+    );
+
+    if (heroRef.current) {
+      observer.observe(heroRef.current);
+    }
+
     return () => {
+      observer.disconnect();
       reducedMotion.removeEventListener("change", updateMotionPreference);
       finePointer.removeEventListener("change", updateMotionPreference);
       if (frameRef.current !== null) {
@@ -103,24 +121,23 @@ export function ExperimentalHero() {
     >
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 z-0 h-[400px] overflow-hidden text-[var(--ruggy-ink)] sm:h-[560px] lg:h-[700px]"
+        className="absolute inset-x-0 top-0 z-0 h-[400px] overflow-hidden bg-[var(--ruggy-blue-soft)] text-[var(--ruggy-ink)] sm:h-[560px] lg:h-[700px]"
       >
+        <video
+          ref={bgVideoRef}
+          className="ruggy-hero-video absolute inset-0 size-full object-cover"
+          poster="/ruggy/hero-arc-poster.jpg"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          tabIndex={-1}
+        >
+          <source src="/ruggy/hero-arc.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-x-0 bottom-0 h-[42%] bg-linear-to-b from-transparent to-(--ruggy-canvas)" />
+        <div className="ruggy-hero-window absolute bottom-0 left-1/2 h-[74%] w-[min(82vw,600px)] -translate-x-1/2 rounded-t-full border-2 border-[var(--ruggy-ink)]" />
         <div className="ruggy-thread-bg absolute inset-0 opacity-70" />
-        <div className="absolute bottom-0 left-1/2 h-[74%] w-[min(82vw,600px)] -translate-x-1/2 overflow-hidden rounded-t-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-blue-soft)] shadow-[10px_-10px_0_var(--ruggy-blue-soft-strong)]">
-          <video
-            ref={arcVideoRef}
-            className="size-full object-cover opacity-80"
-            poster="/ruggy/hero-arc-poster.jpg"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            tabIndex={-1}
-          >
-            <source src="/ruggy/hero-arc.mp4" type="video/mp4" />
-          </video>
-          <div className="ruggy-thread-bg absolute inset-0 bg-(--ruggy-blue-soft)/45" />
-        </div>
       </div>
 
       <div className="relative z-40 mx-auto w-full max-w-[90rem]">
