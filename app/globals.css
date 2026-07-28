@@ -144,14 +144,12 @@
 /* Łuk jest oknem w welonie: spread rysuje przygaszenie tylko poza kształtem,
    więc w środku widać film w pełnej sile. */
 .ruggy-hero-window {
-  box-shadow:
-    10px -10px 0 var(--ruggy-blue-soft-strong),
-    0 0 0 100vmax
-      color-mix(
-        in srgb,
-        color-mix(in srgb, var(--ruggy-canvas) 62%, var(--ruggy-blue-soft)) 82%,
-        transparent
-      );
+  box-shadow: 0 0 0 100vmax
+    color-mix(
+      in srgb,
+      color-mix(in srgb, var(--ruggy-canvas) 62%, var(--ruggy-blue-soft)) 82%,
+      transparent
+    );
 }
 
 .ruggy-experimental-letter {
