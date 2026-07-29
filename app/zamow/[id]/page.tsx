@@ -9,6 +9,12 @@ import {
   formatCustomRugPriceRange,
   formatPriceCents,
 } from "@/lib/custom-rug-price";
+import {
+  calculateDeliveryCostCents,
+  DELIVERY_LABEL,
+  formatDeliveryCostCents,
+  type DeliveryMethod,
+} from "@/lib/delivery-pricing";
 import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
 import { siteConfig } from "@/lib/site-config";
 import { bookingSchema } from "@/schema/booking";
@@ -43,7 +49,9 @@ import { FIELD_FOCUS_ORDER, type FieldErrors } from "./field-error";
 import { ReferenceImageUpload } from "./reference-image-upload";
 import { SizePicker } from "./size-picker";
 
-export type DeliveryMethod = "parcel_locker" | "courier";
+// Re-exported so the booking form and the delivery price table can never drift
+// apart on what a delivery method is.
+export type { DeliveryMethod };
 
 export type Booking = {
   rugTypeId: string;
@@ -371,16 +379,27 @@ export default function ProductPage({
       }).format(booking.pickupDate)
     : "Nie wybrano";
 
-  const selectedDelivery =
-    booking.deliveryMethod === "parcel_locker"
-      ? "Paczkomat InPost"
-      : booking.deliveryMethod === "courier"
-        ? "Kurier"
-        : "Nie wybrano";
-
   const customPriceCents = calculateCustomRugPriceCents(
     booking.customHeightCm,
   );
+  // Ready sizes have a firm price; a custom rug only has the estimate, which is
+  // still what decides whether the order clears the free-delivery threshold.
+  const rugPriceCents = booking.pickedSize
+    ? resolvedSelection.sizePriceCents
+    : customPriceCents;
+  const deliveryCostCents = calculateDeliveryCostCents(
+    booking.deliveryMethod,
+    rugPriceCents,
+  );
+
+  const selectedDelivery = booking.deliveryMethod
+    ? `${DELIVERY_LABEL[booking.deliveryMethod]}${
+        deliveryCostCents != null
+          ? ` · ${formatDeliveryCostCents(deliveryCostCents)}`
+          : ""
+      }`
+    : "Nie wybrano";
+
   const selectedSize = booking.pickedSize
     ? resolvedSelection.sizeLabel
       ? resolvedSelection.sizePriceCents != null
@@ -551,6 +570,7 @@ export default function ProductPage({
                   booking={booking}
                   setBooking={setBooking}
                   fieldErrors={fieldErrors}
+                  rugPriceCents={rugPriceCents}
                 />
               </section>
 

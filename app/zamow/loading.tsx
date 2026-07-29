@@ -23,7 +23,7 @@ export default function ZamowLoading() {
               key={item}
               className="overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-surface)]"
             >
-              <div className="aspect-[4/3] bg-[var(--ruggy-blue-soft)]" />
+              <div className="aspect-square bg-[var(--ruggy-blue-soft)]" />
               <div className="space-y-3 p-6">
                 <div className="h-7 w-2/3 rounded-lg bg-[var(--ruggy-blue-soft-strong)]" />
                 <div className="h-5 w-full rounded-lg bg-[var(--ruggy-blue-soft)]" />

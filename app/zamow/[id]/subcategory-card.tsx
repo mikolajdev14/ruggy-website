@@ -41,14 +41,15 @@ export const SubcategoryCard = ({
       href={`/zamow/${rugTypeId}?variant=${id}`}
       className="group flex h-full flex-col overflow-hidden rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] shadow-[5px_6px_0_var(--ruggy-ink)] transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--ruggy-blue)]"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-white">
+      {/* Square + contained, same as the variant grid: the whole rug shows. */}
+      <div className="relative aspect-square w-full overflow-hidden bg-white">
         {cover ? (
           <Image
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src={cover.src}
             alt={name}
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-[var(--ruggy-blue-soft)] text-4xl font-black text-[var(--ruggy-blue)]">

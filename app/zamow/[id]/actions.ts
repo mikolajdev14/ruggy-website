@@ -22,6 +22,10 @@ import {
   formatDeliveryAddress,
   formatParcelLocker,
 } from "@/lib/delivery-address";
+import {
+  calculateDeliveryCostCents,
+  formatDeliveryLineItemName,
+} from "@/lib/delivery-pricing";
 import { bookingSchema } from "@/schema/booking";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -297,6 +301,24 @@ export async function createCheckoutSession(input: unknown) {
     });
   }
 
+  // Free delivery is simply the absence of a delivery line — a zero-amount line
+  // would only add noise to the Stripe receipt.
+  const deliveryCostCents =
+    calculateDeliveryCostCents(booking.deliveryMethod, priceCents) ?? 0;
+
+  if (deliveryCostCents > 0) {
+    lineItems.push({
+      price_data: {
+        currency: "pln",
+        unit_amount: deliveryCostCents,
+        product_data: {
+          name: formatDeliveryLineItemName(booking.deliveryMethod),
+        },
+      },
+      quantity: 1,
+    });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: booking.customerEmail,
@@ -318,6 +340,7 @@ export async function createCheckoutSession(input: unknown) {
       customerPhone: booking.customerPhone ?? "",
       customerNotes: booking.customerNotes ?? "",
       deliveryMethod: booking.deliveryMethod,
+      deliveryCostCents: String(deliveryCostCents),
       parcelLockerCode: formatParcelLocker(booking),
       deliveryAddress: formatDeliveryAddress(booking),
       referenceImagePath: booking.referenceImagePath ?? "",
@@ -417,10 +440,14 @@ export async function createContactBooking(input: unknown) {
         ),
         booking.antiSlipMat,
       ),
-      price_cents: addAntiSlipMatPrice(
-        estimatedPriceCents,
-        booking.antiSlipMat,
-      ),
+      // A quote is settled on Instagram, but the stored estimate carries the
+      // delivery cost the customer was shown so the two never disagree.
+      price_cents:
+        addAntiSlipMatPrice(estimatedPriceCents, booking.antiSlipMat) +
+        (calculateDeliveryCostCents(
+          booking.deliveryMethod,
+          estimatedPriceCents,
+        ) ?? 0),
       customer_name: booking.customerName,
       customer_email: booking.customerEmail,
       customer_phone: booking.customerPhone?.trim() || null,

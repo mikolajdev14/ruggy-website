@@ -4,6 +4,13 @@ import { Check, MapPin } from "lucide-react";
 import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
 import type { Booking, DeliveryMethod } from "./page";
 import { radioTabIndex, useRadioGroupKeys } from "@/components/use-radio-group";
+import { formatPriceCents } from "@/lib/custom-rug-price";
+import {
+  DELIVERY_PRICE_CENTS,
+  FREE_DELIVERY_HINT,
+  formatDeliveryCostCents,
+  qualifiesForFreeDelivery,
+} from "@/lib/delivery-pricing";
 import { isGeowidgetConfigured } from "@/lib/inpost-geowidget";
 import { ParcelLockerMapDialog } from "./parcel-locker-map-dialog";
 import {
@@ -23,6 +30,8 @@ type DeliveryPickerProps = {
   booking: Booking;
   setBooking: Dispatch<SetStateAction<Booking>>;
   fieldErrors?: FieldErrors;
+  // Price of the chosen rug — decides whether delivery is free yet.
+  rugPriceCents: number | null;
 };
 
 const options: Array<{
@@ -46,8 +55,10 @@ export const DeliveryPicker = ({
   booking,
   setBooking,
   fieldErrors = {},
+  rugPriceCents,
 }: DeliveryPickerProps) => {
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const isFreeDelivery = qualifiesForFreeDelivery(rugPriceCents);
 
   const selectMethod = (deliveryMethod: DeliveryMethod) => {
     setBooking((previous) => ({
@@ -169,11 +180,23 @@ export const DeliveryPicker = ({
                     : "border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] hover:border-[var(--ruggy-ink)]"
               }`}
             >
-              <span className="block text-sm font-black text-[var(--ruggy-ink)]">
+              <span className="block pe-6 text-sm font-black text-[var(--ruggy-ink)]">
                 {option.title}
               </span>
               <span className="mt-1 block text-xs font-bold text-[var(--ruggy-body)]">
                 {option.description}
+              </span>
+              <span className="mt-2 flex items-baseline gap-1.5 text-sm font-black text-[var(--ruggy-ink)]">
+                {isFreeDelivery ? (
+                  <>
+                    <s className="text-xs font-bold text-[var(--ruggy-muted)]">
+                      {formatPriceCents(DELIVERY_PRICE_CENTS[option.value])}
+                    </s>
+                    {formatDeliveryCostCents(0)}
+                  </>
+                ) : (
+                  formatPriceCents(DELIVERY_PRICE_CENTS[option.value])
+                )}
               </span>
               {isSelected ? (
                 <Check
@@ -186,6 +209,12 @@ export const DeliveryPicker = ({
         })}
       </div>
       <FieldError id={fieldErrorId("deliveryMethod")} message={methodError} />
+
+      <p className="text-xs font-bold text-[var(--ruggy-body)]">
+        {isFreeDelivery
+          ? "Dostawa gratis — Twoje zamówienie przekracza próg darmowej wysyłki."
+          : `${FREE_DELIVERY_HINT}.`}
+      </p>
 
       {booking.deliveryMethod === "parcel_locker" ? (
         <div className="space-y-3">
