@@ -134,22 +134,26 @@
   --rug-rotate-y: 0deg;
 }
 
+/* Film ma być widoczny jak zza mgły, na całej szerokości hero. Rozmycie robi
+   mgłę, a powiększenie ponad kadr chowa miękkie krawędzie, które blur zostawia
+   na brzegach. */
 .ruggy-hero-video {
-  scale: 1.06;
+  scale: 1.14;
+  filter: blur(7px) saturate(0.92);
   translate: calc(var(--rug-x) * -0.25) calc(var(--rug-y) * -0.25);
   transition: translate 240ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: translate;
 }
 
-/* Łuk jest oknem w welonie: spread rysuje przygaszenie tylko poza kształtem,
-   więc w środku widać film w pełnej sile. */
-.ruggy-hero-window {
-  box-shadow: 0 0 0 100vmax
-    color-mix(
-      in srgb,
-      color-mix(in srgb, var(--ruggy-canvas) 62%, var(--ruggy-blue-soft)) 82%,
-      transparent
-    );
+/* Welon w kolorze canvasu spina rozmyty film w jedną mgłę i trzyma kontrast
+   pod literami. Ten sam odcień, który wcześniej otaczał łuk — tylko że teraz
+   leży równo na całym tle, bez wyciętego okna. */
+.ruggy-hero-fog {
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--ruggy-canvas) 62%, var(--ruggy-blue-soft)) 74%,
+    transparent
+  );
 }
 
 .ruggy-experimental-letter {

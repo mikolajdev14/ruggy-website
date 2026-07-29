@@ -135,8 +135,8 @@ export function ExperimentalHero() {
         >
           <source src="/ruggy/hero-arc.mp4" type="video/mp4" />
         </video>
+        <div className="ruggy-hero-fog absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 h-[42%] bg-linear-to-b from-transparent to-(--ruggy-canvas)" />
-        <div className="ruggy-hero-window absolute bottom-0 left-1/2 h-[74%] w-[min(82vw,600px)] -translate-x-1/2 rounded-t-full border-2 border-[var(--ruggy-ink)]" />
         <div className="ruggy-thread-bg absolute inset-0 opacity-70" />
       </div>
 
