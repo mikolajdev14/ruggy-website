@@ -67,7 +67,7 @@ const makeCategory = ({
 };
 
 // Papadywany do not have a curated Drive subfolder yet, so their existing
-// selection remains unchanged, including the cover in the realizations pool.
+// selection is extended with one distinct realization to keep five examples.
 const papadywanyPhotos = makePhotos({
   defaultFolder: "papadywany",
   label: "Papadywany",
@@ -81,6 +81,7 @@ const papadywanyPhotos = makePhotos({
     { folder: "papadywany/papashrek", id: "IMG_0249" },
     { folder: "papadywany/papaslonko", id: "IMG_3154" },
     { folder: "papadywany/papastokrotka", id: "IMG_5145" },
+    { folder: "papadywany/paparzaba", id: "IMG_8965" },
   ],
 });
 
@@ -136,7 +137,7 @@ export const categories: GalleryCategory[] = [
     label: "Papadywany",
     tagline: "Kultowe motywy z przymrużeniem oka.",
     cover: papadywanyPhotos[0],
-    photos: papadywanyPhotos,
+    photos: papadywanyPhotos.slice(1),
   },
   makeCategory({
     slug: "herbodywany",
