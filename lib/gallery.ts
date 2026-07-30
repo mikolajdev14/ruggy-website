@@ -144,16 +144,20 @@ export function getCategoryCover(
 
 // Each papadywany subrodzaj lives in its own project folder whose name matches
 // the rug_variants slug (the same slugs POPULAR_PAPADYWAN_SIZE_BY_VARIANT uses).
-// This maps a subrodzaj to its cover photo — the first realization in its folder.
-const papadywanyVariantCovers: Record<string, string> = {
-  "janpat-chlopaki-z-barakow": "IMG_3116",
-  "janpat-ii": "IMG_4955",
-  "janpat-slubny-zwiazek": "IMG_6072",
-  papaharnas: "IMG_4639",
-  paparzaba: "IMG_8965",
-  papashrek: "IMG_0249",
-  papaslonko: "IMG_3154",
-  papastokrotka: "IMG_5145",
+// This maps a subrodzaj to its cover photo — the first realization in its folder,
+// unless `project` points at another shoot the cover is borrowed from.
+const papadywanyVariantCovers: Record<
+  string,
+  { id: string; project?: string }
+> = {
+  "janpat-chlopaki-z-barakow": { id: "IMG_6678", project: "janpat-ii" },
+  "janpat-ii": { id: "IMG_4955" },
+  "janpat-slubny-zwiazek": { id: "IMG_6074" },
+  papaharnas: { id: "IMG_4639" },
+  paparzaba: { id: "IMG_8965" },
+  papashrek: { id: "IMG_0249" },
+  papaslonko: { id: "IMG_3154" },
+  papastokrotka: { id: "IMG_5145" },
 };
 
 /** Cover photo for a papadywany subrodzaj (by rug_variants slug), if any. */
@@ -161,11 +165,11 @@ export function getPapadywanyVariantCover(
   variantSlug: string | null | undefined,
 ): GalleryPhoto | undefined {
   const slug = variantSlug?.trim();
-  const coverId = slug ? papadywanyVariantCovers[slug] : undefined;
-  if (!slug || !coverId) return undefined;
+  const cover = slug ? papadywanyVariantCovers[slug] : undefined;
+  if (!slug || !cover) return undefined;
 
   return {
-    src: `${BASE}/papadywany/${slug}/biale-tlo/${coverId}-white-bg.jpg`,
+    src: `${BASE}/papadywany/${cover.project ?? slug}/biale-tlo/${cover.id}-white-bg.jpg`,
     alt: alt("Papadywany", "Dywan z kultowym motywem"),
     category: "Papadywany",
   };

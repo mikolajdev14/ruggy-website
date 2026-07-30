@@ -3,6 +3,7 @@ import { Archivo_Black, Lobster, Manrope } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site-config";
 import { InactiveTabTitle } from "@/components/inactive-tab-title";
+import AuthHashRouter from "@/components/auth-hash-router";
 
 const lobster = Lobster({
   subsets: ["latin"],
@@ -77,6 +78,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col font-sans">
         <InactiveTabTitle />
+        <AuthHashRouter />
         {children}
       </body>
     </html>

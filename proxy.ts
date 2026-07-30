@@ -36,8 +36,9 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
   const isLoginPage = pathname === "/admin/login";
+  const isSetPasswordPage = pathname === "/admin/set-password";
 
-  if (isAdminRoute && !isLoginPage && !user) {
+  if (isAdminRoute && !isLoginPage && !isSetPasswordPage && !user) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set(
       "next",
