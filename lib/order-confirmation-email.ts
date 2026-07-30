@@ -1,0 +1,266 @@
+import "server-only";
+
+import { formatPriceCents } from "@/lib/custom-rug-price";
+import { DELIVERY_LABEL } from "@/lib/delivery-pricing";
+import { siteConfig } from "@/lib/site-config";
+
+export type OrderConfirmationEmailInput = {
+  bookingId: number;
+  stripeSessionId: string;
+  customerName: string;
+  customerEmail: string;
+  rugTypeName: string;
+  rugVariantName: string | null;
+  rugSizeLabel: string;
+  amountCents: number;
+  bookingDate: string;
+  deliveryMethod: string | null;
+  parcelLockerCode: string | null;
+  deliveryAddress: string | null;
+};
+
+export type OrderConfirmationEmailResult =
+  | {
+      success: true;
+      emailId: string | null;
+      recipient: string;
+      testMode: boolean;
+    }
+  | {
+      success: false;
+      reason: "not_configured" | "request_failed";
+      message: string;
+    };
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const formatBookingDate = (dateKey: string) => {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Warsaw",
+  }).format(date);
+};
+
+const getDeliveryLabel = (deliveryMethod: string | null) => {
+  if (
+    deliveryMethod === "parcel_locker" ||
+    deliveryMethod === "courier"
+  ) {
+    return DELIVERY_LABEL[deliveryMethod];
+  }
+
+  return "Do ustalenia";
+};
+
+const getDeliveryDetails = (input: OrderConfirmationEmailInput) => {
+  if (input.deliveryMethod === "parcel_locker") {
+    return input.parcelLockerCode;
+  }
+
+  if (input.deliveryMethod === "courier") {
+    return input.deliveryAddress;
+  }
+
+  return null;
+};
+
+const buildTextEmail = (
+  input: OrderConfirmationEmailInput,
+  intendedRecipient: string | null,
+) => {
+  const productName = [input.rugTypeName, input.rugVariantName]
+    .filter(Boolean)
+    .join(" · ");
+  const deliveryDetails = getDeliveryDetails(input);
+
+  return [
+    `Cześć ${input.customerName}!`,
+    "",
+    "Płatność została potwierdzona. Twoje zamówienie trafiło do pracowni Ruggy.",
+    "",
+    `Numer zamówienia: #${input.bookingId}`,
+    `Dywan: ${productName}`,
+    `Rozmiar: ${input.rugSizeLabel}`,
+    `Termin: ${formatBookingDate(input.bookingDate)}`,
+    `Dostawa: ${getDeliveryLabel(input.deliveryMethod)}${
+      deliveryDetails ? `, ${deliveryDetails}` : ""
+    }`,
+    `Opłacona kwota: ${formatPriceCents(input.amountCents)}`,
+    "",
+    "Gdy rozpocznę realizację, będę informować Cię o kolejnych krokach.",
+    `W razie pytań napisz do mnie na Instagramie: ${siteConfig.instagram}`,
+    ...(intendedRecipient
+      ? ["", `Tryb testowy. Docelowy odbiorca: ${intendedRecipient}`]
+      : []),
+    "",
+    "Twój Wuja Dywaniarz",
+    "Ruggy",
+  ].join("\n");
+};
+
+const buildHtmlEmail = (
+  input: OrderConfirmationEmailInput,
+  intendedRecipient: string | null,
+) => {
+  const productName = [input.rugTypeName, input.rugVariantName]
+    .filter(Boolean)
+    .join(" · ");
+  const deliveryDetails = getDeliveryDetails(input);
+  const delivery = `${getDeliveryLabel(input.deliveryMethod)}${
+    deliveryDetails ? `, ${deliveryDetails}` : ""
+  }`;
+  const detailRows = [
+    ["Numer zamówienia", `#${input.bookingId}`],
+    ["Dywan", productName],
+    ["Rozmiar", input.rugSizeLabel],
+    ["Termin", formatBookingDate(input.bookingDate)],
+    ["Dostawa", delivery],
+    ["Opłacona kwota", formatPriceCents(input.amountCents)],
+  ];
+
+  return `<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Potwierdzenie zamówienia #${input.bookingId}</title>
+  </head>
+  <body style="margin:0;background:#f8f3e8;color:#142033;font-family:Arial,sans-serif;">
+    <div style="display:none;max-height:0;overflow:hidden;">
+      Płatność potwierdzona. Zamówienie #${input.bookingId} jest już w pracowni Ruggy.
+    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f3e8;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fffaf0;border:2px solid #8b919a;border-radius:24px;overflow:hidden;">
+            <tr>
+              <td style="background:#2864f0;padding:28px 32px;color:#ffffff;">
+                <p style="margin:0 0 8px;font-size:14px;font-weight:700;">ruggy.</p>
+                <h1 style="margin:0;font-size:28px;line-height:1.15;">Zamówienie przyjęte!</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <p style="margin:0 0 12px;font-size:17px;line-height:1.6;">Cześć ${escapeHtml(input.customerName)}!</p>
+                <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#374151;">
+                  Płatność została potwierdzona. Twoje zamówienie trafiło do pracowni Ruggy.
+                </p>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  ${detailRows
+                    .map(
+                      ([label, value]) => `<tr>
+                    <td style="padding:10px 0;border-bottom:1px solid #c9c4ba;color:#5d6674;font-size:14px;vertical-align:top;">${escapeHtml(label)}</td>
+                    <td align="right" style="padding:10px 0;border-bottom:1px solid #c9c4ba;color:#142033;font-size:14px;font-weight:700;vertical-align:top;">${escapeHtml(value)}</td>
+                  </tr>`,
+                    )
+                    .join("")}
+                </table>
+                <p style="margin:24px 0 0;font-size:16px;line-height:1.6;color:#374151;">
+                  Gdy rozpocznę realizację, będę informować Cię o kolejnych krokach.
+                </p>
+                <p style="margin:16px 0 0;font-size:14px;line-height:1.6;color:#5d6674;">
+                  W razie pytań napisz do mnie na
+                  <a href="${siteConfig.instagram}" style="color:#2864f0;font-weight:700;">Instagramie</a>.
+                </p>
+                ${
+                  intendedRecipient
+                    ? `<p style="margin:24px 0 0;padding:12px 14px;background:#dcecff;border-radius:12px;font-size:13px;line-height:1.5;color:#142033;">
+                  Tryb testowy. Docelowy odbiorca: ${escapeHtml(intendedRecipient)}
+                </p>`
+                    : ""
+                }
+                <p style="margin:28px 0 0;font-size:15px;font-weight:700;line-height:1.5;">
+                  Twój Wuja Dywaniarz<br>Ruggy
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+};
+
+export async function sendOrderConfirmationEmail(
+  input: OrderConfirmationEmailInput,
+): Promise<OrderConfirmationEmailResult> {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const from = process.env.RESEND_FROM_EMAIL?.trim();
+  const testRecipient = process.env.RESEND_TEST_RECIPIENT?.trim() || null;
+
+  if (!apiKey || !from) {
+    return {
+      success: false,
+      reason: "not_configured",
+      message:
+        "Brakuje RESEND_API_KEY lub RESEND_FROM_EMAIL. Potwierdzenie email nie zostało wysłane.",
+    };
+  }
+
+  const recipient = testRecipient ?? input.customerEmail;
+  const testMode = testRecipient != null;
+  const subject = `${testMode ? "[TEST] " : ""}Potwierdzenie zamówienia #${input.bookingId} w Ruggy`;
+  const intendedRecipient = testMode ? input.customerEmail : null;
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": `order-confirmation/${input.stripeSessionId}/${
+          testMode ? "test" : "customer"
+        }`,
+      },
+      body: JSON.stringify({
+        from,
+        to: [recipient],
+        subject,
+        text: buildTextEmail(input, intendedRecipient),
+        html: buildHtmlEmail(input, intendedRecipient),
+        tags: [{ name: "email_type", value: "order_confirmation" }],
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const responseBody = await response.text();
+
+      return {
+        success: false,
+        reason: "request_failed",
+        message: `Resend API zwróciło ${response.status}: ${responseBody.slice(0, 500)}`,
+      };
+    }
+
+    const responseBody = (await response.json()) as { id?: string };
+
+    return {
+      success: true,
+      emailId: responseBody.id ?? null,
+      recipient,
+      testMode,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      reason: "request_failed",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Nie udało się połączyć z Resend API.",
+    };
+  }
+}

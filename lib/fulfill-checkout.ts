@@ -4,6 +4,7 @@ import { isValidDateKey } from "@/lib/booking-date";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
 import { appendAntiSlipMatLabel } from "@/lib/order-addons";
+import { sendOrderConfirmationEmail } from "@/lib/order-confirmation-email";
 
 export type FulfillmentResult =
   | { success: true }
@@ -90,51 +91,84 @@ export async function fulfillCheckout(
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id;
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("bookings").upsert(
-    {
-      rug_type_id: rugTypeId,
-      rug_variant_id: rugVariantId,
-      rug_size_id: rugSizeId,
-      rug_type_name: metadata.rugTypeName,
-      rug_variant_name: optionalMetadata(metadata.rugVariantName),
-      rug_size_label: appendAntiSlipMatLabel(
-        metadata.rugSizeLabel,
-        metadata.antiSlipMat === "true",
-      ),
-      price_cents: session.amount_total,
-      customer_name: metadata.customerName,
-      customer_email: customerEmail,
-      customer_phone: optionalMetadata(metadata.customerPhone),
-      notes: optionalMetadata(metadata.customerNotes),
-      delivery_method: optionalMetadata(metadata.deliveryMethod),
-      parcel_locker_code: optionalMetadata(metadata.parcelLockerCode),
-      delivery_address: optionalMetadata(metadata.deliveryAddress),
-      reference_image_path: optionalMetadata(metadata.referenceImagePath),
-      booking_date: bookingDate,
-      status: "paid",
-      stripe_session_id: session.id,
-      stripe_payment_intent_id: paymentIntentId ?? null,
-      expires_at: new Date(session.expires_at * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "stripe_session_id" },
+  const rugVariantName = optionalMetadata(metadata.rugVariantName);
+  const rugSizeLabel = appendAntiSlipMatLabel(
+    metadata.rugSizeLabel,
+    metadata.antiSlipMat === "true",
   );
+  const deliveryMethod = optionalMetadata(metadata.deliveryMethod);
+  const parcelLockerCode = optionalMetadata(metadata.parcelLockerCode);
+  const deliveryAddress = optionalMetadata(metadata.deliveryAddress);
+  const supabase = createAdminClient();
+  const { data: savedBooking, error } = await supabase
+    .from("bookings")
+    .upsert(
+      {
+        rug_type_id: rugTypeId,
+        rug_variant_id: rugVariantId,
+        rug_size_id: rugSizeId,
+        rug_type_name: metadata.rugTypeName,
+        rug_variant_name: rugVariantName,
+        rug_size_label: rugSizeLabel,
+        price_cents: session.amount_total,
+        customer_name: metadata.customerName,
+        customer_email: customerEmail,
+        customer_phone: optionalMetadata(metadata.customerPhone),
+        notes: optionalMetadata(metadata.customerNotes),
+        delivery_method: deliveryMethod,
+        parcel_locker_code: parcelLockerCode,
+        delivery_address: deliveryAddress,
+        reference_image_path: optionalMetadata(metadata.referenceImagePath),
+        booking_date: bookingDate,
+        status: "paid",
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId ?? null,
+        expires_at: new Date(session.expires_at * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_session_id" },
+    )
+    .select("id")
+    .single();
 
-  if (error) {
+  const bookingId = Number(savedBooking?.id);
+
+  if (error || !Number.isInteger(bookingId) || bookingId <= 0) {
     console.error(
       "Nie udało się zapisać zamówienia w Supabase:",
       JSON.stringify({
-        code: error.code,
-        message: error.message,
-        hint: error.hint,
+        code: error?.code,
+        message: error?.message,
+        hint: error?.hint,
       }),
     );
     return {
       success: false,
       reason: "database_error",
-      message: error.message,
+      message: error?.message ?? "Supabase nie zwrócił numeru zamówienia.",
     };
+  }
+
+  const emailResult = await sendOrderConfirmationEmail({
+    bookingId,
+    stripeSessionId: session.id,
+    customerName: metadata.customerName,
+    customerEmail,
+    rugTypeName: metadata.rugTypeName,
+    rugVariantName,
+    rugSizeLabel,
+    amountCents: session.amount_total,
+    bookingDate,
+    deliveryMethod,
+    parcelLockerCode,
+    deliveryAddress,
+  });
+
+  if (!emailResult.success) {
+    console.error(
+      "Nie udało się wysłać potwierdzenia zamówienia:",
+      JSON.stringify(emailResult),
+    );
   }
 
   return { success: true };

@@ -49,6 +49,28 @@ Po wdrożeniu sprawdź:
 Panel `/admin`, konfiguratory `/zamow/[id]` oraz strony wyniku płatności mają
 ustawione `noindex` i celowo nie występują w sitemapie.
 
+## Potwierdzenia zamówień email
+
+Po potwierdzeniu płatności standardowego zamówienia aplikacja wysyła klientowi
+wiadomość przez Resend API. Ustaw lokalnie i na Vercelu:
+
+```env
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=Ruggy <zamowienia@ruggy.pl>
+```
+
+Do testów przed weryfikacją domeny użyj nadawcy Resend i skieruj wszystkie
+wiadomości na adres właściciela konta Resend:
+
+```env
+RESEND_FROM_EMAIL=Ruggy <onboarding@resend.dev>
+RESEND_TEST_RECIPIENT=twoj-email@example.com
+```
+
+W trybie testowym temat wiadomości ma prefiks `[TEST]`, a treść pokazuje
+docelowy adres klienta. Przed produkcją zweryfikuj domenę w Resend, ustaw
+nadawcę w domenie Ruggy i usuń `RESEND_TEST_RECIPIENT`.
+
 ## Powiadomienia WhatsApp
 
 Powiadomienia o nowych zgłoszeniach do wyceny korzystają z oficjalnego Meta
