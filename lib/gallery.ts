@@ -14,113 +14,158 @@ export type GalleryCategory = {
   slug: string;
   label: string;
   tagline: string;
+  cover: GalleryPhoto;
   photos: GalleryPhoto[];
 };
 
 const alt = (label: string, subject: string) =>
   `${subject} — ręcznie tuftowany dywan Ruggy z kategorii ${label}`;
 
+type CategoryPhotoSource = {
+  id: string;
+  folder?: string;
+};
+
+const makePhotos = ({
+  defaultFolder,
+  label,
+  subject,
+  sources,
+}: {
+  defaultFolder: string;
+  label: string;
+  subject: string;
+  sources: CategoryPhotoSource[];
+}): GalleryPhoto[] =>
+  sources.map(({ id, folder }) => ({
+    src: `${BASE}/${folder ?? defaultFolder}/biale-tlo/${id}-white-bg.jpg`,
+    alt: alt(label, subject),
+    category: label,
+  }));
+
+const makeCategory = ({
+  slug,
+  label,
+  tagline,
+  subject,
+  sources,
+}: {
+  slug: string;
+  label: string;
+  tagline: string;
+  subject: string;
+  sources: [CategoryPhotoSource, ...CategoryPhotoSource[]];
+}): GalleryCategory => {
+  const [cover, ...photos] = makePhotos({
+    defaultFolder: slug,
+    label,
+    subject,
+    sources,
+  });
+
+  return { slug, label, tagline, cover, photos };
+};
+
+// Papadywany do not have a curated Drive subfolder yet, so their existing
+// selection remains unchanged, including the cover in the realizations pool.
+const papadywanyPhotos = makePhotos({
+  defaultFolder: "papadywany",
+  label: "Papadywany",
+  subject: "Dywan z kultowym motywem",
+  sources: [
+    { folder: "papadywany/janpat-ii", id: "IMG_4955" },
+    {
+      folder: "papadywany/janpat-slubny-zwiazek",
+      id: "IMG_6072",
+    },
+    { folder: "papadywany/papashrek", id: "IMG_0249" },
+    { folder: "papadywany/papaslonko", id: "IMG_3154" },
+    { folder: "papadywany/papastokrotka", id: "IMG_5145" },
+  ],
+});
+
 /**
- * Five representative projects per category. Order matters: the first photo of
- * each category doubles as the category cover.
+ * Curated Drive folders provide six photos per category: the first is the card
+ * cover and the remaining five are shown as example realizations.
  */
 export const categories: GalleryCategory[] = [
-  {
+  makeCategory({
     slug: "dywanyzwierzaki",
     label: "Zwierzaki",
     tagline: "Twój pupil w miękkiej, tuftowanej wersji.",
-    photos: [
-      "IMG_6559",
-      "IMG_0857",
-      "IMG_3439",
-      "IMG_4803",
-      "IMG_7746",
-    ].map((id) => ({
-      src: `${BASE}/dywanyzwierzaki/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Zwierzaki", "Dywan z motywem zwierzaka"),
-      category: "Zwierzaki",
-    })),
-  },
-  {
+    subject: "Dywan z motywem zwierzaka",
+    sources: [
+      { id: "IMG_7746" },
+      { id: "IMG_7289" },
+      { id: "IMG_6820" },
+      { id: "IMG_6559" },
+      { id: "IMG_6561" },
+      { id: "IMG_4938" },
+    ],
+  }),
+  makeCategory({
     slug: "custom",
     label: "Custom",
     tagline: "Każdy pomysł, dowolny kształt i kolor.",
-    photos: [
-      "IMG_1287",
-      "IMG_3002",
-      "IMG_3628",
-      "IMG_4217",
-      "PEPSIDYWAN",
-    ].map((id) => ({
-      src: `${BASE}/custom/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Custom", "Autorski dywan na zamówienie"),
-      category: "Custom",
-    })),
-  },
-  {
+    subject: "Autorski dywan na zamówienie",
+    sources: [
+      { id: "IMG_6890" },
+      { id: "IMG_6777" },
+      { folder: "dywanyzwierzaki", id: "IMG_6624" },
+      { id: "IMG_3376" },
+      { id: "IMG_1287" },
+      { id: "IMG_1001" },
+    ],
+  }),
+  makeCategory({
     slug: "autodywany",
     label: "Autodywany",
     tagline: "Motoryzacja, którą chcesz mieć pod stopami.",
-    photos: [
-      "IMG_9064",
-      "IMG_2899",
-      "IMG_3389",
-      "IMG_3860",
-      "IMG_4119",
-    ].map((id) => ({
-      src: `${BASE}/autodywany/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Autodywany", "Dywan o motywie motoryzacyjnym"),
-      category: "Autodywany",
-    })),
-  },
+    subject: "Dywan o motywie motoryzacyjnym",
+    sources: [
+      { id: "IMG_8097" },
+      { id: "IMG_6410" },
+      { id: "IMG_5250" },
+      { id: "IMG_3449" },
+      { id: "IMG_9121" },
+      { id: "IMG_9064" },
+    ],
+  }),
   {
     slug: "papadywany",
     label: "Papadywany",
     tagline: "Kultowe motywy z przymrużeniem oka.",
-    photos: [
-      { project: "janpat-ii", id: "IMG_4955" },
-      { project: "janpat-slubny-zwiazek", id: "IMG_6072" },
-      { project: "papashrek", id: "IMG_0249" },
-      { project: "papaslonko", id: "IMG_3154" },
-      { project: "papastokrotka", id: "IMG_5145" },
-    ].map(({ project, id }) => ({
-      src: `${BASE}/papadywany/${project}/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Papadywany", "Dywan z kultowym motywem"),
-      category: "Papadywany",
-    })),
+    cover: papadywanyPhotos[0],
+    photos: papadywanyPhotos,
   },
-  {
+  makeCategory({
     slug: "herbodywany",
     label: "Herbowe",
     tagline: "Herby i symbole w miękkiej odsłonie.",
-    photos: [
-      "IMG_5607",
-      "IMG_0509",
-      "IMG_3515",
-      "IMG_4284",
-      "IMG_5213",
-    ].map((id) => ({
-      src: `${BASE}/herbodywany/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Herbowe", "Dywan z herbem lub symbolem"),
-      category: "Herbowe",
-    })),
-  },
-  {
+    subject: "Dywan z herbem lub symbolem",
+    sources: [
+      { id: "IMG_7623" },
+      { folder: "autodywany", id: "IMG_6818" },
+      { id: "IMG_5607" },
+      { id: "IMG_5213" },
+      { id: "IMG_4284" },
+      { id: "IMG_0509" },
+    ],
+  }),
+  makeCategory({
     slug: "piwodywany",
     label: "Alkodywany",
     tagline: "Ulubione marki w formie dywanu.",
-    photos: [
-      "IMG_6653",
-      "IMG_3329",
-      "IMG_5523",
-      "IMG_7201",
-      "IMG_7727",
-    ].map((id) => ({
-      src: `${BASE}/piwodywany/biale-tlo/${id}-white-bg.jpg`,
-      alt: alt("Alkodywany", "Dywan inspirowany ulubioną marką"),
-      category: "Alkodywany",
-    })),
-  },
+    subject: "Dywan inspirowany ulubioną marką",
+    sources: [
+      { id: "IMG_8806" },
+      { id: "IMG_7728" },
+      { id: "IMG_7201" },
+      { id: "IMG_6653" },
+      { id: "IMG_5523" },
+      { id: "IMG_3331" },
+    ],
+  }),
 ];
 
 const categoriesBySlug = new Map(
@@ -135,11 +180,11 @@ export function getCategory(
   return slug ? categoriesBySlug.get(slug.trim()) : undefined;
 }
 
-/** Cover photo (first realization) for a given category slug, if any. */
+/** Curated cover photo for a given category slug, if any. */
 export function getCategoryCover(
   slug: string | null | undefined,
 ): GalleryPhoto | undefined {
-  return getCategory(slug)?.photos[0];
+  return getCategory(slug)?.cover;
 }
 
 // Each papadywany subrodzaj lives in its own project folder whose name matches
@@ -176,9 +221,9 @@ export function getPapadywanyVariantCover(
 }
 
 /**
- * Flat pool of every category's realizations, spanning all categories.
+ * Flat pool of every category's cover and realizations, spanning all categories.
  * Used to fill the 3D dome gallery on the homepage.
  */
 export const allRugPhotos: GalleryPhoto[] = categories.flatMap(
-  (category) => category.photos,
+  (category) => [category.cover, ...category.photos],
 );
