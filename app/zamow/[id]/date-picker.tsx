@@ -5,7 +5,8 @@ import {
 } from "@/lib/booking-date";
 import { CalendarDays } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { DayPicker } from "react-day-picker";
+import { DateLib, DayPicker } from "react-day-picker";
+import { pl } from "react-day-picker/locale";
 import "react-day-picker/dist/style.css";
 import type { Booking } from "./page";
 import type { Dispatch, SetStateAction } from "react";
@@ -63,6 +64,11 @@ const css = `
     text-decoration: line-through;
   }
 `;
+
+// Polish month and weekday names come out of the locale in lower case, which
+// reads as a typo in a heading-sized caption.
+const capitalize = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
 
 export const DatePicker = ({
   setBooking,
@@ -145,6 +151,29 @@ export const DatePicker = ({
       >
         <DayPicker
           className="order-calendar"
+          locale={pl}
+          formatters={{
+            formatCaption: (month, options, dateLib) =>
+              capitalize(
+                (dateLib ?? new DateLib(options)).formatMonthYear(month),
+              ),
+            formatWeekdayName: (weekday, options, dateLib) =>
+              capitalize(
+                (dateLib ?? new DateLib(options)).format(weekday, "cccccc"),
+              ),
+          }}
+          labels={{
+            labelPrevious: () => "Poprzedni miesiąc",
+            labelNext: () => "Następny miesiąc",
+            labelDayButton: (date, modifiers, options, dateLib) => {
+              let label = capitalize(
+                (dateLib ?? new DateLib(options)).format(date, "PPPP"),
+              );
+              if (modifiers.today) label = `Dzisiaj, ${label}`;
+              if (modifiers.selected) label = `${label}, wybrany`;
+              return label;
+            },
+          }}
           disabled={[{ before: minimumBookingDate }, ...blockedDates]}
           mode="single"
           month={visibleMonth}
