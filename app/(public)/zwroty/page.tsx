@@ -7,35 +7,35 @@ export const metadata: Metadata = {
   alternates: { canonical: "/zwroty" },
 };
 
-const documentContent = `Sprzedawcą jest RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Kontakt w sprawie zwrotów i reklamacji: e-mail sklep@ruggy.pl.
+const documentContent = `Rolę Sprzedawcy pełni RUGGY Tomasz Krasowski, Dorohucza 26A, 21-044 Trawniki, NIP: 7123482342. Sprawy zwrotów i reklamacji prowadzimy mailowo pod adresem sklep@ruggy.pl.
 
-§1. Prawo do odstąpienia od umowy
-Klient będący konsumentem ma prawo odstąpić od umowy zawartej na odległość bez podawania przyczyny w terminie 14 dni od dnia otrzymania produktu (art. 27 Ustawy z dnia 30 maja 2014 r. o prawach konsumenta).
-Termin 14 dni liczony jest od dnia, w którym Klient (lub wskazana przez niego osoba inna niż przewoźnik) objął produkt w posiadanie. Dla zamówień obejmujących wiele produktów dostarczanych osobno — od objęcia w posiadanie ostatniego produktu.
-Do zachowania terminu wystarczy wysłanie oświadczenia o odstąpieniu przed jego upływem.
-§2. Wyłączenia — produkty na zamówienie
-Zgodnie z art. 38 pkt 3 Ustawy o prawach konsumenta, prawo odstąpienia NIE przysługuje w odniesieniu do produktów wykonanych według specyfikacji Konsumenta lub wyraźnie spersonalizowanych — dotyczy to dywanów tworzonych na indywidualne zamówienie (custom).
-Produkty gotowe, dostępne w sklepie „od ręki” (nie personalizowane), podlegają standardowemu prawu zwrotu opisanemu w §1.
-W razie wątpliwości, czy dany produkt podlega zwrotowi, prosimy o kontakt przed złożeniem zamówienia: sklep@ruggy.pl.
-§3. Jak dokonać zwrotu — krok po kroku
-Poinformuj nas o decyzji o odstąpieniu, wysyłając wiadomość na adres sklep@ruggy.pl. Oświadczenie nie wymaga żadnej szczególnej formy ani wzoru — wystarczy jednoznaczna informacja, że odstępujesz od umowy.
-W zgłoszeniu podaj numer zamówienia, datę otrzymania produktu oraz numer rachunku bankowego do zwrotu płatności.
-Otrzymasz od nas potwierdzenie zgłoszenia oraz adres, na który należy odesłać produkt.
-Zapakuj produkt w sposób zabezpieczający go przed uszkodzeniem w transporcie i odeślij go w ciągu 14 dni od złożenia oświadczenia o odstąpieniu.
-§4. Koszty zwrotu
-Bezpośrednie koszty odesłania produktu (przesyłka zwrotna) ponosi Klient.
-Sprzedawca zwraca koszt najtańszej oferowanej przez siebie metody dostawy. Jeżeli Klient wybrał metodę droższą niż najtańsza dostępna — dodatkowa różnica nie podlega zwrotowi.
-Prosimy nie odsyłać przesyłek za pobraniem — takie przesyłki nie będą odbierane.
-§5. Zwrot płatności
-Sprzedawca zwraca wszystkie otrzymane od Klienta płatności (w tym koszt najtańszej dostawy) niezwłocznie, nie później niż w terminie 14 dni od dnia otrzymania oświadczenia o odstąpieniu.
-Sprzedawca może wstrzymać się ze zwrotem płatności do chwili otrzymania produktu z powrotem lub dostarczenia przez Klienta dowodu jego odesłania — w zależności od tego, które zdarzenie nastąpi wcześniej.
-Zwrot płatności następuje przy użyciu tej samej metody płatności, której użył Klient, chyba że wyraźnie zgodzi się on na inne rozwiązanie. Zwrot nie wiąże się z żadnymi dodatkowymi kosztami po stronie Klienta.
-§6. Stan zwracanego produktu
-Klient ponosi odpowiedzialność za zmniejszenie wartości produktu wynikające z korzystania z niego w sposób wykraczający poza konieczny do stwierdzenia charakteru, cech i funkcjonowania produktu.
-Produkt powinien zostać zwrócony w stanie kompletnym, bez śladów użytkowania wykraczających poza zwykłe sprawdzenie.
-Dywany rzemieślnicze mogą wykazywać nieznaczne różnice kolorystyczne i wymiarowe względem zdjęć — nie stanowi to wady ani podstawy do reklamacji.
-§7. Reklamacje (wady produktu)
-Zwrot z tytułu odstąpienia od umowy to nie to samo co reklamacja. Jeżeli produkt ma wadę, Klientowi przysługują uprawnienia z tytułu rękojmi. Szczegółowe zasady reklamacji opisane są w Regulaminie sklepu. Reklamacje przyjmujemy na adres: sklep@ruggy.pl.
+§1. Uprawnienie do odstąpienia od umowy
+Klientowi będącemu konsumentem wolno odstąpić od umowy zawartej na odległość bez podawania przyczyny w ciągu 14 dni od otrzymania produktu (art. 27 Ustawy z dnia 30 maja 2014 r. o prawach konsumenta).
+Bieg czternastu dni rozpoczyna się w dniu, w którym Klient — albo wskazana przez niego osoba inna niż przewoźnik — objął produkt w posiadanie. Gdy zamówienie obejmuje kilka produktów dostarczanych osobno, liczy się objęcie w posiadanie ostatniego z nich.
+Termin uznaje się za dotrzymany, jeśli oświadczenie o odstąpieniu zostanie wysłane przed jego upływem.
+§2. Kiedy zwrot nie przysługuje — produkty na zamówienie
+Stosownie do art. 38 pkt 3 Ustawy o prawach konsumenta odstąpienie NIE obejmuje produktów wytworzonych według specyfikacji Konsumenta bądź wyraźnie spersonalizowanych — a więc dywanów powstających na indywidualne zamówienie (custom).
+Produkty gotowe, dostępne w sklepie „od ręki” (bez personalizacji), objęte są standardowym prawem zwrotu opisanym w §1.
+Jeśli nie masz pewności, czy dany produkt można zwrócić, napisz do nas przed złożeniem zamówienia: sklep@ruggy.pl.
+§3. Zwrot krok po kroku
+Przekaż nam informację o odstąpieniu, pisząc na adres sklep@ruggy.pl. Oświadczenie nie musi mieć konkretnej formy ani opierać się na wzorze — liczy się jednoznaczny komunikat, że odstępujesz od umowy.
+W zgłoszeniu wskaż numer zamówienia, datę odbioru produktu oraz numer rachunku bankowego, na który mamy zwrócić płatność.
+Odeślemy Ci potwierdzenie zgłoszenia razem z adresem, pod który należy odesłać produkt.
+Zabezpiecz produkt opakowaniem chroniącym go przed uszkodzeniem w transporcie i nadaj przesyłkę w ciągu 14 dni od złożenia oświadczenia o odstąpieniu.
+§4. Kto ponosi koszty zwrotu
+Bezpośrednie koszty odesłania produktu (przesyłka zwrotna) obciążają Klienta.
+Sprzedawca oddaje równowartość najtańszej metody dostawy, jaką sam oferuje. Jeżeli Klient sięgnął po metodę droższą od najtańszej dostępnej, powstałej różnicy nie zwracamy.
+Prosimy nie nadawać przesyłek za pobraniem — takich paczek nie odbieramy.
+§5. Oddanie pieniędzy
+Wszystkie otrzymane od Klienta płatności (łącznie z kosztem najtańszej dostawy) Sprzedawca oddaje bezzwłocznie, najpóźniej w ciągu 14 dni od dnia otrzymania oświadczenia o odstąpieniu.
+Do chwili otrzymania produktu z powrotem albo przedstawienia przez Klienta dowodu jego odesłania — zależnie od tego, co nastąpi wcześniej — Sprzedawca może wstrzymać się ze zwrotem płatności.
+Płatność wraca tą samą metodą, którą posłużył się Klient, chyba że wyraźnie zgodzi się on na inne rozwiązanie. Zwrot nie generuje po stronie Klienta żadnych dodatkowych kosztów.
+§6. W jakim stanie odesłać produkt
+Klient odpowiada za spadek wartości produktu spowodowany korzystaniem z niego ponad to, co konieczne do stwierdzenia jego charakteru, cech i funkcjonowania.
+Produkt należy odesłać kompletny, bez śladów używania wykraczających poza zwykłe sprawdzenie.
+Dywany rzemieślnicze mogą różnić się nieznacznie kolorem i wymiarami od zdjęć — nie jest to wada ani podstawa do reklamacji.
+§7. Reklamacja wadliwego produktu
+Zwrot wynikający z odstąpienia od umowy to co innego niż reklamacja. Gdy produkt ma wadę, Klient korzysta z uprawnień z tytułu rękojmi. Dokładne zasady reklamacji znajdziesz w Regulaminie sklepu. Reklamacje przyjmujemy pod adresem: sklep@ruggy.pl.
 
 `;
 

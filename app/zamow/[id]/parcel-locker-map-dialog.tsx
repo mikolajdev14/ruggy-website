@@ -132,7 +132,9 @@ export function ParcelLockerMapDialog({
     widget.setAttribute("config", GEOWIDGET_CONFIG);
     widget.setAttribute("onpoint", POINT_EVENT);
     widget.style.display = "block";
+    widget.style.width = "100%";
     widget.style.height = "100%";
+    widget.style.minHeight = "100%";
     host.append(widget);
 
     return () => widget.remove();
@@ -145,7 +147,7 @@ export function ParcelLockerMapDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="parcel-locker-map-title"
-        className="flex max-h-[92vh] w-full max-w-3xl flex-col rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-5 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-6"
+        className="flex h-[min(92dvh,48rem)] max-h-[92dvh] w-full max-w-4xl flex-col rounded-[2rem] border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] p-5 shadow-[8px_10px_0_var(--ruggy-yellow)] sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -173,7 +175,6 @@ export function ParcelLockerMapDialog({
         <div
           ref={dialogBodyRef}
           className="mt-4 min-h-0 flex-1 overflow-hidden rounded-2xl border-2 border-[var(--ruggy-border-strong)]"
-          style={{ height: "min(66vh, 34rem)" }}
         >
           {status === "loading" ? (
             <p
