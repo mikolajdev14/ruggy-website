@@ -1,3 +1,8 @@
+import {
+  isMissingRugPhotosTable,
+  mapRugPhotos,
+  type RugPhotoRow,
+} from "@/lib/rug-photos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -74,6 +79,7 @@ export default async function AdminRugCatalogPage() {
   const [
     { data: typeRows, error: typesError },
     { data: bookingRefs, error: bookingsError },
+    { data: photoRows, error: photosError },
   ] = await Promise.all([
     supabase
       .from("rug_types")
@@ -83,7 +89,23 @@ export default async function AdminRugCatalogPage() {
     // Which catalog rows order history points at — the UI uses this to explain
     // up front why a row can only be deactivated, instead of failing on click.
     supabase.from("bookings").select("rug_type_id, rug_variant_id, rug_size_id"),
+    // Kept out of the rug_types embed on purpose: before the photos migration
+    // is applied this query fails on its own, instead of taking the whole
+    // catalog down with it.
+    supabase
+      .from("rug_photos")
+      .select("id, rug_type_id, storage_path, is_cover, display_order"),
   ]);
+
+  const photosTableMissing = isMissingRugPhotosTable(photosError);
+  const photosByTypeId = new Map<number, RugPhotoRow[]>();
+
+  for (const row of (photoRows ?? []) as Array<
+    RugPhotoRow & { rug_type_id: number | string }
+  >) {
+    const typeId = Number(row.rug_type_id);
+    photosByTypeId.set(typeId, [...(photosByTypeId.get(typeId) ?? []), row]);
+  }
 
   const catalog: CatalogRugType[] = ((typeRows as TypeRow[] | null) ?? [])
     .map((row) => ({
@@ -94,6 +116,7 @@ export default async function AdminRugCatalogPage() {
       leadTimeDays: row.lead_time_days == null ? null : Number(row.lead_time_days),
       isActive: row.is_active !== false,
       displayOrder: Number(row.display_order ?? 0),
+      photos: mapRugPhotos(photosByTypeId.get(Number(row.id))),
       sizes: mapSizes(row.rug_sizes),
       variants: (row.rug_variants ?? [])
         .map((variant) => ({
@@ -134,11 +157,26 @@ export default async function AdminRugCatalogPage() {
         </div>
       ) : null}
 
+      {photosTableMissing ? (
+        <div className="mb-5 rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[#fff1bf] px-4 py-3 text-sm font-semibold text-[var(--ruggy-ink)]">
+          Zdjęcia kategorii są wyłączone, dopóki nie uruchomisz migracji{" "}
+          <code className="font-black">
+            supabase/migrations/20260801_add_rug_photos.sql
+          </code>{" "}
+          w Supabase. Reszta panelu działa normalnie.
+        </div>
+      ) : photosError ? (
+        <div className="mb-5 rounded-2xl border-2 border-[var(--ruggy-coral)]/40 bg-[#fff0eb] px-4 py-3 text-sm font-semibold text-[var(--ruggy-error)]">
+          Nie udało się pobrać zdjęć kategorii.
+        </div>
+      ) : null}
+
       <RugCatalogClient
         catalog={catalog}
         usedTypeIds={[...new Set(usedTypeIds)]}
         usedVariantIds={[...new Set(usedVariantIds)]}
         usedSizeIds={[...new Set(usedSizeIds)]}
+        photosEnabled={!photosTableMissing}
       />
     </AdminShell>
   );

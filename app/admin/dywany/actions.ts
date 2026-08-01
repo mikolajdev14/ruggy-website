@@ -1,5 +1,11 @@
 "use server";
 
+import { validateImageUpload } from "@/lib/image-upload";
+import {
+  isMissingRugPhotosTable,
+  MAX_RUG_PHOTO_SIZE,
+  RUG_CATALOG_PHOTOS_BUCKET,
+} from "@/lib/rug-photos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientServer } from "@/lib/supabase/server";
 import {
@@ -12,7 +18,12 @@ import {
 } from "@/schema/rug-catalog";
 import { revalidatePath } from "next/cache";
 
-export type CatalogActionResult = { success: boolean; message?: string };
+export type CatalogActionResult = {
+  success: boolean;
+  message?: string;
+  /** Set by createRugType so the caller can attach photos to the fresh row. */
+  rugTypeId?: number;
+};
 
 // Server Functions are reachable by direct POST, so every entry point below
 // re-checks the admin session before touching the service-role client.
@@ -47,6 +58,12 @@ const revalidateCatalog = () => {
 
 /** Postgres unique-violation, i.e. the slug is already taken. */
 const isDuplicateSlug = (error: { code?: string }) => error.code === "23505";
+
+// Until supabase/migrations/20260801_add_rug_photos.sql is applied the panel
+// still runs — it just can't store photos, and says so plainly instead of
+// surfacing a Postgres error code.
+const MISSING_PHOTOS_TABLE_MESSAGE =
+  "Brakuje tabeli rug_photos. Uruchom migrację supabase/migrations/20260801_add_rug_photos.sql w Supabase, żeby dodawać zdjęcia.";
 
 // A row that a booking points at is order history: its name/price snapshot is
 // what the customer bought. Deleting it would orphan (or silently blank) that
@@ -99,27 +116,38 @@ export async function createRugType(
   if (!supabase) return SESSION_EXPIRED;
 
   const values = parsed.data;
-  const { error } = await supabase.from("rug_types").insert({
-    name: values.name,
-    slug: values.slug,
-    description: values.description,
-    lead_time_days: values.leadTimeDays,
-    display_order: values.displayOrder,
-    is_active: values.isActive,
-  });
+  const { data: createdType, error } = await supabase
+    .from("rug_types")
+    .insert({
+      name: values.name,
+      slug: values.slug,
+      description: values.description,
+      lead_time_days: values.leadTimeDays,
+      display_order: values.displayOrder,
+      is_active: values.isActive,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !createdType) {
     console.error("Nie udało się dodać kategorii dywanów:", error);
     return {
       success: false,
-      message: isDuplicateSlug(error)
-        ? "Kategoria z tym slugiem już istnieje."
-        : "Nie udało się dodać kategorii.",
+      message:
+        error && isDuplicateSlug(error)
+          ? "Kategoria z tym slugiem już istnieje."
+          : "Nie udało się dodać kategorii.",
     };
   }
 
   revalidateCatalog();
-  return { success: true, message: `Kategoria „${values.name}” została dodana.` };
+  return {
+    success: true,
+    message: `Kategoria „${values.name}” została dodana.`,
+    // The creation form holds its photos in memory until the row exists; it
+    // uploads them against this id as soon as the insert lands.
+    rugTypeId: Number(createdType.id),
+  };
 }
 
 export async function updateRugType(
@@ -245,6 +273,30 @@ export async function deleteRugType(id: number): Promise<CatalogActionResult> {
         success: false,
         message: "Nie udało się usunąć podrodzajów kategorii.",
       };
+    }
+  }
+
+  // rug_photos cascades with the type, but the objects in Storage do not — drop
+  // them first so a removed category stops costing storage.
+  const { data: photoRows, error: photosError } = await supabase
+    .from("rug_photos")
+    .select("storage_path")
+    .eq("rug_type_id", id);
+
+  if (photosError && !isMissingRugPhotosTable(photosError)) {
+    console.error("Nie udało się pobrać zdjęć kategorii:", photosError);
+    return { success: false, message: "Nie udało się usunąć kategorii." };
+  }
+
+  const storagePaths = (photoRows ?? []).map((row) => row.storage_path);
+
+  if (storagePaths.length) {
+    const { error: storageError } = await supabase.storage
+      .from(RUG_CATALOG_PHOTOS_BUCKET)
+      .remove(storagePaths);
+
+    if (storageError) {
+      console.error("Nie udało się usunąć plików zdjęć:", storageError);
     }
   }
 
@@ -517,4 +569,218 @@ export async function deleteRugSize(id: number): Promise<CatalogActionResult> {
 
   revalidateCatalog();
   return { success: true, message: "Rozmiar został usunięty." };
+}
+
+/* ----------------------------------------------------------------- photos */
+
+export async function uploadRugPhoto(
+  rugTypeId: number,
+  file: File,
+  makeCover: boolean,
+): Promise<CatalogActionResult> {
+  if (!isPositiveId(rugTypeId)) {
+    return { success: false, message: "Nieprawidłowa kategoria." };
+  }
+
+  const validation = await validateImageUpload(file, MAX_RUG_PHOTO_SIZE);
+
+  if (!validation.ok) {
+    return { success: false, message: validation.message };
+  }
+
+  const supabase = await getAdminClient();
+  if (!supabase) return SESSION_EXPIRED;
+
+  const { data: existingPhotos, error: existingError } = await supabase
+    .from("rug_photos")
+    .select("id, display_order, is_cover")
+    .eq("rug_type_id", rugTypeId);
+
+  if (existingError) {
+    console.error("Nie udało się pobrać zdjęć kategorii:", existingError);
+    return {
+      success: false,
+      message: isMissingRugPhotosTable(existingError)
+        ? MISSING_PHOTOS_TABLE_MESSAGE
+        : "Nie udało się pobrać zdjęć kategorii.",
+    };
+  }
+
+  const photos = existingPhotos ?? [];
+  // The very first photo of a category becomes its cover on its own — a
+  // category with realizations but no card cover is never what anyone wants.
+  const shouldBeCover = makeCover || photos.length === 0;
+  const nextOrder = photos.length
+    ? Math.max(...photos.map((photo) => Number(photo.display_order ?? 0))) + 1
+    : 0;
+
+  const { buffer, extension, contentType } = validation.image;
+  const storagePath = `${rugTypeId}/${crypto.randomUUID()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(RUG_CATALOG_PHOTOS_BUCKET)
+    .upload(storagePath, buffer, {
+      cacheControl: "31536000",
+      contentType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error("Nie udało się przesłać zdjęcia kategorii:", uploadError);
+    return {
+      success: false,
+      message: `Nie udało się przesłać zdjęcia. Sprawdź, czy istnieje bucket „${RUG_CATALOG_PHOTOS_BUCKET}”.`,
+    };
+  }
+
+  if (shouldBeCover && photos.some((photo) => photo.is_cover)) {
+    const { error: unsetError } = await supabase
+      .from("rug_photos")
+      .update({ is_cover: false })
+      .eq("rug_type_id", rugTypeId);
+
+    if (unsetError) {
+      console.error("Nie udało się zmienić okładki:", unsetError);
+      await supabase.storage.from(RUG_CATALOG_PHOTOS_BUCKET).remove([storagePath]);
+      return { success: false, message: "Nie udało się ustawić okładki." };
+    }
+  }
+
+  const { error: insertError } = await supabase.from("rug_photos").insert({
+    rug_type_id: rugTypeId,
+    storage_path: storagePath,
+    is_cover: shouldBeCover,
+    display_order: nextOrder,
+  });
+
+  if (insertError) {
+    console.error("Nie udało się zapisać zdjęcia kategorii:", insertError);
+    // Nothing points at the uploaded object now, so drop it rather than leave
+    // an invisible file billing storage forever.
+    await supabase.storage.from(RUG_CATALOG_PHOTOS_BUCKET).remove([storagePath]);
+    return { success: false, message: "Nie udało się zapisać zdjęcia." };
+  }
+
+  revalidateCatalog();
+  return {
+    success: true,
+    message: shouldBeCover ? "Okładka została dodana." : "Zdjęcie zostało dodane.",
+  };
+}
+
+export async function setRugPhotoCover(
+  photoId: number,
+): Promise<CatalogActionResult> {
+  if (!isPositiveId(photoId)) {
+    return { success: false, message: "Nieprawidłowe zdjęcie." };
+  }
+
+  const supabase = await getAdminClient();
+  if (!supabase) return SESSION_EXPIRED;
+
+  const { data: photo, error: photoError } = await supabase
+    .from("rug_photos")
+    .select("id, rug_type_id")
+    .eq("id", photoId)
+    .maybeSingle();
+
+  if (photoError || !photo) {
+    console.error("Nie udało się pobrać zdjęcia:", photoError);
+    return {
+      success: false,
+      message: isMissingRugPhotosTable(photoError)
+        ? MISSING_PHOTOS_TABLE_MESSAGE
+        : "Nie udało się znaleźć zdjęcia.",
+    };
+  }
+
+  // Clear first: a unique partial index allows only one cover per category.
+  const { error: unsetError } = await supabase
+    .from("rug_photos")
+    .update({ is_cover: false })
+    .eq("rug_type_id", photo.rug_type_id);
+
+  if (unsetError) {
+    console.error("Nie udało się zdjąć poprzedniej okładki:", unsetError);
+    return { success: false, message: "Nie udało się ustawić okładki." };
+  }
+
+  const { error } = await supabase
+    .from("rug_photos")
+    .update({ is_cover: true })
+    .eq("id", photoId);
+
+  if (error) {
+    console.error("Nie udało się ustawić okładki:", error);
+    return { success: false, message: "Nie udało się ustawić okładki." };
+  }
+
+  revalidateCatalog();
+  return { success: true, message: "Okładka została zmieniona." };
+}
+
+export async function deleteRugPhoto(
+  photoId: number,
+): Promise<CatalogActionResult> {
+  if (!isPositiveId(photoId)) {
+    return { success: false, message: "Nieprawidłowe zdjęcie." };
+  }
+
+  const supabase = await getAdminClient();
+  if (!supabase) return SESSION_EXPIRED;
+
+  const { data: photo, error: photoError } = await supabase
+    .from("rug_photos")
+    .select("id, rug_type_id, storage_path, is_cover")
+    .eq("id", photoId)
+    .maybeSingle();
+
+  if (photoError || !photo) {
+    console.error("Nie udało się pobrać zdjęcia:", photoError);
+    return {
+      success: false,
+      message: isMissingRugPhotosTable(photoError)
+        ? MISSING_PHOTOS_TABLE_MESSAGE
+        : "Nie udało się znaleźć zdjęcia.",
+    };
+  }
+
+  const { error } = await supabase.from("rug_photos").delete().eq("id", photoId);
+
+  if (error) {
+    console.error("Nie udało się usunąć zdjęcia:", error);
+    return { success: false, message: "Nie udało się usunąć zdjęcia." };
+  }
+
+  const { error: storageError } = await supabase.storage
+    .from(RUG_CATALOG_PHOTOS_BUCKET)
+    .remove([photo.storage_path]);
+
+  if (storageError) {
+    // The row is gone, so the photo is off the site either way; a leftover
+    // object is worth a log, not an error the owner has to act on.
+    console.error("Nie udało się usunąć pliku zdjęcia:", storageError);
+  }
+
+  // Deleting the cover would leave the category card blank, so the next photo
+  // in order takes over.
+  if (photo.is_cover) {
+    const { data: replacement } = await supabase
+      .from("rug_photos")
+      .select("id")
+      .eq("rug_type_id", photo.rug_type_id)
+      .order("display_order")
+      .limit(1)
+      .maybeSingle();
+
+    if (replacement) {
+      await supabase
+        .from("rug_photos")
+        .update({ is_cover: true })
+        .eq("id", replacement.id);
+    }
+  }
+
+  revalidateCatalog();
+  return { success: true, message: "Zdjęcie zostało usunięte." };
 }

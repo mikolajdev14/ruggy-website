@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, AtSign, CreditCard } from "lucide-react";
-import { getCategoryCover } from "@/lib/gallery";
+import type { GalleryPhoto } from "@/lib/gallery";
 import { formatPriceCents } from "@/lib/custom-rug-price";
 
 export type RugOrderMode = "checkout" | "quote";
@@ -15,10 +15,13 @@ interface RugProps {
   mode: RugOrderMode;
   fromPriceCents: number | null;
   hasSubcategories?: boolean;
+  // Resolved by the page: an uploaded cover when the category has one, the
+  // curated photo from lib/gallery.ts otherwise.
+  cover?: GalleryPhoto;
 }
 
 export const RugCard = (props: RugProps) => {
-  const cover = getCategoryCover(props.slug);
+  const cover = props.cover;
   const isCheckout = props.mode === "checkout";
   // Types with subrodzajs (papadywany) pick one on a dedicated page first;
   // everything else goes straight to the details form.

@@ -13,6 +13,22 @@ npm run dev
 
 Aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost:3000).
 
+## Migracje bazy
+
+Pliki z `supabase/migrations/` uruchamiaj w kolejności dat w SQL Editorze
+Supabase. Najnowsza, `20260801_add_rug_photos.sql`, dodaje tabelę
+`rug_photos` i publiczny bucket `rug-catalog-photos` — bez niej panel
+`/admin/dywany` działa, ale nie pozwala wgrywać zdjęć kategorii, a strona
+zamówienia korzysta wyłącznie ze zdjęć z `lib/gallery.ts` i `public/ruggy`.
+
+## Zdjęcia kategorii
+
+Okładkę i przykładowe realizacje wgrywasz w `/admin/dywany` — przy tworzeniu
+nowej kategorii albo w jej edycji. Pliki trafiają do bucketu
+`rug-catalog-photos`, a kategoria bez własnych zdjęć wciąż pokazuje kuratorowany
+zestaw z `lib/gallery.ts`. Pierwsze wgrane zdjęcie zastępuje ten zestaw w
+całości, żeby nie mieszać dwóch źródeł.
+
 ## Adres produkcyjny
 
 Na Vercelu ustaw zmienną:

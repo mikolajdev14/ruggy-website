@@ -1,7 +1,12 @@
 "use client";
 
 import { CategoryRealizations } from "@/components/category-realizations";
-import { getCategory } from "@/lib/gallery";
+import type { GalleryPhoto } from "@/lib/gallery";
+import {
+  mapRugPhotos,
+  resolveCategoryPhotos,
+  type RugPhotoRow,
+} from "@/lib/rug-photos";
 import { createClient } from "@/lib/supabase/client";
 import { formatLocalDateKey } from "@/lib/booking-date";
 import {
@@ -149,6 +154,7 @@ export default function ProductPage({
     variantParam && /^\d+$/.test(variantParam) ? Number(variantParam) : null;
   const [blockedDays, setBlockedDays] = useState<Date[]>([]);
   const [rugType, setRugType] = useState<RugTypeSummary | null>(null);
+  const [realizations, setRealizations] = useState<GalleryPhoto[]>([]);
   const [submitMessage, setSubmitMessage] = useState<string>();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -187,20 +193,36 @@ export default function ProductPage({
     const supabase = createClient();
 
     const loadPageData = async () => {
-      const [{ data: blockedDates }, { data: selectedRugType }] =
-        await Promise.all([
-          supabase.from("blocked_dates").select("date"),
-          supabase
-            .from("rug_types")
-            .select("name, slug, description, lead_time_days")
-            .eq("id", id)
-            .single(),
-        ]);
+      const [
+        { data: blockedDates },
+        { data: selectedRugType },
+        { data: photoRows },
+      ] = await Promise.all([
+        supabase.from("blocked_dates").select("date"),
+        supabase
+          .from("rug_types")
+          .select("name, slug, description, lead_time_days")
+          .eq("id", id)
+          .single(),
+        // Separate from the rug_types query so a missing rug_photos table (the
+        // migration not applied yet) leaves the configurator fully usable.
+        supabase
+          .from("rug_photos")
+          .select("id, storage_path, is_cover, display_order")
+          .eq("rug_type_id", id),
+      ]);
 
       if (!isMounted) return;
 
       setBlockedDays(blockedDates?.map((item) => new Date(item.date)) ?? []);
       setRugType(selectedRugType);
+      setRealizations(
+        resolveCategoryPhotos({
+          slug: selectedRugType?.slug,
+          name: selectedRugType?.name ?? "Dywany",
+          photos: mapRugPhotos(photoRows as RugPhotoRow[] | null),
+        }).realizations,
+      );
     };
 
     void loadPageData();
@@ -212,7 +234,6 @@ export default function ProductPage({
 
   const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
-  const category = getCategory(rugType?.slug);
 
   // Papadywany picks its subrodzaj on a separate page (/zamow/[id]/podrodzaj)
   // that hands the choice back as ?variant=. Mirror that param into the booking
@@ -520,10 +541,10 @@ export default function ProductPage({
         </div>
       </section>
 
-      {category ? (
+      {realizations.length ? (
         <CategoryRealizations
-          photos={category.photos}
-          categoryName={category.label}
+          photos={realizations}
+          categoryName={realizations[0].category}
         />
       ) : null}
 

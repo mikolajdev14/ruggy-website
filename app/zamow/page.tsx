@@ -1,6 +1,11 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { CUSTOM_RUG_MIN_PRICE_CENTS } from "@/lib/custom-rug-price";
 import { usesDirectCheckout } from "@/lib/rug-order-mode";
+import {
+  mapRugPhotos,
+  resolveCategoryPhotos,
+  type RugPhotoRow,
+} from "@/lib/rug-photos";
 import { ArrowLeft, ArrowRight, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -40,12 +45,29 @@ export const revalidate = 300;
 
 export default async function ZamowPage() {
   const supabase = createPublicClient();
-  const { data: rugTypes, error } = await supabase
-    .from("rug_types")
-    .select(
-      "id, name, slug, description, lead_time_days, rug_sizes(price_cents, is_active), rug_variants(is_active, rug_sizes(price_cents, is_active))",
-    )
-    .eq("is_active", true);
+  const [{ data: rugTypes, error }, { data: photoRows }] = await Promise.all([
+    supabase
+      .from("rug_types")
+      .select(
+        "id, name, slug, description, lead_time_days, rug_sizes(price_cents, is_active), rug_variants(is_active, rug_sizes(price_cents, is_active))",
+      )
+      .eq("is_active", true),
+    // Deliberately a separate query, not an embed: if the photos migration has
+    // not been applied yet this fails alone and every card falls back to its
+    // curated cover, instead of taking the whole page down.
+    supabase
+      .from("rug_photos")
+      .select("id, rug_type_id, storage_path, is_cover, display_order"),
+  ]);
+
+  const photosByTypeId = new Map<number, RugPhotoRow[]>();
+
+  for (const row of (photoRows ?? []) as Array<
+    RugPhotoRow & { rug_type_id: number | string }
+  >) {
+    const typeId = Number(row.rug_type_id);
+    photosByTypeId.set(typeId, [...(photosByTypeId.get(typeId) ?? []), row]);
+  }
 
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
@@ -89,6 +111,11 @@ export default async function ZamowPage() {
               const hasSubcategories = (rug.rug_variants ?? []).some(
                 (variant) => variant.is_active !== false,
               );
+              const { cover } = resolveCategoryPhotos({
+                slug: rug.slug,
+                name: rug.name,
+                photos: mapRugPhotos(photosByTypeId.get(Number(rug.id))),
+              });
 
               return (
                 <li key={rug.id}>
@@ -100,6 +127,7 @@ export default async function ZamowPage() {
                     leadDays={rug.lead_time_days}
                     mode={isCheckout ? "checkout" : "quote"}
                     hasSubcategories={hasSubcategories}
+                    cover={cover}
                     fromPriceCents={
                       isCheckout
                         ? minActivePriceCents(rug.rug_sizes, rug.rug_variants)

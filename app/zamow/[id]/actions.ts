@@ -27,6 +27,7 @@ import {
   formatDeliveryLineItemName,
 } from "@/lib/delivery-pricing";
 import { bookingSchema } from "@/schema/booking";
+import { validateImageUpload } from "@/lib/image-upload";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -68,25 +69,13 @@ async function validateBookingDate(
 }
 
 export async function uploadReferenceImage(file: File) {
-  const extensionByType: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-  };
-  const extension = extensionByType[file?.type];
+  const validation = await validateImageUpload(file, MAX_REFERENCE_IMAGE_SIZE);
 
-  if (!file || typeof file.arrayBuffer !== "function") {
-    return { success: false, message: "Nie wybrano zdjęcia." };
+  if (!validation.ok) {
+    return { success: false, message: validation.message };
   }
 
-  if (!extension) {
-    return { success: false, message: "Dozwolone są pliki JPG, PNG i WEBP." };
-  }
-
-  if (file.size > MAX_REFERENCE_IMAGE_SIZE) {
-    return { success: false, message: "Zdjęcie może mieć maksymalnie 5 MB." };
-  }
-
+  const { buffer: fileBuffer, extension, contentType } = validation.image;
   const rateLimit = await consumeReferenceImageUploadLimit();
 
   if (rateLimit.unavailable) {
@@ -103,36 +92,13 @@ export async function uploadReferenceImage(file: File) {
     };
   }
 
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-  const isJpeg =
-    fileBuffer[0] === 0xff &&
-    fileBuffer[1] === 0xd8 &&
-    fileBuffer[2] === 0xff;
-  const isPng = fileBuffer.subarray(0, 8).equals(
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-  );
-  const isWebp =
-    fileBuffer.toString("ascii", 0, 4) === "RIFF" &&
-    fileBuffer.toString("ascii", 8, 12) === "WEBP";
-
-  if (
-    (file.type === "image/jpeg" && !isJpeg) ||
-    (file.type === "image/png" && !isPng) ||
-    (file.type === "image/webp" && !isWebp)
-  ) {
-    return {
-      success: false,
-      message: "Plik nie jest prawidłowym obrazem w wybranym formacie.",
-    };
-  }
-
   const path = `bookings/${crypto.randomUUID()}.${extension}`;
   const supabase = createAdminClient();
   const { error } = await supabase.storage
     .from(REFERENCE_IMAGES_BUCKET)
     .upload(path, fileBuffer, {
       cacheControl: "3600",
-      contentType: file.type,
+      contentType,
       upsert: false,
     });
 

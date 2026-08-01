@@ -2,6 +2,7 @@
 
 import { getCategory } from "@/lib/gallery";
 import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
+import { MAX_RUG_PHOTO_SIZE, type RugPhoto } from "@/lib/rug-photos";
 import {
   collectCatalogFieldErrors,
   rugSizeSchema,
@@ -17,6 +18,7 @@ import {
   Check,
   ChevronDown,
   CircleDollarSign,
+  ImagePlus,
   Info,
   Layers,
   LoaderCircle,
@@ -25,6 +27,7 @@ import {
   Plus,
   Ruler,
   Shapes,
+  Star,
   Trash2,
   TriangleAlert,
   X,
@@ -43,12 +46,15 @@ import {
   createRugSize,
   createRugType,
   createRugVariant,
+  deleteRugPhoto,
   deleteRugSize,
   deleteRugType,
   deleteRugVariant,
+  setRugPhotoCover,
   updateRugSize,
   updateRugType,
   updateRugVariant,
+  uploadRugPhoto,
   type CatalogActionResult,
 } from "./actions";
 
@@ -79,9 +85,13 @@ export type CatalogRugType = {
   leadTimeDays: number | null;
   isActive: boolean;
   displayOrder: number;
+  photos: RugPhoto[];
   sizes: CatalogSize[];
   variants: CatalogVariant[];
 };
+
+/** A photo chosen for a category that does not exist yet, held until it does. */
+type PendingPhoto = { id: string; file: File; previewUrl: string };
 
 type SizeOwner = { rugTypeId: number | null; rugVariantId: number | null };
 
@@ -174,11 +184,13 @@ export default function RugCatalogClient({
   usedTypeIds,
   usedVariantIds,
   usedSizeIds,
+  photosEnabled,
 }: {
   catalog: CatalogRugType[];
   usedTypeIds: number[];
   usedVariantIds: number[];
   usedSizeIds: number[];
+  photosEnabled: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -188,9 +200,37 @@ export default function RugCatalogClient({
   } | null>(null);
   const [openTypeId, setOpenTypeId] = useState<number | null>(null);
   const [isAddingType, setIsAddingType] = useState(false);
+  const [newTypePhotos, setNewTypePhotos] = useState<PendingPhoto[]>([]);
+  const [newTypeCoverId, setNewTypeCoverId] = useState<string | null>(null);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(
     null,
   );
+
+  // Previews are object URLs; the browser holds each blob alive until the URL
+  // is revoked, so none may leave this component unreleased. The ref exists
+  // only for the unmount path, where the latest state is no longer in scope.
+  const pendingPhotosRef = useRef<PendingPhoto[]>([]);
+
+  useEffect(() => {
+    pendingPhotosRef.current = newTypePhotos;
+  }, [newTypePhotos]);
+
+  useEffect(
+    () => () => {
+      for (const photo of pendingPhotosRef.current) {
+        URL.revokeObjectURL(photo.previewUrl);
+      }
+    },
+    [],
+  );
+
+  const releasePendingPhotos = (photos: PendingPhoto[]) => {
+    for (const photo of photos) {
+      URL.revokeObjectURL(photo.previewUrl);
+    }
+    setNewTypePhotos([]);
+    setNewTypeCoverId(null);
+  };
 
   const usedTypes = useMemo(() => new Set(usedTypeIds), [usedTypeIds]);
   const usedVariants = useMemo(() => new Set(usedVariantIds), [usedVariantIds]);
@@ -221,6 +261,68 @@ export default function RugCatalogClient({
 
       setFeedback({ tone: "success", message: result.message ?? "Zapisano." });
       onSuccess?.();
+      router.refresh();
+    });
+  };
+
+  // Photos can only be attached once the category has an id, so creating one
+  // is a two-step transaction: insert the row, then push the buffered files at
+  // it. The cover goes first, so no other photo is ever briefly the cover.
+  const handleCreateType = (values: RugTypeInput) => {
+    setFeedback(null);
+
+    startTransition(async () => {
+      const result = await createRugType(values);
+
+      if (!result.success || !result.rugTypeId) {
+        setFeedback({
+          tone: "error",
+          message: result.message ?? "Nie udało się dodać kategorii.",
+        });
+        return;
+      }
+
+      const queue = newTypePhotos.toSorted(
+        (first, second) =>
+          Number(second.id === newTypeCoverId) -
+          Number(first.id === newTypeCoverId),
+      );
+      let uploaded = 0;
+      let uploadError: string | undefined;
+
+      // Sequential on purpose: each upload reads the category's current photos
+      // to work out the next display_order and whether a cover already exists.
+      for (const photo of queue) {
+        const upload = await uploadRugPhoto(
+          result.rugTypeId,
+          photo.file,
+          photo.id === newTypeCoverId,
+        );
+
+        if (upload.success) {
+          uploaded += 1;
+        } else {
+          uploadError = upload.message;
+          break;
+        }
+      }
+
+      releasePendingPhotos(newTypePhotos);
+      setIsAddingType(false);
+
+      setFeedback(
+        uploadError
+          ? {
+              tone: "error",
+              message: `Kategoria „${values.name}” została dodana, ale zdjęcia nie w całości: ${uploadError}`,
+            }
+          : {
+              tone: "success",
+              message: uploaded
+                ? `Kategoria „${values.name}” została dodana wraz z ${uploaded} zdjęciami.`
+                : (result.message ?? "Kategoria została dodana."),
+            },
+      );
       router.refresh();
     });
   };
@@ -328,9 +430,42 @@ export default function RugCatalogClient({
             defaultDisplayOrder={nextTypeOrder}
             pending={isPending}
             submitLabel="Dodaj kategorię"
-            onCancel={() => setIsAddingType(false)}
-            onSubmit={(values) =>
-              run(() => createRugType(values), () => setIsAddingType(false))
+            onCancel={() => {
+              releasePendingPhotos(newTypePhotos);
+              setIsAddingType(false);
+            }}
+            onSubmit={handleCreateType}
+            extraFields={
+              photosEnabled ? (
+                <PendingPhotoPicker
+                  photos={newTypePhotos}
+                  coverId={newTypeCoverId}
+                  disabled={isPending}
+                  onAdd={(added) => {
+                    setNewTypePhotos((current) => [...current, ...added]);
+                    setNewTypeCoverId(
+                      (current) => current ?? added[0]?.id ?? null,
+                    );
+                  }}
+                  onRemove={(photoId) => {
+                    setNewTypePhotos((current) => {
+                      const removed = current.find(
+                        (photo) => photo.id === photoId,
+                      );
+                      if (removed) URL.revokeObjectURL(removed.previewUrl);
+                      const next = current.filter(
+                        (photo) => photo.id !== photoId,
+                      );
+                      setNewTypeCoverId((cover) =>
+                        cover === photoId ? (next[0]?.id ?? null) : cover,
+                      );
+                      return next;
+                    });
+                  }}
+                  onSetCover={setNewTypeCoverId}
+                  onError={(message) => setFeedback({ tone: "error", message })}
+                />
+              ) : null
             }
           />
         </section>
@@ -349,6 +484,7 @@ export default function RugCatalogClient({
                 hasBookings={usedTypes.has(type.id)}
                 usedVariants={usedVariants}
                 usedSizes={usedSizes}
+                photosEnabled={photosEnabled}
                 pending={isPending}
                 run={run}
                 askConfirm={setConfirmRequest}
@@ -390,6 +526,7 @@ function TypeCard({
   hasBookings,
   usedVariants,
   usedSizes,
+  photosEnabled,
   pending,
   run,
   askConfirm,
@@ -400,6 +537,7 @@ function TypeCard({
   hasBookings: boolean;
   usedVariants: Set<number>;
   usedSizes: Set<number>;
+  photosEnabled: boolean;
   pending: boolean;
   run: RunAction;
   askConfirm: (request: ConfirmRequest) => void;
@@ -488,6 +626,18 @@ function TypeCard({
             onDelete={requestDelete}
             deleteBlocked={hasBookings}
           />
+
+          {photosEnabled ? (
+            <PhotoManager
+              typeId={type.id}
+              typeName={type.name}
+              slug={type.slug}
+              photos={type.photos}
+              pending={pending}
+              run={run}
+              askConfirm={askConfirm}
+            />
+          ) : null}
 
           <SizeSection
             title="Rozmiary i ceny kategorii"
@@ -683,6 +833,7 @@ function TypeForm({
   onCancel,
   onDelete,
   deleteBlocked,
+  extraFields,
 }: {
   initial: CatalogRugType | null;
   defaultDisplayOrder: number;
@@ -692,6 +843,8 @@ function TypeForm({
   onCancel?: () => void;
   onDelete?: () => void;
   deleteBlocked?: boolean;
+  /** Rendered just above the buttons — the new-category photo picker uses it. */
+  extraFields?: ReactNode;
 }) {
   const serverDraft = {
     name: initial?.name ?? "",
@@ -840,6 +993,8 @@ function TypeForm({
         />
       </div>
 
+      {extraFields}
+
       <FormActions
         pending={pending}
         isDirty={isDirty || !initial}
@@ -975,6 +1130,309 @@ function VariantForm({
         deleteLabel="Usuń podrodzaj"
       />
     </form>
+  );
+}
+
+/* --------------------------------------------------------------- photos */
+
+const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+// The same rules the server enforces, applied here so a wrong file is rejected
+// before it is uploaded rather than after.
+const pickValidPhotos = (files: File[]) => {
+  const valid: File[] = [];
+
+  for (const file of files) {
+    if (!ACCEPTED_PHOTO_TYPES.includes(file.type)) {
+      return { valid, error: `„${file.name}” to nie jest JPG, PNG ani WEBP.` };
+    }
+
+    if (file.size > MAX_RUG_PHOTO_SIZE) {
+      return {
+        valid,
+        error: `„${file.name}” waży więcej niż ${MAX_RUG_PHOTO_SIZE / (1024 * 1024)} MB.`,
+      };
+    }
+
+    valid.push(file);
+  }
+
+  return { valid, error: undefined as string | undefined };
+};
+
+function PhotoUploadButton({
+  label,
+  disabled,
+  onFiles,
+}: {
+  label: string;
+  disabled: boolean;
+  onFiles: (files: File[]) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => inputRef.current?.click()}
+        className={secondaryButtonClass}
+      >
+        <ImagePlus size={16} aria-hidden="true" />
+        {label}
+      </button>
+      {/* `hidden` rather than sr-only: the button is the control, and a second
+          tab stop onto an invisible input helps nobody. */}
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept={ACCEPTED_PHOTO_TYPES.join(",")}
+        className="hidden"
+        onChange={(event) => {
+          const files = [...(event.target.files ?? [])];
+          // Cleared so picking the very same file again still fires onChange.
+          event.target.value = "";
+          if (files.length) onFiles(files);
+        }}
+      />
+    </>
+  );
+}
+
+function PhotoTile({
+  src,
+  alt,
+  isCover,
+  disabled,
+  onSetCover,
+  onRemove,
+}: {
+  src: string;
+  alt: string;
+  isCover: boolean;
+  disabled: boolean;
+  onSetCover: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <figure
+      className={`overflow-hidden rounded-2xl border-2 bg-white ${
+        isCover
+          ? "border-[var(--ruggy-ink)] shadow-[3px_4px_0_var(--ruggy-yellow)]"
+          : "border-[var(--ruggy-border)]"
+      }`}
+    >
+      <div className="relative aspect-square bg-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="size-full object-contain" />
+        {isCover ? (
+          <span className="absolute start-2 top-2 inline-flex items-center gap-1 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-2 py-0.5 text-[10px] font-black text-[var(--ruggy-ink)]">
+            <Star size={10} aria-hidden="true" />
+            Okładka
+          </span>
+        ) : null}
+      </div>
+
+      <figcaption className="flex items-center justify-between gap-1 border-t-2 border-[var(--ruggy-border)] p-1.5">
+        <button
+          type="button"
+          disabled={disabled || isCover}
+          onClick={onSetCover}
+          className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-black text-[var(--ruggy-blue)] transition-colors hover:bg-[var(--ruggy-blue-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-blue)] disabled:cursor-not-allowed disabled:text-[var(--ruggy-muted)] disabled:hover:bg-transparent"
+        >
+          <Star size={11} aria-hidden="true" />
+          <span className="truncate">
+            {isCover ? "Jest okładką" : "Na okładkę"}
+          </span>
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onRemove}
+          aria-label="Usuń zdjęcie"
+          title="Usuń zdjęcie"
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--ruggy-error)] transition-colors hover:bg-[#fff0eb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-error)] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Trash2 size={13} aria-hidden="true" />
+        </button>
+      </figcaption>
+    </figure>
+  );
+}
+
+function PhotoHeading({ count }: { count: number }) {
+  return (
+    <div>
+      <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.1em] text-[var(--ruggy-ink)]">
+        <ImagePlus size={16} className="text-[var(--ruggy-blue)]" aria-hidden="true" />
+        Zdjęcia
+      </h3>
+      <p className="mt-1 text-xs text-[var(--ruggy-muted)]">
+        Okładka trafia na kafelek kategorii, reszta na pasek „przykładowe
+        realizacje”. JPG, PNG lub WEBP do{" "}
+        {MAX_RUG_PHOTO_SIZE / (1024 * 1024)} MB.
+        {count ? ` Masz ${count}.` : ""}
+      </p>
+    </div>
+  );
+}
+
+// New category: there is no row to hang photos on yet, so files sit here with
+// object-URL previews until the insert returns an id.
+function PendingPhotoPicker({
+  photos,
+  coverId,
+  disabled,
+  onAdd,
+  onRemove,
+  onSetCover,
+  onError,
+}: {
+  photos: PendingPhoto[];
+  coverId: string | null;
+  disabled: boolean;
+  onAdd: (photos: PendingPhoto[]) => void;
+  onRemove: (photoId: string) => void;
+  onSetCover: (photoId: string) => void;
+  onError: (message: string) => void;
+}) {
+  return (
+    <section className="rounded-[1.5rem] border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] p-4">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <PhotoHeading count={photos.length} />
+        <PhotoUploadButton
+          label="Wybierz zdjęcia"
+          disabled={disabled}
+          onFiles={(files) => {
+            const { valid, error } = pickValidPhotos(files);
+
+            if (valid.length) {
+              onAdd(
+                valid.map((file) => ({
+                  id: crypto.randomUUID(),
+                  file,
+                  previewUrl: URL.createObjectURL(file),
+                })),
+              );
+            }
+
+            if (error) onError(error);
+          }}
+        />
+      </div>
+
+      {photos.length ? (
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {photos.map((photo) => (
+            <li key={photo.id}>
+              <PhotoTile
+                src={photo.previewUrl}
+                alt={photo.file.name}
+                isCover={photo.id === coverId}
+                disabled={disabled}
+                onSetCover={() => onSetCover(photo.id)}
+                onRemove={() => onRemove(photo.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-4 text-xs font-bold text-[var(--ruggy-muted)]">
+          Bez zdjęć kafelek kategorii pokaże tylko jej pierwszą literę. Zdjęcia
+          wyślą się zaraz po dodaniu kategorii.
+        </p>
+      )}
+    </section>
+  );
+}
+
+// Existing category: every pick uploads straight away, so what you see here is
+// exactly what the shop is serving.
+function PhotoManager({
+  typeId,
+  typeName,
+  slug,
+  photos,
+  pending,
+  run,
+  askConfirm,
+}: {
+  typeId: number;
+  typeName: string;
+  slug: string;
+  photos: RugPhoto[];
+  pending: boolean;
+  run: RunAction;
+  askConfirm: (request: ConfirmRequest) => void;
+}) {
+  const staticGallery = getCategory(slug);
+
+  return (
+    <section className="mt-7 border-t-2 border-[var(--ruggy-border)] pt-6">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <PhotoHeading count={photos.length} />
+        <PhotoUploadButton
+          label="Dodaj zdjęcia"
+          disabled={pending}
+          onFiles={(files) => {
+            const { valid, error } = pickValidPhotos(files);
+
+            if (error) {
+              run(async () => ({ success: false, message: error }));
+              return;
+            }
+
+            run(async () => {
+              for (const file of valid) {
+                const result = await uploadRugPhoto(typeId, file, false);
+                if (!result.success) return result;
+              }
+
+              return {
+                success: true,
+                message:
+                  valid.length > 1
+                    ? `Dodano ${valid.length} zdjęć.`
+                    : "Zdjęcie zostało dodane.",
+              };
+            });
+          }}
+        />
+      </div>
+
+      {photos.length ? (
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {photos.map((photo) => (
+            <li key={photo.id}>
+              <PhotoTile
+                src={photo.url}
+                alt={`Zdjęcie kategorii ${typeName}`}
+                isCover={photo.isCover}
+                disabled={pending}
+                onSetCover={() => run(() => setRugPhotoCover(photo.id))}
+                onRemove={() =>
+                  askConfirm({
+                    title: "Usunąć to zdjęcie?",
+                    description:
+                      "Plik zniknie ze strony i z magazynu Supabase. Tej operacji nie da się cofnąć — jeśli to okładka, jej rolę przejmie kolejne zdjęcie.",
+                    confirmLabel: "Usuń zdjęcie",
+                    onConfirm: () => run(() => deleteRugPhoto(photo.id)),
+                  })
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-canvas)] px-4 py-4 text-xs font-bold leading-5 text-[var(--ruggy-muted)]">
+          {staticGallery
+            ? `Ta kategoria korzysta na razie ze zdjęć wgranych do repozytorium (${staticGallery.photos.length + 1} szt. z /public). Pierwsze zdjęcie dodane tutaj zastąpi cały ten zestaw.`
+            : "Brak zdjęć — kafelek kategorii pokaże tylko jej pierwszą literę."}
+        </p>
+      )}
+    </section>
   );
 }
 
