@@ -1,6 +1,7 @@
 "use client";
 
 import { getCategory } from "@/lib/gallery";
+import { RUG_LEAD_TIME_LABEL } from "@/lib/rug-lead-time";
 import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
 import { MAX_RUG_PHOTO_SIZE, type RugPhoto } from "@/lib/rug-photos";
 import {
@@ -84,6 +85,7 @@ export type CatalogRugType = {
   description: string | null;
   leadTimeDays: number | null;
   isActive: boolean;
+  hasDelay: boolean;
   displayOrder: number;
   photos: RugPhoto[];
   sizes: CatalogSize[];
@@ -597,6 +599,7 @@ function TypeCard({
                   ? "Płatność online"
                   : "Wycena na Instagramie"}
               </Badge>
+              {type.hasDelay ? <Badge tone="yellow">Opóźnienie</Badge> : null}
               {gallery ? <Badge tone="muted">Galeria realizacji</Badge> : null}
             </span>
             <span className="mt-1 block truncate text-xs font-semibold text-[var(--ruggy-muted)]">
@@ -853,6 +856,7 @@ function TypeForm({
     leadTimeDays: String(initial?.leadTimeDays ?? 7),
     displayOrder: String(defaultDisplayOrder),
     isActive: initial?.isActive ?? true,
+    hasDelay: initial?.hasDelay ?? false,
   };
   const [draft, setDraft, isDirty] = useServerDraft(serverDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -866,6 +870,7 @@ function TypeForm({
       leadTimeDays: toInteger(draft.leadTimeDays),
       displayOrder: toInteger(draft.displayOrder),
       isActive: draft.isActive,
+      hasDelay: draft.hasDelay,
     };
     const parsed = rugTypeSchema.safeParse(values);
 
@@ -991,6 +996,24 @@ function TypeForm({
             setDraft((current) => ({ ...current, isActive: checked }))
           }
         />
+      </div>
+
+      {/* Deliberately its own row: it is the one switch that changes what the
+          shop says about a category without hiding it. */}
+      <div>
+        <ActiveSwitch
+          label="Opóźnienie"
+          checked={draft.hasDelay}
+          onLabel="Nakładka „opóźnienie” włączona"
+          offLabel="Bez opóźnienia"
+          onChange={(checked) =>
+            setDraft((current) => ({ ...current, hasDelay: checked }))
+          }
+        />
+        <p className="mt-1.5 text-[11px] font-bold leading-4 text-[var(--ruggy-muted)]">
+          Włączone: karta tej kategorii i jej strona pokazują klientowi, że
+          realizacja potrwa dłużej niż {RUG_LEAD_TIME_LABEL}.
+        </p>
       </div>
 
       {extraFields}

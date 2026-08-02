@@ -39,6 +39,8 @@ export const rugTypeSchema = z.object({
     .min(0, "Kolejność nie może być ujemna")
     .max(9999, "Kolejność to maksimum 9999"),
   isActive: z.boolean(),
+  // Flips the "opóźnienie" overlay on the category in the shop.
+  hasDelay: z.boolean(),
 });
 
 export const rugVariantSchema = z.object({

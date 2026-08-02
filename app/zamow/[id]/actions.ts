@@ -32,8 +32,14 @@ import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   consumeContactBookingLimit,
+  consumeCheckoutSessionLimit,
   consumeReferenceImageUploadLimit,
 } from "@/lib/upload-rate-limit";
+import {
+  createReferenceImageProof,
+  isValidReferenceImageProof,
+} from "@/lib/security/reference-image-proof";
+import { getTrustedAppOrigin } from "@/lib/security/origin";
 import { headers } from "next/headers";
 import { sendQuoteRequestWhatsAppNotification } from "@/lib/whatsapp-notification";
 
@@ -107,7 +113,11 @@ export async function uploadReferenceImage(file: File) {
     return { success: false, message: "Nie udało się przesłać zdjęcia." };
   }
 
-  return { success: true, path };
+  return {
+    success: true,
+    path,
+    proof: createReferenceImageProof(path),
+  };
 }
 
 export async function createCheckoutSession(input: unknown) {
@@ -121,6 +131,27 @@ export async function createCheckoutSession(input: unknown) {
   }
 
   const booking = result.data;
+  const checkoutRateLimit = await consumeCheckoutSessionLimit();
+
+  if (checkoutRateLimit.unavailable || !checkoutRateLimit.allowed) {
+    return {
+      success: false,
+      message: checkoutRateLimit.unavailable
+        ? "Nie udało się sprawdzić limitu płatności."
+        : "Utworzono zbyt wiele płatności. Spróbuj ponownie później.",
+    };
+  }
+
+  if (
+    booking.referenceImagePath &&
+    !isValidReferenceImageProof(
+      booking.referenceImagePath,
+      booking.referenceImageProof,
+    )
+  ) {
+    return { success: false, message: "Zdjęcie referencyjne jest nieprawidłowe." };
+  }
+
   const supabase = createAdminClient();
   const dateError = await validateBookingDate(supabase, booking.pickupDate);
 
@@ -214,22 +245,9 @@ export async function createCheckoutSession(input: unknown) {
     };
   }
 
-  const requestOrigin = (await headers()).get("origin");
-  const checkoutOriginSource =
-    requestOrigin ?? process.env.NEXT_PUBLIC_APP_URL;
+  const checkoutOrigin = getTrustedAppOrigin((await headers()).get("origin"));
 
-  if (!checkoutOriginSource) {
-    return {
-      success: false,
-      message: "Nie udało się ustalić adresu powrotu po płatności.",
-    };
-  }
-
-  let checkoutOrigin: string;
-
-  try {
-    checkoutOrigin = new URL(checkoutOriginSource).origin;
-  } catch {
+  if (!checkoutOrigin) {
     return {
       success: false,
       message: "Adres powrotu po płatności jest nieprawidłowy.",
@@ -347,6 +365,16 @@ export async function createContactBooking(input: unknown) {
   }
 
   const booking = result.data;
+  if (
+    booking.referenceImagePath &&
+    !isValidReferenceImageProof(
+      booking.referenceImagePath,
+      booking.referenceImageProof,
+    )
+  ) {
+    return { success: false, message: "Zdjęcie referencyjne jest nieprawidłowe." };
+  }
+
   const supabase = createAdminClient();
   const dateError = await validateBookingDate(supabase, booking.pickupDate);
 

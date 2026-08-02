@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { isAdminUser } from "@/lib/auth/admin";
 import { NextResponse, type NextRequest } from "next/server";
 
 const getSafeAdminPath = (value: string | null) =>
@@ -47,7 +48,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isLoginPage && user) {
+  if (
+    isAdminRoute &&
+    !isLoginPage &&
+    !isSetPasswordPage &&
+    user &&
+    !isAdminUser(user)
+  ) {
+    const forbiddenUrl = new URL("/admin/login", request.url);
+    forbiddenUrl.searchParams.set("error", "forbidden");
+    return NextResponse.redirect(forbiddenUrl);
+  }
+
+  if (isLoginPage && user && isAdminUser(user)) {
     const destination =
       getSafeAdminPath(request.nextUrl.searchParams.get("next")) ??
       "/admin/dashboard";

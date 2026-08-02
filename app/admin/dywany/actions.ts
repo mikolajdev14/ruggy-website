@@ -7,7 +7,7 @@ import {
   RUG_CATALOG_PHOTOS_BUCKET,
 } from "@/lib/rug-photos";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClientServer } from "@/lib/supabase/server";
+import { getAuthorizedAdminClient } from "@/lib/auth/server-admin";
 import {
   rugSizeSchema,
   rugTypeSchema,
@@ -27,14 +27,7 @@ export type CatalogActionResult = {
 
 // Server Functions are reachable by direct POST, so every entry point below
 // re-checks the admin session before touching the service-role client.
-const getAdminClient = async () => {
-  const supabase = await createClientServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user ? createAdminClient() : null;
-};
+const getAdminClient = getAuthorizedAdminClient;
 
 const SESSION_EXPIRED: CatalogActionResult = {
   success: false,
@@ -125,6 +118,7 @@ export async function createRugType(
       lead_time_days: values.leadTimeDays,
       display_order: values.displayOrder,
       is_active: values.isActive,
+      has_delay: values.hasDelay,
     })
     .select("id")
     .single();
@@ -177,6 +171,7 @@ export async function updateRugType(
       lead_time_days: values.leadTimeDays,
       display_order: values.displayOrder,
       is_active: values.isActive,
+      has_delay: values.hasDelay,
     })
     .eq("id", id);
 

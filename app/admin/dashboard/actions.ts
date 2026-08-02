@@ -1,7 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClientServer } from "@/lib/supabase/server";
+import { getAuthorizedAdminClient } from "@/lib/auth/server-admin";
 import { createRugDesign } from "@/lib/openai-rug-design";
 import {
   getAiRugPreviewPath,
@@ -18,14 +17,7 @@ const allowedStatuses = [
 ] as const;
 type BookingStatus = (typeof allowedStatuses)[number];
 
-const getAdminClient = async () => {
-  const supabase = await createClientServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user ? createAdminClient() : null;
-};
+const getAdminClient = getAuthorizedAdminClient;
 
 export async function updateBookingStatus(
   bookingId: number,

@@ -20,6 +20,8 @@ import {
   formatDeliveryCostCents,
   type DeliveryMethod,
 } from "@/lib/delivery-pricing";
+import { RugDelayBanner } from "@/components/rug-delay-notice";
+import { RUG_LEAD_TIME_LABEL } from "@/lib/rug-lead-time";
 import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
 import { siteConfig } from "@/lib/site-config";
 import { bookingSchema } from "@/schema/booking";
@@ -82,7 +84,7 @@ type RugTypeSummary = {
   name: string;
   slug: string;
   description: string | null;
-  lead_time_days: number | null;
+  has_delay: boolean | null;
 };
 
 // The size label/price and the chosen papadywany subrodzaj are fetched inside
@@ -201,7 +203,7 @@ export default function ProductPage({
         supabase.from("blocked_dates").select("date"),
         supabase
           .from("rug_types")
-          .select("name, slug, description, lead_time_days")
+          .select("name, slug, description, has_delay")
           .eq("id", id)
           .single(),
         // Separate from the rug_types query so a missing rug_photos table (the
@@ -234,6 +236,7 @@ export default function ProductPage({
 
   const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
+  const hasDelay = rugType?.has_delay === true;
 
   // Papadywany picks its subrodzaj on a separate page (/zamow/[id]/podrodzaj)
   // that hands the choice back as ?variant=. Mirror that param into the booking
@@ -271,6 +274,7 @@ export default function ProductPage({
         ? formatLocalDateKey(booking.pickupDate)
         : "",
       referenceImagePath: undefined,
+      referenceImageProof: undefined,
       antiSlipMat,
     };
 
@@ -302,6 +306,7 @@ export default function ProductPage({
 
     try {
       let referenceImagePath: string | undefined;
+      let referenceImageProof: string | undefined;
 
       if (referenceImage) {
         const uploadResponse = await uploadReferenceImage(referenceImage);
@@ -313,12 +318,14 @@ export default function ProductPage({
         }
 
         referenceImagePath = uploadResponse.path;
+        referenceImageProof = uploadResponse.proof;
       }
 
       if (isDirectCheckout) {
         const response = await createCheckoutSession({
           ...bookingInput,
           referenceImagePath,
+          referenceImageProof,
         });
 
         if (!response.success) {
@@ -334,6 +341,7 @@ export default function ProductPage({
       const response = await createContactBooking({
         ...bookingInput,
         referenceImagePath,
+        referenceImageProof,
       });
 
       if (!response.success) {
@@ -516,6 +524,11 @@ export default function ProductPage({
                 )}
               </p>
             ) : null}
+            {hasDelay ? (
+              <div className="mt-4">
+                <RugDelayBanner />
+              </div>
+            ) : null}
           </div>
 
           <div className="border-s-2 border-[var(--ruggy-ink)] ps-4">
@@ -532,11 +545,11 @@ export default function ProductPage({
                 {rugType?.name}
               </p>
             ) : null}
-            {rugType?.lead_time_days ? (
-              <p className="mt-0.5 text-xs text-[var(--ruggy-muted)]">
-                Około {rugType.lead_time_days} dni realizacji
-              </p>
-            ) : null}
+            <p className="mt-0.5 text-xs text-[var(--ruggy-muted)]">
+              {hasDelay
+                ? "Realizacja dłuższa niż zwykle"
+                : `Realizacja ${RUG_LEAD_TIME_LABEL}`}
+            </p>
           </div>
         </div>
       </section>

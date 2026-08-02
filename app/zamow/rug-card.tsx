@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowRight, AtSign, CreditCard } from "lucide-react";
 import type { GalleryPhoto } from "@/lib/gallery";
 import { formatPriceCents } from "@/lib/custom-rug-price";
+import { RugDelayOverlay } from "@/components/rug-delay-notice";
+import { RUG_LEAD_TIME_LABEL } from "@/lib/rug-lead-time";
 
 export type RugOrderMode = "checkout" | "quote";
 
@@ -11,8 +13,8 @@ interface RugProps {
   slug: string;
   name: string;
   description: string;
-  leadDays: number;
   mode: RugOrderMode;
+  hasDelay?: boolean;
   fromPriceCents: number | null;
   hasSubcategories?: boolean;
   // Resolved by the page: an uploaded cover when the category has one, the
@@ -51,9 +53,13 @@ export const RugCard = (props: RugProps) => {
             {props.name.charAt(0)}
           </div>
         )}
-        <div className="absolute start-4 top-4 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
-          {props.leadDays} dni realizacji
-        </div>
+        {/* A delayed category never also advertises the standard window — the
+            overlay replaces the lead-time chip instead of contradicting it. */}
+        {props.hasDelay ? null : (
+          <div className="absolute start-4 top-4 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
+            Realizacja {RUG_LEAD_TIME_LABEL}
+          </div>
+        )}
         <div className="absolute end-4 top-4 inline-flex items-center gap-1.5 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
           {isCheckout ? (
             <>
@@ -67,6 +73,7 @@ export const RugCard = (props: RugProps) => {
             </>
           )}
         </div>
+        {props.hasDelay ? <RugDelayOverlay /> : null}
       </div>
 
       <div className="flex flex-1 flex-col p-6">

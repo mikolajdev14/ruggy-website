@@ -10,10 +10,14 @@ async function consumePublicActionLimit(
   windowSeconds: number,
 ) {
   const requestHeaders = await headers();
-  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0];
+  const forwardedFor = requestHeaders
+    .get("x-vercel-forwarded-for")
+    ?.split(",")[0];
   const clientAddress =
     forwardedFor?.trim() ||
     requestHeaders.get("x-real-ip")?.trim() ||
+    requestHeaders.get("cf-connecting-ip")?.trim() ||
+    requestHeaders.get("x-forwarded-for")?.split(",").at(-1)?.trim() ||
     "unknown-client";
   const fingerprint = createHash("sha256")
     .update(clientAddress)
@@ -46,4 +50,8 @@ export function consumeContactBookingLimit() {
 
 export function consumeAgreedProjectPaymentLimit() {
   return consumePublicActionLimit("agreed-project-payment", 12, 60 * 60);
+}
+
+export function consumeCheckoutSessionLimit() {
+  return consumePublicActionLimit("checkout-session", 10, 60 * 60);
 }

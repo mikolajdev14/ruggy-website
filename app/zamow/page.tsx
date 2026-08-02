@@ -49,7 +49,7 @@ export default async function ZamowPage() {
     supabase
       .from("rug_types")
       .select(
-        "id, name, slug, description, lead_time_days, rug_sizes(price_cents, is_active), rug_variants(is_active, rug_sizes(price_cents, is_active))",
+        "id, name, slug, description, has_delay, rug_sizes(price_cents, is_active), rug_variants(is_active, rug_sizes(price_cents, is_active))",
       )
       .eq("is_active", true),
     // Deliberately a separate query, not an embed: if the photos migration has
@@ -124,8 +124,8 @@ export default async function ZamowPage() {
                     slug={rug.slug}
                     name={rug.name}
                     description={rug.description}
-                    leadDays={rug.lead_time_days}
                     mode={isCheckout ? "checkout" : "quote"}
+                    hasDelay={rug.has_delay === true}
                     hasSubcategories={hasSubcategories}
                     cover={cover}
                     fromPriceCents={

@@ -4,6 +4,28 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : undefined;
 
+const supabaseOrigin = supabaseHost ? `https://${supabaseHost}` : "";
+const inpostHosts = [
+  "https://geowidget.inpost.pl",
+  "https://sandbox-easy-geowidget-sdk.easypack24.net",
+].join(" ");
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self' https://checkout.stripe.com",
+  `script-src 'self' 'unsafe-inline' ${inpostHosts}`,
+  `style-src 'self' 'unsafe-inline' ${inpostHosts}`,
+  `img-src 'self' data: blob: ${supabaseOrigin}`,
+  `connect-src 'self' ${supabaseOrigin} https://api.stripe.com ${inpostHosts}`,
+  `frame-src 'self' ${inpostHosts}`,
+  "font-src 'self' data:",
+  "media-src 'self'",
+  "worker-src 'self' blob:",
+].join("; ");
+
 const nextConfig: NextConfig = {
   images: {
     // Catalog photos uploaded from /admin/dywany are served from the public
@@ -17,6 +39,27 @@ const nextConfig: NextConfig = {
           },
         ]
       : [],
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "Content-Security-Policy", value: contentSecurityPolicy },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ];
   },
   experimental: {
     inlineCss: true,

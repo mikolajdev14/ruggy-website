@@ -1,5 +1,6 @@
 "use server";
 
+import { isAdminUser } from "@/lib/auth/admin";
 import { createClientServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -17,9 +18,16 @@ export const handleLogin = async (
 
   const supabase = await createClientServer();
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  if (error) {
+  if (error || !data.user || !isAdminUser(data.user)) {
+    if (data.user) {
+      await supabase.auth.signOut();
+    }
+
     return { error: "Nieprawidlowy email lub haslo" };
   }
 

@@ -2,6 +2,7 @@
 
 import { getStripe } from "@/lib/stripe";
 import { consumeAgreedProjectPaymentLimit } from "@/lib/upload-rate-limit";
+import { getTrustedAppOrigin } from "@/lib/security/origin";
 import { headers } from "next/headers";
 import * as z from "zod";
 
@@ -49,21 +50,9 @@ export async function createAgreedProjectCheckout(input: unknown) {
   }
 
   const payment = result.data;
-  const requestOrigin = (await headers()).get("origin");
-  const originSource = requestOrigin ?? process.env.NEXT_PUBLIC_APP_URL;
+  const origin = getTrustedAppOrigin((await headers()).get("origin"));
 
-  if (!originSource) {
-    return {
-      success: false as const,
-      message: "Nie udało się ustalić adresu powrotu po płatności.",
-    };
-  }
-
-  let origin: string;
-
-  try {
-    origin = new URL(originSource).origin;
-  } catch {
+  if (!origin) {
     return {
       success: false as const,
       message: "Adres powrotu po płatności jest nieprawidłowy.",

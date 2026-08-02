@@ -6,7 +6,10 @@ import { handleLogin } from "./actions";
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{
+    next?: string | string[];
+    error?: string | string[];
+  }>;
 }) {
   const params = use(searchParams);
   const requestedDestination = Array.isArray(params.next)
@@ -17,6 +20,10 @@ export default function LoginPage({
     !requestedDestination.startsWith("//")
       ? requestedDestination
       : "/admin/dashboard";
+  const errorMessage =
+    params.error === "forbidden"
+      ? "To konto nie ma uprawnień do panelu administracyjnego."
+      : null;
   const [data, formAction, isPending] = useActionState(handleLogin, undefined);
 
   return (
@@ -71,9 +78,9 @@ export default function LoginPage({
               />
             </div>
 
-            {data?.error && (
+            {(errorMessage || data?.error) && (
               <p className="rounded-xl border-2 border-[var(--ruggy-coral)]/40 bg-[#fff0eb] px-3.5 py-2.5 text-sm font-semibold text-[var(--ruggy-error)]">
-                {data.error}
+                {errorMessage || data?.error}
               </p>
             )}
 

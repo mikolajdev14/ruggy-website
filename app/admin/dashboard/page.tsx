@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClientServer } from "@/lib/supabase/server";
+import { getAdminUser } from "@/lib/auth/server-admin";
 import { getPolandDateKey } from "@/lib/booking-date";
 import { redirect } from "next/navigation";
 import {
@@ -48,10 +48,7 @@ export default async function AdminDashboardPage({
     ? params.booking[0]
     : params.booking;
   const requestedBookingId = Number(requestedBookingValue);
-  const serverSupabase = await createClientServer();
-  const {
-    data: { user },
-  } = await serverSupabase.auth.getUser();
+  const user = await getAdminUser();
 
   if (!user) {
     redirect("/admin/login");

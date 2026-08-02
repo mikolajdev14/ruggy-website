@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { PAPADYWANY_SLUG } from "@/lib/rug-order-mode";
+import { RugDelayBanner } from "@/components/rug-delay-notice";
 import { PosterHero } from "@/components/poster-hero";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -23,7 +24,7 @@ type RugTypeRow = {
   id: number;
   name: string;
   slug: string;
-  lead_time_days: number | null;
+  has_delay: boolean | null;
   rug_variants: VariantRow[];
 };
 
@@ -45,7 +46,7 @@ export default async function PodrodzajPage({
   const { data, error } = await supabase
     .from("rug_types")
     .select(
-      "id, name, slug, lead_time_days, rug_variants(id, name, slug, is_active, display_order, rug_sizes(price_cents, is_active))",
+      "id, name, slug, has_delay, rug_variants(id, name, slug, is_active, display_order, rug_sizes(price_cents, is_active))",
     )
     .eq("id", id)
     .single();
@@ -98,6 +99,12 @@ export default async function PodrodzajPage({
           ]}
           description="Każdy motyw ma swój charakter i cenę. Wybierz ten, który do Ciebie mówi — rozmiar, termin i dostawę ustawisz w kolejnym kroku."
         />
+
+        {rugType.has_delay ? (
+          <div className="mt-8">
+            <RugDelayBanner />
+          </div>
+        ) : null}
 
         {variants.length ? (
           <ul className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
