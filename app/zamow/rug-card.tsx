@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, AtSign, CreditCard } from "lucide-react";
+import { ArrowRight, AtSign, Clock, CreditCard, TriangleAlert } from "lucide-react";
 import type { GalleryPhoto } from "@/lib/gallery";
 import { formatPriceCents } from "@/lib/custom-rug-price";
 import { RugDelayOverlay } from "@/components/rug-delay-notice";
@@ -53,14 +53,9 @@ export const RugCard = (props: RugProps) => {
             {props.name.charAt(0)}
           </div>
         )}
-        {/* A delayed category never also advertises the standard window — the
-            overlay replaces the lead-time chip instead of contradicting it. */}
-        {props.hasDelay ? null : (
-          <div className="absolute start-4 top-4 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
-            Realizacja {RUG_LEAD_TIME_LABEL}
-          </div>
-        )}
-        <div className="absolute end-4 top-4 inline-flex items-center gap-1.5 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
+        {/* One chip on the photo, always the same one: two of them collided on
+            a narrow card, and the lead time reads better next to the price. */}
+        <span className="absolute end-4 top-4 inline-flex items-center gap-1.5 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-surface)] px-3 py-1.5 text-xs font-black text-[var(--ruggy-ink)]">
           {isCheckout ? (
             <>
               <CreditCard className="size-3.5" aria-hidden="true" />
@@ -72,7 +67,7 @@ export const RugCard = (props: RugProps) => {
               Wycena na Instagramie
             </>
           )}
-        </div>
+        </span>
         {props.hasDelay ? <RugDelayOverlay /> : null}
       </div>
 
@@ -81,7 +76,23 @@ export const RugCard = (props: RugProps) => {
           {props.name}
         </h2>
 
-        <p className="mt-3 line-clamp-3 text-base leading-7 text-[var(--ruggy-body)]">
+        {/* Every card fills this slot, delayed or not, so the title, the term
+            and the price sit on the same line across the whole grid. */}
+        {props.hasDelay ? (
+          <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border-2 border-[var(--ruggy-ink)] bg-[#fdecea] px-3 py-1 text-xs font-black text-[var(--ruggy-error)]">
+            <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
+            Termin potwierdzę indywidualnie
+          </span>
+        ) : (
+          <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border-2 border-[var(--ruggy-ink)] bg-[var(--ruggy-yellow)] px-3 py-1 text-xs font-black text-[var(--ruggy-ink)]">
+            <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+            Realizacja {RUG_LEAD_TIME_LABEL}
+          </span>
+        )}
+
+        {/* flex-1 absorbs the difference between a one-line and a three-line
+            description, which is what pushes the footers out of line. */}
+        <p className="mt-4 line-clamp-3 flex-1 text-base leading-7 text-[var(--ruggy-body)]">
           {props.description}
         </p>
 
