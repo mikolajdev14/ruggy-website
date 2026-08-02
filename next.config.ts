@@ -10,13 +10,19 @@ const inpostHosts = [
   "https://sandbox-easy-geowidget-sdk.easypack24.net",
 ].join(" ");
 
+// React's dev build uses eval() for debugging features (rebuilding call stacks
+// across the server/client boundary), and Turbopack's HMR runtime needs it too.
+// Production never runs that code, so the allowance stops at `next dev`.
+const isDev = process.env.NODE_ENV !== "production";
+const devScriptSrc = isDev ? " 'unsafe-eval'" : "";
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://checkout.stripe.com",
-  `script-src 'self' 'unsafe-inline' ${inpostHosts}`,
+  `script-src 'self' 'unsafe-inline'${devScriptSrc} ${inpostHosts}`,
   `style-src 'self' 'unsafe-inline' ${inpostHosts}`,
   `img-src 'self' data: blob: ${supabaseOrigin}`,
   `connect-src 'self' ${supabaseOrigin} https://api.stripe.com ${inpostHosts}`,
