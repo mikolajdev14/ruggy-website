@@ -92,17 +92,29 @@ export default async function AdminRugCatalogPage() {
     // catalog down with it.
     supabase
       .from("rug_photos")
-      .select("id, rug_type_id, storage_path, is_cover, display_order"),
+      .select(
+        "id, rug_type_id, rug_variant_id, storage_path, is_cover, display_order",
+      ),
   ]);
 
   const photosTableMissing = isMissingRugPhotosTable(photosError);
   const photosByTypeId = new Map<number, RugPhotoRow[]>();
+  const photosByVariantId = new Map<number, RugPhotoRow[]>();
 
   for (const row of (photoRows ?? []) as Array<
-    RugPhotoRow & { rug_type_id: number | string }
+    RugPhotoRow
   >) {
-    const typeId = Number(row.rug_type_id);
-    photosByTypeId.set(typeId, [...(photosByTypeId.get(typeId) ?? []), row]);
+    if (row.rug_type_id != null) {
+      const typeId = Number(row.rug_type_id);
+      photosByTypeId.set(typeId, [...(photosByTypeId.get(typeId) ?? []), row]);
+    }
+    if (row.rug_variant_id != null) {
+      const variantId = Number(row.rug_variant_id);
+      photosByVariantId.set(variantId, [
+        ...(photosByVariantId.get(variantId) ?? []),
+        row,
+      ]);
+    }
   }
 
   const catalog: CatalogRugType[] = ((typeRows as TypeRow[] | null) ?? [])
@@ -125,6 +137,7 @@ export default async function AdminRugCatalogPage() {
           description: variant.description,
           isActive: variant.is_active !== false,
           displayOrder: Number(variant.display_order ?? 0),
+          photos: mapRugPhotos(photosByVariantId.get(Number(variant.id))),
           sizes: mapSizes(variant.rug_sizes),
         }))
         .toSorted(byDisplayOrder),
@@ -158,10 +171,11 @@ export default async function AdminRugCatalogPage() {
 
       {photosTableMissing ? (
         <div className="mb-5 rounded-2xl border-2 border-[var(--ruggy-border-strong)] bg-[#fff1bf] px-4 py-3 text-sm font-semibold text-[var(--ruggy-ink)]">
-          Zdjęcia kategorii są wyłączone, dopóki nie uruchomisz migracji{" "}
-          <code className="font-black">
-            supabase/migrations/20260801_add_rug_photos.sql
-          </code>{" "}
+          Zdjęcia są wyłączone, dopóki nie uruchomisz migracji{" "}
+            <code className="font-black">
+            supabase/migrations/20260801_add_rug_photos.sql oraz
+            supabase/migrations/20260803_add_variant_rug_photos.sql
+            </code>{" "}
           w Supabase. Reszta panelu działa normalnie.
         </div>
       ) : photosError ? (

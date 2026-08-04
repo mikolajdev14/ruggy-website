@@ -21,8 +21,9 @@ import { revalidatePath } from "next/cache";
 export type CatalogActionResult = {
   success: boolean;
   message?: string;
-  /** Set by createRugType so the caller can attach photos to the fresh row. */
+  /** Set by create actions so the caller can attach photos to the fresh row. */
   rugTypeId?: number;
+  rugVariantId?: number;
 };
 
 // Server Functions are reachable by direct POST, so every entry point below
@@ -56,7 +57,7 @@ const isDuplicateSlug = (error: { code?: string }) => error.code === "23505";
 // still runs — it just can't store photos, and says so plainly instead of
 // surfacing a Postgres error code.
 const MISSING_PHOTOS_TABLE_MESSAGE =
-  "Brakuje tabeli rug_photos. Uruchom migrację supabase/migrations/20260801_add_rug_photos.sql w Supabase, żeby dodawać zdjęcia.";
+  "Brakuje migracji zdjęć. Uruchom supabase/migrations/20260801_add_rug_photos.sql oraz supabase/migrations/20260803_add_variant_rug_photos.sql w Supabase.";
 
 // A row that a booking points at is order history: its name/price snapshot is
 // what the customer bought. Deleting it would orphan (or silently blank) that
@@ -245,6 +246,35 @@ export async function deleteRugType(id: number): Promise<CatalogActionResult> {
     };
   }
 
+  // Foreign keys remove rows from the database, but Storage objects need an
+  // explicit cleanup. Read both owners before deleting the child variants.
+  const [typePhotoResult, variantPhotoResult] = await Promise.all([
+    supabase.from("rug_photos").select("storage_path").eq("rug_type_id", id),
+    variantIds.length
+      ? supabase
+          .from("rug_photos")
+          .select("storage_path")
+          .in("rug_variant_id", variantIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (
+    (typePhotoResult.error && !isMissingRugPhotosTable(typePhotoResult.error)) ||
+    (variantPhotoResult.error &&
+      !isMissingRugPhotosTable(variantPhotoResult.error))
+  ) {
+    console.error(
+      "Nie udało się pobrać zdjęć kategorii:",
+      typePhotoResult.error ?? variantPhotoResult.error,
+    );
+    return { success: false, message: "Nie udało się usunąć kategorii." };
+  }
+
+  const storagePaths = [
+    ...(typePhotoResult.data ?? []),
+    ...(variantPhotoResult.data ?? []),
+  ].map((row) => row.storage_path);
+
   // Children first: rug_sizes and rug_variants both point back at the type, so
   // the parent row can only go once nothing references it.
   if (sizeIds.length) {
@@ -270,20 +300,6 @@ export async function deleteRugType(id: number): Promise<CatalogActionResult> {
       };
     }
   }
-
-  // rug_photos cascades with the type, but the objects in Storage do not — drop
-  // them first so a removed category stops costing storage.
-  const { data: photoRows, error: photosError } = await supabase
-    .from("rug_photos")
-    .select("storage_path")
-    .eq("rug_type_id", id);
-
-  if (photosError && !isMissingRugPhotosTable(photosError)) {
-    console.error("Nie udało się pobrać zdjęć kategorii:", photosError);
-    return { success: false, message: "Nie udało się usunąć kategorii." };
-  }
-
-  const storagePaths = (photoRows ?? []).map((row) => row.storage_path);
 
   if (storagePaths.length) {
     const { error: storageError } = await supabase.storage
@@ -326,16 +342,20 @@ export async function createRugVariant(
   if (!supabase) return SESSION_EXPIRED;
 
   const values = parsed.data;
-  const { error } = await supabase.from("rug_variants").insert({
-    rug_type_id: rugTypeId,
-    name: values.name,
-    slug: values.slug,
-    description: values.description,
-    display_order: values.displayOrder,
-    is_active: values.isActive,
-  });
+  const { data: createdVariant, error } = await supabase
+    .from("rug_variants")
+    .insert({
+      rug_type_id: rugTypeId,
+      name: values.name,
+      slug: values.slug,
+      description: values.description,
+      display_order: values.displayOrder,
+      is_active: values.isActive,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !createdVariant) {
     console.error("Nie udało się dodać podrodzaju:", error);
     return {
       success: false,
@@ -346,7 +366,11 @@ export async function createRugVariant(
   }
 
   revalidateCatalog();
-  return { success: true, message: `Podrodzaj „${values.name}” został dodany.` };
+  return {
+    success: true,
+    message: `Podrodzaj „${values.name}” został dodany.`,
+    rugVariantId: Number(createdVariant.id),
+  };
 }
 
 export async function updateRugVariant(
@@ -429,6 +453,18 @@ export async function deleteRugVariant(
     };
   }
 
+  const { data: photoRows, error: photosError } = await supabase
+    .from("rug_photos")
+    .select("storage_path")
+    .eq("rug_variant_id", id);
+
+  if (photosError && !isMissingRugPhotosTable(photosError)) {
+    console.error("Nie udało się pobrać zdjęć podrodzaju:", photosError);
+    return { success: false, message: "Nie udało się usunąć podrodzaju." };
+  }
+
+  const storagePaths = (photoRows ?? []).map((row) => row.storage_path);
+
   if (sizeIds.length) {
     const { error } = await supabase.from("rug_sizes").delete().in("id", sizeIds);
 
@@ -446,6 +482,16 @@ export async function deleteRugVariant(
   if (error) {
     console.error("Nie udało się usunąć podrodzaju:", error);
     return { success: false, message: "Nie udało się usunąć podrodzaju." };
+  }
+
+  if (storagePaths.length) {
+    const { error: storageError } = await supabase.storage
+      .from(RUG_CATALOG_PHOTOS_BUCKET)
+      .remove(storagePaths);
+
+    if (storageError) {
+      console.error("Nie udało się usunąć plików zdjęć podrodzaju:", storageError);
+    }
   }
 
   revalidateCatalog();
@@ -568,14 +614,28 @@ export async function deleteRugSize(id: number): Promise<CatalogActionResult> {
 
 /* ----------------------------------------------------------------- photos */
 
+export type RugPhotoOwner = {
+  rugTypeId: number | null;
+  rugVariantId: number | null;
+};
+
 export async function uploadRugPhoto(
-  rugTypeId: number,
+  owner: RugPhotoOwner,
   file: File,
   makeCover: boolean,
 ): Promise<CatalogActionResult> {
-  if (!isPositiveId(rugTypeId)) {
-    return { success: false, message: "Nieprawidłowa kategoria." };
+  const ownsType = isPositiveId(owner.rugTypeId);
+  const ownsVariant = isPositiveId(owner.rugVariantId);
+
+  if (ownsType === ownsVariant) {
+    return {
+      success: false,
+      message: "Zdjęcie musi należeć do kategorii albo do podrodzaju.",
+    };
   }
+
+  const ownerColumn = ownsType ? "rug_type_id" : "rug_variant_id";
+  const ownerId = ownsType ? owner.rugTypeId : owner.rugVariantId;
 
   const validation = await validateImageUpload(file, MAX_RUG_PHOTO_SIZE);
 
@@ -589,10 +649,10 @@ export async function uploadRugPhoto(
   const { data: existingPhotos, error: existingError } = await supabase
     .from("rug_photos")
     .select("id, display_order, is_cover")
-    .eq("rug_type_id", rugTypeId);
+    .eq(ownerColumn, ownerId);
 
   if (existingError) {
-    console.error("Nie udało się pobrać zdjęć kategorii:", existingError);
+    console.error("Nie udało się pobrać zdjęć właściciela:", existingError);
     return {
       success: false,
       message: isMissingRugPhotosTable(existingError)
@@ -610,7 +670,8 @@ export async function uploadRugPhoto(
     : 0;
 
   const { buffer, extension, contentType } = validation.image;
-  const storagePath = `${rugTypeId}/${crypto.randomUUID()}.${extension}`;
+  const storagePrefix = ownsType ? String(ownerId) : `variants/${ownerId}`;
+  const storagePath = `${storagePrefix}/${crypto.randomUUID()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from(RUG_CATALOG_PHOTOS_BUCKET)
@@ -632,7 +693,7 @@ export async function uploadRugPhoto(
     const { error: unsetError } = await supabase
       .from("rug_photos")
       .update({ is_cover: false })
-      .eq("rug_type_id", rugTypeId);
+      .eq(ownerColumn, ownerId);
 
     if (unsetError) {
       console.error("Nie udało się zmienić okładki:", unsetError);
@@ -642,14 +703,15 @@ export async function uploadRugPhoto(
   }
 
   const { error: insertError } = await supabase.from("rug_photos").insert({
-    rug_type_id: rugTypeId,
+    rug_type_id: ownsType ? ownerId : null,
+    rug_variant_id: ownsVariant ? ownerId : null,
     storage_path: storagePath,
     is_cover: shouldBeCover,
     display_order: nextOrder,
   });
 
   if (insertError) {
-    console.error("Nie udało się zapisać zdjęcia kategorii:", insertError);
+    console.error("Nie udało się zapisać zdjęcia:", insertError);
     // Nothing points at the uploaded object now, so drop it rather than leave
     // an invisible file billing storage forever.
     await supabase.storage.from(RUG_CATALOG_PHOTOS_BUCKET).remove([storagePath]);
@@ -675,7 +737,7 @@ export async function setRugPhotoCover(
 
   const { data: photo, error: photoError } = await supabase
     .from("rug_photos")
-    .select("id, rug_type_id")
+    .select("id, rug_type_id, rug_variant_id")
     .eq("id", photoId)
     .maybeSingle();
 
@@ -689,11 +751,15 @@ export async function setRugPhotoCover(
     };
   }
 
-  // Clear first: a unique partial index allows only one cover per category.
+  const ownsType = isPositiveId(photo.rug_type_id);
+  const ownerColumn = ownsType ? "rug_type_id" : "rug_variant_id";
+  const ownerId = ownsType ? photo.rug_type_id : photo.rug_variant_id;
+
+  // Clear first: a unique partial index allows only one cover per owner.
   const { error: unsetError } = await supabase
     .from("rug_photos")
     .update({ is_cover: false })
-    .eq("rug_type_id", photo.rug_type_id);
+    .eq(ownerColumn, ownerId);
 
   if (unsetError) {
     console.error("Nie udało się zdjąć poprzedniej okładki:", unsetError);
@@ -726,7 +792,7 @@ export async function deleteRugPhoto(
 
   const { data: photo, error: photoError } = await supabase
     .from("rug_photos")
-    .select("id, rug_type_id, storage_path, is_cover")
+    .select("id, rug_type_id, rug_variant_id, storage_path, is_cover")
     .eq("id", photoId)
     .maybeSingle();
 
@@ -757,13 +823,17 @@ export async function deleteRugPhoto(
     console.error("Nie udało się usunąć pliku zdjęcia:", storageError);
   }
 
-  // Deleting the cover would leave the category card blank, so the next photo
-  // in order takes over.
+  const ownsType = isPositiveId(photo.rug_type_id);
+  const ownerColumn = ownsType ? "rug_type_id" : "rug_variant_id";
+  const ownerId = ownsType ? photo.rug_type_id : photo.rug_variant_id;
+
+  // Deleting the cover would leave the owner card blank, so the next photo in
+  // order takes over.
   if (photo.is_cover) {
     const { data: replacement } = await supabase
       .from("rug_photos")
       .select("id")
-      .eq("rug_type_id", photo.rug_type_id)
+      .eq(ownerColumn, ownerId)
       .order("display_order")
       .limit(1)
       .maybeSingle();

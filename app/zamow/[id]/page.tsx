@@ -5,6 +5,7 @@ import type { GalleryPhoto } from "@/lib/gallery";
 import {
   mapRugPhotos,
   resolveCategoryPhotos,
+  resolveVariantPhotos,
   type RugPhotoRow,
 } from "@/lib/rug-photos";
 import { createClient } from "@/lib/supabase/client";
@@ -198,7 +199,8 @@ export default function ProductPage({
       const [
         { data: blockedDates },
         { data: selectedRugType },
-        { data: photoRows },
+        { data: parentPhotoRows },
+        { data: variantPhotoRows },
       ] = await Promise.all([
         supabase.from("blocked_dates").select("date"),
         supabase
@@ -210,20 +212,45 @@ export default function ProductPage({
         // migration not applied yet) leaves the configurator fully usable.
         supabase
           .from("rug_photos")
-          .select("id, storage_path, is_cover, display_order")
+          .select("id, rug_type_id, rug_variant_id, storage_path, is_cover, display_order")
           .eq("rug_type_id", id),
+        preselectedVariantId != null
+          ? supabase
+              .from("rug_photos")
+              .select(
+                "id, rug_type_id, rug_variant_id, storage_path, is_cover, display_order",
+              )
+              .eq("rug_variant_id", preselectedVariantId)
+          : Promise.resolve({ data: null }),
       ]);
 
       if (!isMounted) return;
 
       setBlockedDays(blockedDates?.map((item) => new Date(item.date)) ?? []);
       setRugType(selectedRugType);
+
+      const parentPhotos = mapRugPhotos(
+        parentPhotoRows as RugPhotoRow[] | null,
+      );
+      const variantPhotos = mapRugPhotos(
+        variantPhotoRows as RugPhotoRow[] | null,
+      );
+      const gallery =
+        preselectedVariantId != null
+          ? resolveVariantPhotos({
+              variantPhotos,
+              parentSlug: selectedRugType?.slug,
+              parentName: selectedRugType?.name ?? "Dywany",
+              parentPhotos,
+            })
+          : resolveCategoryPhotos({
+              slug: selectedRugType?.slug,
+              name: selectedRugType?.name ?? "Dywany",
+              photos: parentPhotos,
+            });
+
       setRealizations(
-        resolveCategoryPhotos({
-          slug: selectedRugType?.slug,
-          name: selectedRugType?.name ?? "Dywany",
-          photos: mapRugPhotos(photoRows as RugPhotoRow[] | null),
-        }).realizations,
+        gallery.realizations,
       );
     };
 
@@ -232,7 +259,7 @@ export default function ProductPage({
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, preselectedVariantId]);
 
   const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;

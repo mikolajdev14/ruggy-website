@@ -75,6 +75,7 @@ export type CatalogVariant = {
   description: string | null;
   isActive: boolean;
   displayOrder: number;
+  photos: RugPhoto[];
   sizes: CatalogSize[];
 };
 
@@ -100,6 +101,7 @@ type SizeOwner = { rugTypeId: number | null; rugVariantId: number | null };
 type RunAction = (
   action: () => Promise<CatalogActionResult>,
   onSuccess?: () => void,
+  options?: { onFailure?: () => void; refreshOnFailure?: boolean },
 ) => void;
 
 type ConfirmRequest = {
@@ -247,7 +249,7 @@ export default function RugCatalogClient({
     return () => window.clearTimeout(timeout);
   }, [feedback]);
 
-  const run: RunAction = (action, onSuccess) => {
+  const run: RunAction = (action, onSuccess, options) => {
     setFeedback(null);
 
     startTransition(async () => {
@@ -258,6 +260,8 @@ export default function RugCatalogClient({
           tone: "error",
           message: result.message ?? "Nie udało się zapisać zmian.",
         });
+        options?.onFailure?.();
+        if (options?.refreshOnFailure) router.refresh();
         return;
       }
 
@@ -296,7 +300,7 @@ export default function RugCatalogClient({
       // to work out the next display_order and whether a cover already exists.
       for (const photo of queue) {
         const upload = await uploadRugPhoto(
-          result.rugTypeId,
+          { rugTypeId: result.rugTypeId, rugVariantId: null },
           photo.file,
           photo.id === newTypeCoverId,
         );
@@ -545,6 +549,9 @@ function TypeCard({
   askConfirm: (request: ConfirmRequest) => void;
 }) {
   const [isAddingVariant, setIsAddingVariant] = useState(false);
+  const [newVariantPhotos, setNewVariantPhotos] = useState<PendingPhoto[]>([]);
+  const [newVariantCoverId, setNewVariantCoverId] = useState<string | null>(null);
+  const pendingVariantPhotosRef = useRef<PendingPhoto[]>([]);
   const sizeSource = getSizeSource(type.slug);
   const allSizes = [...type.sizes, ...type.variants.flatMap((v) => v.sizes)];
   const gallery = getCategory(type.slug);
@@ -552,6 +559,85 @@ function TypeCard({
   const nextVariantOrder = type.variants.length
     ? Math.max(...type.variants.map((variant) => variant.displayOrder)) + 1
     : 1;
+
+  useEffect(() => {
+    pendingVariantPhotosRef.current = newVariantPhotos;
+  }, [newVariantPhotos]);
+
+  useEffect(
+    () => () => {
+      for (const photo of pendingVariantPhotosRef.current) {
+        URL.revokeObjectURL(photo.previewUrl);
+      }
+    },
+    [],
+  );
+
+  const releasePendingVariantPhotos = (photos: PendingPhoto[]) => {
+    for (const photo of photos) {
+      URL.revokeObjectURL(photo.previewUrl);
+    }
+    setNewVariantPhotos([]);
+    setNewVariantCoverId(null);
+  };
+
+  const handleCreateVariant = (values: RugVariantInput) => {
+    const queue = newVariantPhotos.toSorted(
+      (first, second) =>
+        Number(second.id === newVariantCoverId) -
+        Number(first.id === newVariantCoverId),
+    );
+
+    run(
+      async () => {
+        const result = await createRugVariant(type.id, values);
+
+        if (!result.success || !result.rugVariantId) return result;
+
+        let uploaded = 0;
+        let uploadError: string | undefined;
+
+        for (const photo of queue) {
+          const upload = await uploadRugPhoto(
+            { rugTypeId: null, rugVariantId: result.rugVariantId },
+            photo.file,
+            photo.id === newVariantCoverId,
+          );
+
+          if (!upload.success) {
+            uploadError = upload.message;
+            break;
+          }
+
+          uploaded += 1;
+        }
+
+        releasePendingVariantPhotos(newVariantPhotos);
+
+        if (uploadError) {
+          return {
+            success: false,
+            message: `Podrodzaj „${values.name}” został dodany, ale zdjęcia nie w całości: ${uploadError}`,
+          };
+        }
+
+        return {
+          success: true,
+          message: uploaded
+            ? `Podrodzaj „${values.name}” został dodany wraz z ${uploaded} zdjęciami.`
+            : (result.message ?? "Podrodzaj został dodany."),
+        };
+      },
+      () => setIsAddingVariant(false),
+      {
+        onFailure: () => {
+          releasePendingVariantPhotos(newVariantPhotos);
+          setIsAddingVariant(false);
+        },
+        refreshOnFailure: true,
+      },
+    );
+  };
 
   const requestDelete = () => {
     askConfirm({
@@ -632,10 +718,10 @@ function TypeCard({
 
           {photosEnabled ? (
             <PhotoManager
-              typeId={type.id}
-              typeName={type.name}
-              slug={type.slug}
+              owner={{ rugTypeId: type.id, rugVariantId: null }}
+              ownerName={type.name}
               photos={type.photos}
+              fallbackSlug={type.slug}
               pending={pending}
               run={run}
               askConfirm={askConfirm}
@@ -693,12 +779,43 @@ function TypeCard({
                   defaultDisplayOrder={nextVariantOrder}
                   pending={pending}
                   submitLabel="Dodaj podrodzaj"
-                  onCancel={() => setIsAddingVariant(false)}
-                  onSubmit={(values) =>
-                    run(
-                      () => createRugVariant(type.id, values),
-                      () => setIsAddingVariant(false),
-                    )
+                  onCancel={() => {
+                    releasePendingVariantPhotos(newVariantPhotos);
+                    setIsAddingVariant(false);
+                  }}
+                  onSubmit={handleCreateVariant}
+                  extraFields={
+                    photosEnabled ? (
+                      <PendingPhotoPicker
+                        photos={newVariantPhotos}
+                        coverId={newVariantCoverId}
+                        disabled={pending}
+                        emptyMessage="Bez zdjęć podrodzaj odziedziczy galerię kategorii nadrzędnej."
+                        onAdd={(added) => {
+                          setNewVariantPhotos((current) => [...current, ...added]);
+                          setNewVariantCoverId(
+                            (current) => current ?? added[0]?.id ?? null,
+                          );
+                        }}
+                        onRemove={(photoId) => {
+                          setNewVariantPhotos((current) => {
+                            const removed = current.find(
+                              (photo) => photo.id === photoId,
+                            );
+                            if (removed) URL.revokeObjectURL(removed.previewUrl);
+                            const next = current.filter(
+                              (photo) => photo.id !== photoId,
+                            );
+                            setNewVariantCoverId((cover) =>
+                              cover === photoId ? (next[0]?.id ?? null) : cover,
+                            );
+                            return next;
+                          });
+                        }}
+                        onSetCover={setNewVariantCoverId}
+                        onError={(message) => run(async () => ({ success: false, message }))}
+                      />
+                    ) : null
                   }
                 />
               </div>
@@ -712,6 +829,10 @@ function TypeCard({
                       variant={variant}
                       hasBookings={usedVariants.has(variant.id)}
                       usedSizes={usedSizes}
+                      typeName={type.name}
+                      parentSlug={type.slug}
+                      parentPhotos={type.photos}
+                      photosEnabled={photosEnabled}
                       pending={pending}
                       run={run}
                       askConfirm={askConfirm}
@@ -737,6 +858,10 @@ function VariantCard({
   variant,
   hasBookings,
   usedSizes,
+  typeName,
+  parentSlug,
+  parentPhotos,
+  photosEnabled,
   pending,
   run,
   askConfirm,
@@ -744,6 +869,10 @@ function VariantCard({
   variant: CatalogVariant;
   hasBookings: boolean;
   usedSizes: Set<number>;
+  typeName: string;
+  parentSlug: string;
+  parentPhotos: RugPhoto[];
+  photosEnabled: boolean;
   pending: boolean;
   run: RunAction;
   askConfirm: (request: ConfirmRequest) => void;
@@ -808,6 +937,20 @@ function VariantCard({
             onDelete={requestDelete}
             deleteBlocked={hasBookings}
           />
+
+          {photosEnabled ? (
+            <PhotoManager
+              owner={{ rugTypeId: null, rugVariantId: variant.id }}
+              ownerName={variant.name}
+              photos={variant.photos}
+              fallbackSlug={parentSlug}
+              fallbackName={typeName}
+              fallbackPhotos={parentPhotos}
+              pending={pending}
+              run={run}
+              askConfirm={askConfirm}
+            />
+          ) : null}
 
           <SizeSection
             title="Rozmiary i ceny podrodzaju"
@@ -1042,6 +1185,7 @@ function VariantForm({
   onCancel,
   onDelete,
   deleteBlocked,
+  extraFields,
 }: {
   initial: CatalogVariant | null;
   defaultDisplayOrder: number;
@@ -1051,6 +1195,7 @@ function VariantForm({
   onCancel?: () => void;
   onDelete?: () => void;
   deleteBlocked?: boolean;
+  extraFields?: ReactNode;
 }) {
   const serverDraft = {
     name: initial?.name ?? "",
@@ -1142,6 +1287,8 @@ function VariantForm({
           }
         />
       </div>
+
+      {extraFields}
 
       <FormActions
         pending={pending}
@@ -1293,8 +1440,8 @@ function PhotoHeading({ count }: { count: number }) {
         Zdjęcia
       </h3>
       <p className="mt-1 text-xs text-[var(--ruggy-muted)]">
-        Okładka trafia na kafelek kategorii, reszta na pasek „przykładowe
-        realizacje”. JPG, PNG lub WEBP do{" "}
+        Okładka trafia na kafelek, reszta na pasek „przykładowe realizacje”.
+        JPG, PNG lub WEBP do{" "}
         {MAX_RUG_PHOTO_SIZE / (1024 * 1024)} MB.
         {count ? ` Masz ${count}.` : ""}
       </p>
@@ -1312,6 +1459,7 @@ function PendingPhotoPicker({
   onRemove,
   onSetCover,
   onError,
+  emptyMessage,
 }: {
   photos: PendingPhoto[];
   coverId: string | null;
@@ -1320,6 +1468,7 @@ function PendingPhotoPicker({
   onRemove: (photoId: string) => void;
   onSetCover: (photoId: string) => void;
   onError: (message: string) => void;
+  emptyMessage?: string;
 }) {
   return (
     <section className="rounded-[1.5rem] border-2 border-[var(--ruggy-border)] bg-[var(--ruggy-canvas)] p-4">
@@ -1363,8 +1512,8 @@ function PendingPhotoPicker({
         </ul>
       ) : (
         <p className="mt-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] px-4 py-4 text-xs font-bold text-[var(--ruggy-muted)]">
-          Bez zdjęć kafelek kategorii pokaże tylko jej pierwszą literę. Zdjęcia
-          wyślą się zaraz po dodaniu kategorii.
+          {emptyMessage ??
+            "Bez zdjęć kafelek kategorii pokaże tylko jej pierwszą literę. Zdjęcia wyślą się zaraz po dodaniu kategorii."}
         </p>
       )}
     </section>
@@ -1374,23 +1523,29 @@ function PendingPhotoPicker({
 // Existing category: every pick uploads straight away, so what you see here is
 // exactly what the shop is serving.
 function PhotoManager({
-  typeId,
-  typeName,
-  slug,
+  owner,
+  ownerName,
   photos,
+  fallbackSlug,
+  fallbackName,
+  fallbackPhotos,
   pending,
   run,
   askConfirm,
 }: {
-  typeId: number;
-  typeName: string;
-  slug: string;
+  owner: SizeOwner;
+  ownerName: string;
   photos: RugPhoto[];
+  fallbackSlug?: string;
+  fallbackName?: string;
+  fallbackPhotos?: RugPhoto[];
   pending: boolean;
   run: RunAction;
   askConfirm: (request: ConfirmRequest) => void;
 }) {
-  const staticGallery = getCategory(slug);
+  const staticGallery = fallbackSlug ? getCategory(fallbackSlug) : undefined;
+  const isVariant = owner.rugVariantId != null;
+  const fallbackPhotoCount = fallbackPhotos?.length ?? 0;
 
   return (
     <section className="mt-7 border-t-2 border-[var(--ruggy-border)] pt-6">
@@ -1409,7 +1564,7 @@ function PhotoManager({
 
             run(async () => {
               for (const file of valid) {
-                const result = await uploadRugPhoto(typeId, file, false);
+                const result = await uploadRugPhoto(owner, file, false);
                 if (!result.success) return result;
               }
 
@@ -1431,7 +1586,7 @@ function PhotoManager({
             <li key={photo.id}>
               <PhotoTile
                 src={photo.url}
-                alt={`Zdjęcie kategorii ${typeName}`}
+                alt={`Zdjęcie ${isVariant ? "podrodzaju" : "kategorii"} ${ownerName}`}
                 isCover={photo.isCover}
                 disabled={pending}
                 onSetCover={() => run(() => setRugPhotoCover(photo.id))}
@@ -1450,7 +1605,9 @@ function PhotoManager({
         </ul>
       ) : (
         <p className="mt-3 rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-canvas)] px-4 py-4 text-xs font-bold leading-5 text-[var(--ruggy-muted)]">
-          {staticGallery
+          {isVariant
+            ? `Brak własnych zdjęć. Ten podrodzaj korzysta teraz z galerii kategorii${fallbackName ? ` „${fallbackName}”` : " nadrzędnej"}${fallbackPhotoCount ? ` (${fallbackPhotoCount} zdjęć)` : ""}. Dodanie pierwszego zdjęcia zastąpi ten fallback.`
+            : staticGallery
             ? `Ta kategoria korzysta na razie ze zdjęć wgranych do repozytorium (${staticGallery.photos.length + 1} szt. z /public). Pierwsze zdjęcie dodane tutaj zastąpi cały ten zestaw.`
             : "Brak zdjęć — kafelek kategorii pokaże tylko jej pierwszą literę."}
         </p>

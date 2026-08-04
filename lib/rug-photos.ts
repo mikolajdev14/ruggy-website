@@ -10,6 +10,8 @@ export const MAX_RUG_PHOTO_SIZE = 5 * 1024 * 1024;
 /** Row shape of public.rug_photos as every caller selects it. */
 export type RugPhotoRow = {
   id: number | string;
+  rug_type_id?: number | string | null;
+  rug_variant_id?: number | string | null;
   storage_path: string;
   is_cover: boolean | null;
   display_order: number | string | null;
@@ -52,6 +54,22 @@ export const mapRugPhotos = (rows: RugPhotoRow[] | null | undefined): RugPhoto[]
 const buildAlt = (categoryName: string) =>
   `Ręcznie tuftowany dywan Ruggy z kategorii ${categoryName}`;
 
+const resolveUploadedPhotos = (photos: RugPhoto[], name: string) => {
+  const cover = photos.find((photo) => photo.isCover) ?? photos[0];
+  const alt = buildAlt(name);
+
+  return {
+    cover: cover
+      ? { src: cover.url, alt, category: name }
+      : undefined,
+    realizations: cover
+      ? photos
+          .filter((photo) => photo.id !== cover.id)
+          .map((photo) => ({ src: photo.url, alt, category: name }))
+      : [],
+  };
+};
+
 /**
  * Cover + realizations for one category.
  *
@@ -69,15 +87,7 @@ export function resolveCategoryPhotos({
   photos: RugPhoto[];
 }): { cover: GalleryPhoto | undefined; realizations: GalleryPhoto[] } {
   if (photos.length) {
-    const cover = photos.find((photo) => photo.isCover) ?? photos[0];
-    const alt = buildAlt(name);
-
-    return {
-      cover: { src: cover.url, alt, category: name },
-      realizations: photos
-        .filter((photo) => photo.id !== cover.id)
-        .map((photo) => ({ src: photo.url, alt, category: name })),
-    };
+    return resolveUploadedPhotos(photos, name);
   }
 
   const category = getCategory(slug);
@@ -86,4 +96,36 @@ export function resolveCategoryPhotos({
     cover: category?.cover,
     realizations: category?.photos ?? [],
   };
+}
+
+/**
+ * Resolve a variant gallery without changing the parent category gallery.
+ * Variant uploads win; an empty variant falls back to the parent's full
+ * resolver, including its uploaded or curated static photos.
+ */
+export function resolveVariantPhotos({
+  variantName,
+  variantPhotos,
+  parentSlug,
+  parentName,
+  parentPhotos,
+}: {
+  variantName?: string | null;
+  variantPhotos: RugPhoto[];
+  parentSlug: string | null | undefined;
+  parentName: string;
+  parentPhotos: RugPhoto[];
+}): { cover: GalleryPhoto | undefined; realizations: GalleryPhoto[] } {
+  if (variantPhotos.length) {
+    return resolveUploadedPhotos(
+      variantPhotos,
+      variantName?.trim() || parentName,
+    );
+  }
+
+  return resolveCategoryPhotos({
+    slug: parentSlug,
+    name: parentName,
+    photos: parentPhotos,
+  });
 }

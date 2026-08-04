@@ -1,5 +1,11 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { PAPADYWANY_SLUG } from "@/lib/rug-order-mode";
+import {
+  mapRugPhotos,
+  resolveCategoryPhotos,
+  resolveVariantPhotos,
+  type RugPhotoRow,
+} from "@/lib/rug-photos";
 import { RugDelayBanner } from "@/components/rug-delay-notice";
 import { PosterHero } from "@/components/poster-hero";
 import { ArrowLeft } from "lucide-react";
@@ -43,13 +49,20 @@ export default async function PodrodzajPage({
 }) {
   const { id } = await params;
   const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("rug_types")
-    .select(
-      "id, name, slug, has_delay, rug_variants(id, name, slug, is_active, display_order, rug_sizes(price_cents, is_active))",
-    )
-    .eq("id", id)
-    .single();
+  const [{ data, error }, { data: photoRows }] = await Promise.all([
+    supabase
+      .from("rug_types")
+      .select(
+        "id, name, slug, has_delay, rug_variants(id, name, slug, is_active, display_order, rug_sizes(price_cents, is_active))",
+      )
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("rug_photos")
+      .select(
+        "id, rug_type_id, rug_variant_id, storage_path, is_cover, display_order",
+      ),
+  ]);
 
   const rugType = data as unknown as RugTypeRow | null;
 
@@ -57,6 +70,26 @@ export default async function PodrodzajPage({
   // goes straight to the details page.
   if (error || !rugType || rugType.slug !== PAPADYWANY_SLUG) {
     redirect(`/zamow/${id}`);
+  }
+
+  const allPhotoRows = (photoRows ?? []) as unknown as RugPhotoRow[];
+  const parentPhotos = mapRugPhotos(
+    allPhotoRows.filter((row) => Number(row.rug_type_id) === Number(rugType.id)),
+  );
+  const parentGallery = resolveCategoryPhotos({
+    slug: rugType.slug,
+    name: rugType.name,
+    photos: parentPhotos,
+  });
+  const photosByVariantId = new Map<number, RugPhotoRow[]>();
+
+  for (const row of allPhotoRows) {
+    if (row.rug_variant_id == null) continue;
+    const variantId = Number(row.rug_variant_id);
+    photosByVariantId.set(variantId, [
+      ...(photosByVariantId.get(variantId) ?? []),
+      row,
+    ]);
   }
 
   const variants = (rugType.rug_variants ?? [])
@@ -114,8 +147,18 @@ export default async function PodrodzajPage({
                   rugTypeId={rugType.id}
                   id={variant.id}
                   name={variant.name}
-                  slug={variant.slug}
                   sizes={variant.rug_sizes}
+                  cover={
+                    resolveVariantPhotos({
+                      variantName: variant.name,
+                      variantPhotos: mapRugPhotos(
+                        photosByVariantId.get(variant.id),
+                      ),
+                      parentSlug: rugType.slug,
+                      parentName: rugType.name,
+                      parentPhotos,
+                    }).cover ?? parentGallery.cover
+                  }
                 />
               </li>
             ))}

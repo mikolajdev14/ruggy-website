@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { formatPriceCents } from "@/lib/custom-rug-price";
-import { getPapadywanyVariantCover } from "@/lib/gallery";
+import type { GalleryPhoto } from "@/lib/gallery";
 
 type VariantSize = { price_cents: number | string; is_active: boolean | null };
 
@@ -10,8 +10,8 @@ interface SubcategoryCardProps {
   rugTypeId: number | string;
   id: number;
   name: string;
-  slug: string;
   sizes: VariantSize[];
+  cover?: GalleryPhoto;
 }
 
 // Cheapest active size in a subrodzaj → its "od X zł" starting price.
@@ -30,10 +30,9 @@ export const SubcategoryCard = ({
   rugTypeId,
   id,
   name,
-  slug,
   sizes,
+  cover,
 }: SubcategoryCardProps) => {
-  const cover = getPapadywanyVariantCover(slug);
   const price = fromPriceCents(sizes);
 
   return (
