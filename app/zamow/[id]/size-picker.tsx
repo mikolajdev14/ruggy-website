@@ -11,7 +11,6 @@ import {
   formatCustomRugPriceRange,
 } from "@/lib/custom-rug-price";
 import {
-  PAPADYWANY_SLUG,
   usesDirectCheckout,
 } from "@/lib/rug-order-mode";
 import { getPopularRugSizeLabel } from "@/lib/popular-rug-sizes";
@@ -131,11 +130,24 @@ export const SizePicker = ({
         setSizeData(nextSizeData);
         setLoadError(false);
 
-        if (nextSizeData.slug === PAPADYWANY_SLUG) {
-          // The subrodzaj is chosen on /zamow/[id]/podrodzaj and arrives as the
-          // ?variant= param (mirrored into booking.rugVariantId by the page);
-          // the popular size is defaulted by the effect below, so nothing is
-          // auto-selected here.
+        const activeVariants = getActiveVariants(nextSizeData.rug_variants);
+
+        if (activeVariants.length) {
+          // Any category with active variants is chosen on
+          // /zamow/[id]/podrodzaj and arrives as the ?variant= param.
+          setBooking((previous) => {
+            const selectedVariant = activeVariants.find(
+              (variant) => variant.id === previous.rugVariantId,
+            );
+
+            return {
+              ...previous,
+              rugVariantId: selectedVariant?.id ?? null,
+              pickedSize: null,
+              customWidthCm: null,
+              customHeightCm: null,
+            };
+          });
         } else if (usesDirectCheckout(nextSizeData.slug)) {
           const availableSizes = getActiveSizes(nextSizeData.rug_sizes);
 
@@ -176,14 +188,18 @@ export const SizePicker = ({
     };
   }, [id, setBooking]);
 
-  const isPapadywany = sizeData?.slug === PAPADYWANY_SLUG;
-  const isCustomType = Boolean(sizeData && !usesDirectCheckout(sizeData.slug));
   const activeVariants = getActiveVariants(sizeData?.rug_variants ?? []);
+  const hasSubcategories = activeVariants.length > 0;
+  const isCustomType = Boolean(
+    sizeData && !usesDirectCheckout(sizeData.slug) && !hasSubcategories,
+  );
   const selectedVariant = activeVariants.find(
     (variant) => variant.id === booking.rugVariantId,
   );
   const availableSizes = getActiveSizes(
-    isPapadywany ? selectedVariant?.rug_sizes ?? [] : sizeData?.rug_sizes ?? [],
+    hasSubcategories
+      ? selectedVariant?.rug_sizes ?? []
+      : sizeData?.rug_sizes ?? [],
   );
   const customPriceCents = calculateCustomRugPriceCents(
     booking.customHeightCm,
@@ -225,7 +241,7 @@ export const SizePicker = ({
   // size to the popular format — but only while none is picked, so a manual
   // choice and a subrodzaj switch (which clears the size) both behave correctly.
   useEffect(() => {
-    if (!isPapadywany || booking.rugVariantId == null) return;
+    if (!hasSubcategories || booking.rugVariantId == null) return;
     if (booking.pickedSize != null || !sizeData) return;
 
     const variant = getActiveVariants(sizeData.rug_variants).find(
@@ -246,7 +262,7 @@ export const SizePicker = ({
         : previous,
     );
   }, [
-    isPapadywany,
+    hasSubcategories,
     booking.rugVariantId,
     booking.pickedSize,
     sizeData,
@@ -299,7 +315,7 @@ export const SizePicker = ({
           <p className="mt-1 text-sm leading-6 text-[var(--ruggy-body)]">
             {isCustomType
               ? "Podaj własne wymiary, a pokażę Ci orientacyjną cenę."
-              : isPapadywany
+              : hasSubcategories
                 ? "Najpierw wybierz podrodzaj, a następnie jego rozmiar."
                 : "Wybierz jeden z dostępnych formatów."}
           </p>
@@ -420,7 +436,7 @@ export const SizePicker = ({
         </div>
       ) : (
         <div className="space-y-5">
-          {isPapadywany && !selectedVariant ? (
+          {hasSubcategories && !selectedVariant ? (
             <div className="rounded-2xl border-2 border-dashed border-[var(--ruggy-border-strong)] bg-[var(--ruggy-surface)] p-5 text-sm font-bold text-[var(--ruggy-muted)]">
               Wybierz podrodzaj, aby zobaczyć dostępne rozmiary.
             </div>

@@ -11,3 +11,12 @@ export function usesDirectCheckout(slug: string | null | undefined) {
     (directCheckoutSlug) => directCheckoutSlug === slug,
   );
 }
+
+export function hasActiveRugVariants(
+  variants:
+    | Array<{ is_active?: boolean | null }>
+    | null
+    | undefined,
+) {
+  return (variants ?? []).some((variant) => variant.is_active !== false);
+}

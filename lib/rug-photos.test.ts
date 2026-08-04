@@ -58,10 +58,29 @@ describe("resolveVariantPhotos", () => {
     expect(result.realizations[0].src).toContain("/21.jpg");
   });
 
-  it("falls back to the parent uploaded gallery when the variant is empty", () => {
-    // AC-4 and AC-5: empty variants inherit the parent gallery.
+  it("keeps the static Papadywany cover when the variant has no uploads", () => {
+    // Existing Papadywany variants have curated covers from before uploads.
     const result = resolveVariantPhotos({
       variantName: "Papashrek",
+      variantSlug: "papashrek",
+      variantPhotos: [],
+      parentSlug: "papadywany",
+      parentName: "Papadywany",
+      parentPhotos,
+    });
+
+    expect(result.cover?.src).toContain(
+      "/ruggy/kategorie/papadywany/papashrek/",
+    );
+    expect(result.cover?.src).toContain("IMG_0249-white-bg.jpg");
+    expect(result.cover?.category).toBe("Papadywany");
+    expect(result.realizations[0].src).toContain("/11.jpg");
+  });
+
+  it("falls back to the parent uploaded gallery for an unmapped variant", () => {
+    const result = resolveVariantPhotos({
+      variantName: "Nowy podrodzaj",
+      variantSlug: "nowy-podrodzaj",
       variantPhotos: [],
       parentSlug: "papadywany",
       parentName: "Papadywany",

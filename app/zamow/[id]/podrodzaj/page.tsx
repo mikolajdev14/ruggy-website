@@ -35,9 +35,9 @@ type RugTypeRow = {
 };
 
 export const metadata: Metadata = {
-  title: "Wybierz podrodzaj papadywanu",
+  title: "Wybierz podrodzaj dywanu",
   description:
-    "Każdy papadywan ma swój motyw. Wybierz podrodzaj, a potem dopniesz rozmiar, termin i dostawę.",
+    "Wybierz podrodzaj dywanu, a potem dopniesz rozmiar, termin i dostawę.",
 };
 
 export const revalidate = 300;
@@ -66,9 +66,7 @@ export default async function PodrodzajPage({
 
   const rugType = data as unknown as RugTypeRow | null;
 
-  // Only papadywany branches into subrodzajs; anything else (or a missing row)
-  // goes straight to the details page.
-  if (error || !rugType || rugType.slug !== PAPADYWANY_SLUG) {
+  if (error || !rugType) {
     redirect(`/zamow/${id}`);
   }
 
@@ -99,11 +97,17 @@ export default async function PodrodzajPage({
         Number(first.display_order ?? 0) - Number(second.display_order ?? 0),
     );
 
+  // Any active category with variants gets the same selection step. The
+  // content warning remains specific to papadywany, not to the routing rule.
+  if (!variants.length) {
+    redirect(`/zamow/${id}`);
+  }
+
+  const needsContentWarning = rugType.slug === PAPADYWANY_SLUG;
+
   return (
     <main className="min-h-screen bg-[var(--ruggy-canvas)] text-[var(--ruggy-ink)]">
-      {/* This page is papadywany-only (guarded above), so the warning always
-          applies — it now lands here, before any subrodzaj is visible. */}
-      <ContentWarningGate />
+      {needsContentWarning ? <ContentWarningGate /> : null}
 
       <header className="border-b border-[var(--ruggy-border)]">
         <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
@@ -128,9 +132,9 @@ export default async function PodrodzajPage({
           words={[
             { text: "Wybierz" },
             { text: "podrodzaj", emphasis: true },
-            { text: "papadywanu." },
+            { text: `${rugType.name}.` },
           ]}
-          description="Każdy motyw ma swój charakter i cenę. Wybierz ten, który do Ciebie mówi — rozmiar, termin i dostawę ustawisz w kolejnym kroku."
+          description={`Wybierz podrodzaj kategorii „${rugType.name}”. Rozmiar, termin i dostawę ustawisz w kolejnym kroku.`}
         />
 
         {rugType.has_delay ? (
@@ -151,6 +155,7 @@ export default async function PodrodzajPage({
                   cover={
                     resolveVariantPhotos({
                       variantName: variant.name,
+                      variantSlug: variant.slug,
                       variantPhotos: mapRugPhotos(
                         photosByVariantId.get(variant.id),
                       ),

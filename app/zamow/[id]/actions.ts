@@ -9,7 +9,7 @@ import {
   formatCustomRugSizeLabel,
 } from "@/lib/custom-rug-price";
 import {
-  PAPADYWANY_SLUG,
+  hasActiveRugVariants,
   usesDirectCheckout,
 } from "@/lib/rug-order-mode";
 import {
@@ -39,7 +39,7 @@ import {
   createReferenceImageProof,
   isValidReferenceImageProof,
 } from "@/lib/security/reference-image-proof";
-import { getTrustedAppOrigin } from "@/lib/security/origin";
+import { getCheckoutReturnOrigin } from "@/lib/security/origin";
 import { headers } from "next/headers";
 import { sendQuoteRequestWhatsAppNotification } from "@/lib/whatsapp-notification";
 
@@ -159,7 +159,7 @@ export async function createCheckoutSession(input: unknown) {
 
   const { data: rugType, error: rugTypeError } = await supabase
     .from("rug_types")
-    .select("id, name, slug")
+    .select("id, name, slug, rug_variants(id, name, is_active)")
     .eq("id", Number(booking.rugTypeId))
     .single();
 
@@ -200,9 +200,9 @@ export async function createCheckoutSession(input: unknown) {
 
   let rugVariant: { id: number | string; name: string } | null = null;
 
-  if (rugType.slug === PAPADYWANY_SLUG) {
+  if (hasActiveRugVariants(rugType.rug_variants)) {
     if (booking.rugVariantId == null) {
-      return { success: false, message: "Wybierz podrodzaj papadywanu." };
+      return { success: false, message: "Wybierz podrodzaj dywanu." };
     }
 
     const { data: selectedVariant, error: variantError } = await supabase
@@ -245,7 +245,9 @@ export async function createCheckoutSession(input: unknown) {
     };
   }
 
-  const checkoutOrigin = getTrustedAppOrigin((await headers()).get("origin"));
+  const checkoutOrigin = getCheckoutReturnOrigin(
+    (await headers()).get("origin"),
+  );
 
   if (!checkoutOrigin) {
     return {

@@ -23,7 +23,11 @@ import {
 } from "@/lib/delivery-pricing";
 import { RugDelayBanner } from "@/components/rug-delay-notice";
 import { RUG_LEAD_TIME_LABEL } from "@/lib/rug-lead-time";
-import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
+import {
+  PAPADYWANY_SLUG,
+  hasActiveRugVariants,
+  usesDirectCheckout,
+} from "@/lib/rug-order-mode";
 import { siteConfig } from "@/lib/site-config";
 import { bookingSchema } from "@/schema/booking";
 import {
@@ -86,11 +90,12 @@ type RugTypeSummary = {
   slug: string;
   description: string | null;
   has_delay: boolean | null;
+  rug_variants: Array<{ id: number | string; is_active: boolean | null }>;
 };
 
-// The size label/price and the chosen papadywany subrodzaj are fetched inside
-// SizePicker; it reports the resolved selection back up so the sticky summary
-// and hero can confirm exactly what the customer is buying before checkout.
+// The size label, price and chosen subcategory are fetched inside SizePicker;
+// it reports the resolved selection back up so the summary can confirm what
+// the customer is buying before checkout.
 export type ResolvedSelection = {
   sizeLabel: string | null;
   sizePriceCents: number | null;
@@ -205,7 +210,9 @@ export default function ProductPage({
         supabase.from("blocked_dates").select("date"),
         supabase
           .from("rug_types")
-          .select("name, slug, description, has_delay")
+          .select(
+            "name, slug, description, has_delay, rug_variants(id, is_active)",
+          )
           .eq("id", id)
           .single(),
         // Separate from the rug_types query so a missing rug_photos table (the
@@ -262,13 +269,14 @@ export default function ProductPage({
   }, [id, preselectedVariantId]);
 
   const isPapadywany = rugType?.slug === PAPADYWANY_SLUG;
+  const hasSubcategories = hasActiveRugVariants(rugType?.rug_variants);
   const isDirectCheckout = rugType ? usesDirectCheckout(rugType.slug) : true;
   const hasDelay = rugType?.has_delay === true;
 
-  // Papadywany picks its subrodzaj on a separate page (/zamow/[id]/podrodzaj)
-  // that hands the choice back as ?variant=. Mirror that param into the booking
-  // so the size step is scoped to it; if it is missing, send them to pick one.
-  const redirectingToSubcategory = isPapadywany && preselectedVariantId == null;
+  // Any category with active subcategories picks one on the dedicated page
+  // first, then hands the choice back as ?variant=.
+  const redirectingToSubcategory =
+    hasSubcategories && preselectedVariantId == null;
 
   // When the ?variant= changes (e.g. "Zmień podrodzaj" then a different pick),
   // mirror it into the booking and clear the size — adjusting state during
@@ -502,7 +510,7 @@ export default function ProductPage({
             ruggy<span className="text-[var(--ruggy-blue)]">.</span>
           </Link>
           <div className="flex items-center gap-1">
-            {isPapadywany ? (
+            {hasSubcategories ? (
               <Link
                 href={`/zamow/${id}/podrodzaj`}
                 className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-black text-[var(--ruggy-body)] transition-colors hover:bg-[var(--ruggy-blue-soft)] hover:text-[var(--ruggy-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-ink)]"
@@ -560,14 +568,14 @@ export default function ProductPage({
 
           <div className="border-s-2 border-[var(--ruggy-ink)] ps-4">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--ruggy-muted)]">
-              {isPapadywany ? "Wybrany podrodzaj" : "Wybrany wariant"}
+              {hasSubcategories ? "Wybrany podrodzaj" : "Wybrany wariant"}
             </p>
             <p className="mt-1 text-base font-black text-[var(--ruggy-ink)]">
-              {isPapadywany && resolvedSelection.variantName
+              {hasSubcategories && resolvedSelection.variantName
                 ? resolvedSelection.variantName
                 : rugType?.name || `Wariant #${id}`}
             </p>
-            {isPapadywany && resolvedSelection.variantName ? (
+            {hasSubcategories && resolvedSelection.variantName ? (
               <p className="mt-0.5 text-xs font-bold text-[var(--ruggy-muted)]">
                 {rugType?.name}
               </p>

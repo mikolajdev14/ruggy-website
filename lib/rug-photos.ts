@@ -1,4 +1,8 @@
-import { getCategory, type GalleryPhoto } from "@/lib/gallery";
+import {
+  getCategory,
+  getPapadywanyVariantCover,
+  type GalleryPhoto,
+} from "@/lib/gallery";
 
 // Photos the owner uploads from /admin/dywany. They live in a public Storage
 // bucket rather than /public, because a serverless deploy has no writable
@@ -100,17 +104,20 @@ export function resolveCategoryPhotos({
 
 /**
  * Resolve a variant gallery without changing the parent category gallery.
- * Variant uploads win; an empty variant falls back to the parent's full
- * resolver, including its uploaded or curated static photos.
+ * Variant uploads win. For the existing Papadywany catalog, the old static
+ * per-variant cover remains the next fallback so cards do not all inherit the
+ * parent category cover. Other empty variants use the parent's full resolver.
  */
 export function resolveVariantPhotos({
   variantName,
+  variantSlug,
   variantPhotos,
   parentSlug,
   parentName,
   parentPhotos,
 }: {
   variantName?: string | null;
+  variantSlug?: string | null;
   variantPhotos: RugPhoto[];
   parentSlug: string | null | undefined;
   parentName: string;
@@ -123,9 +130,18 @@ export function resolveVariantPhotos({
     );
   }
 
-  return resolveCategoryPhotos({
+  const parentGallery = resolveCategoryPhotos({
     slug: parentSlug,
     name: parentName,
     photos: parentPhotos,
   });
+
+  const staticVariantCover =
+    parentSlug?.trim() === "papadywany"
+      ? getPapadywanyVariantCover(variantSlug)
+      : undefined;
+
+  return staticVariantCover
+    ? { cover: staticVariantCover, realizations: parentGallery.realizations }
+    : parentGallery;
 }

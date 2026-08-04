@@ -2,7 +2,7 @@
 
 import { getCategory } from "@/lib/gallery";
 import { RUG_LEAD_TIME_LABEL } from "@/lib/rug-lead-time";
-import { PAPADYWANY_SLUG, usesDirectCheckout } from "@/lib/rug-order-mode";
+import { usesDirectCheckout } from "@/lib/rug-order-mode";
 import { MAX_RUG_PHOTO_SIZE, type RugPhoto } from "@/lib/rug-photos";
 import {
   collectCatalogFieldErrors,
@@ -136,8 +136,8 @@ const toInteger = (value: string) => {
 // tables below use it so the owner never edits a table nobody will ever see.
 type SizeSource = "variants" | "type" | "custom";
 
-const getSizeSource = (slug: string): SizeSource => {
-  if (slug === PAPADYWANY_SLUG) return "variants";
+const getSizeSource = (slug: string, variantCount: number): SizeSource => {
+  if (variantCount > 0) return "variants";
   return usesDirectCheckout(slug) ? "type" : "custom";
 };
 
@@ -552,7 +552,7 @@ function TypeCard({
   const [newVariantPhotos, setNewVariantPhotos] = useState<PendingPhoto[]>([]);
   const [newVariantCoverId, setNewVariantCoverId] = useState<string | null>(null);
   const pendingVariantPhotosRef = useRef<PendingPhoto[]>([]);
-  const sizeSource = getSizeSource(type.slug);
+  const sizeSource = getSizeSource(type.slug, type.variants.length);
   const allSizes = [...type.sizes, ...type.variants.flatMap((v) => v.sizes)];
   const gallery = getCategory(type.slug);
 

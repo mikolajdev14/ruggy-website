@@ -1,6 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { CUSTOM_RUG_MIN_PRICE_CENTS } from "@/lib/custom-rug-price";
-import { usesDirectCheckout } from "@/lib/rug-order-mode";
+import { hasActiveRugVariants, usesDirectCheckout } from "@/lib/rug-order-mode";
 import {
   mapRugPhotos,
   resolveCategoryPhotos,
@@ -108,9 +108,7 @@ export default async function ZamowPage() {
           <ul className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
             {rugTypes.map((rug) => {
               const isCheckout = usesDirectCheckout(rug.slug);
-              const hasSubcategories = (rug.rug_variants ?? []).some(
-                (variant) => variant.is_active !== false,
-              );
+              const hasSubcategories = hasActiveRugVariants(rug.rug_variants);
               const { cover } = resolveCategoryPhotos({
                 slug: rug.slug,
                 name: rug.name,

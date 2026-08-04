@@ -2,7 +2,7 @@
 
 import { getStripe } from "@/lib/stripe";
 import { consumeAgreedProjectPaymentLimit } from "@/lib/upload-rate-limit";
-import { getTrustedAppOrigin } from "@/lib/security/origin";
+import { getCheckoutReturnOrigin } from "@/lib/security/origin";
 import { headers } from "next/headers";
 import * as z from "zod";
 
@@ -50,7 +50,7 @@ export async function createAgreedProjectCheckout(input: unknown) {
   }
 
   const payment = result.data;
-  const origin = getTrustedAppOrigin((await headers()).get("origin"));
+  const origin = getCheckoutReturnOrigin((await headers()).get("origin"));
 
   if (!origin) {
     return {
