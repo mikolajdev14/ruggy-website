@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent } from "react";
 import type { GalleryPhoto } from "@/lib/gallery";
@@ -179,14 +180,15 @@ const MarqueeRow = ({ photos, durationSeconds, label }: MarqueeRowProps) => {
               aria-hidden={isDuplicate}
               className="me-4 shrink-0 sm:me-6"
             >
-              <figure className="h-40 w-40 overflow-hidden rounded-2xl border-2 border-white/10 bg-white shadow-[4px_5px_0_rgba(0,0,0,0.35)] sm:h-56 sm:w-56">
-                <img
+              <figure className="relative h-40 w-40 overflow-hidden rounded-2xl border-2 border-white/10 bg-white shadow-[4px_5px_0_rgba(0,0,0,0.35)] sm:h-56 sm:w-56">
+                <Image
                   src={photo.src}
                   alt={isDuplicate ? "" : photo.alt}
+                  fill
+                  sizes="(min-width: 640px) 224px, 160px"
                   loading={isDuplicate ? "lazy" : undefined}
-                  decoding="async"
                   draggable={false}
-                  className="h-full w-full object-cover"
+                  className="object-cover"
                 />
               </figure>
             </li>

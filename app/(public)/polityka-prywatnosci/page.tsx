@@ -32,11 +32,14 @@ ustalenia, dochodzenia lub obrony ewentualnych roszczeń — na podstawie art. 6
 Dane podaje się dobrowolnie, ale bez nich nie da się złożyć ani zrealizować zamówienia, a więc zawrzeć i wykonać umowy. Nie podejmujemy decyzji opierających się wyłącznie na zautomatyzowanym przetwarzaniu, w tym profilowaniu, ani nie sięgamy po dane w celach marketingowych bez odrębnej zgody.
 
 §3 Komu powierzamy dane
-Dane osobowe powierzamy tylko zaufanym podmiotom i wyłącznie w zakresie koniecznym do realizacji zamówienia:
-zewnętrzny operator płatności elektronicznych — obsługa płatności online;
+Dane osobowe powierzamy tylko zaufanym podmiotom i wyłącznie w zakresie koniecznym do prowadzenia Sklepu oraz realizacji zamówienia:
+Vercel Inc. — hosting aplikacji internetowej i obsługa logów technicznych;
+Stripe — obsługa płatności online;
 InPost S.A. — dostarczenie Towaru do Paczkomatu InPost lub kurierem;
 dostawca infrastruktury bazodanowej i hostingu (Supabase), gdzie przechowywane są dane zamówień oraz przesłane zdjęcia referencyjne;
-Meta Platforms Ireland Limited — jedynie wtedy, gdy Klient z własnej inicjatywy pisze do Sprzedawcy przez Instagram w sprawie indywidualnej wyceny; dane zawarte w takiej wiadomości objęte są dodatkowo polityką prywatności Meta.
+Resend — wysyłka transakcyjnych potwierdzeń zamówienia na podany adres e-mail;
+Meta Platforms Ireland Limited — obsługa wiadomości na Instagramie oraz powiadomień o nowych zgłoszeniach wysyłanych do Sprzedawcy przez WhatsApp;
+OpenAI — przygotowanie poglądowego projektu dywanu na podstawie opcjonalnego zdjęcia referencyjnego, gdy Sprzedawca korzysta z tej funkcji w panelu administracyjnym.
 Danych osobowych nie sprzedajemy ani nie udostępniamy podmiotom trzecim w celach marketingowych.
 
 §4 Transfer danych poza EOG

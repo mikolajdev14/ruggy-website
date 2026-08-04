@@ -47,7 +47,7 @@ Niniejszy Sklep internetowy świadczy usługi drogą elektroniczną; aby przyst�
 Umowa o świadczenie usług powstaje drogą elektroniczną przez udostępnienie Klientowi Sklepu internetowego możliwości wypełnienia formularza zamówienia; zawierana jest na czas oznaczony w chwili rozpoczęcia wypełniania formularza przez Klienta, a kończy się w momencie rezygnacji z jego wypełniania albo przesłania go Sprzedawcy.
 Usługa opisana w pkt. 1 jest bezpłatna, choć może wymagać dostępu do sieci internetowej.
 Zamówienia drogą elektroniczną przyjmowane są przez całą dobę, siedem dni w tygodniu.
-Kończąc zakup, Klient zaznacza w odpowiednim okienku zamówienia zgodę na przetwarzanie przez sklep jego danych osobowych podanych w formularzu zamówienia w celu i zakresie koniecznym do realizacji zamówienia – bez niej umowa nie może zostać zawarta. Podanie danych osobowych warunkuje złożenie zamówienia; ich niepodanie traktowane jest jak rezygnacja z zawarcia umowy.
+Kończąc zakup, Klient potwierdza zapoznanie się z Regulaminem i Polityką prywatności. Dane osobowe podane w formularzu są przetwarzane w celu i zakresie koniecznym do przyjęcia oraz realizacji zamówienia. Podanie danych osobowych warunkuje złożenie zamówienia; ich niepodanie traktowane jest jak rezygnacja z zawarcia umowy.
 Stosownie do art. 8 ust. 2 RODO administrator, biorąc pod uwagę dostępną technologię, podejmuje rozsądne działania, aby sprawdzić, czy zgodę wyraziła bądź zaaprobowała osoba sprawująca władzę rodzicielską lub opiekę nad dzieckiem (poniżej 16 lat).
 Wydatki Klienta na dostęp do sieci Internet oraz transmisję danych obciążają wyłącznie jego, według taryfy jego dostawcy usług internetowych.
 §4. Zasady zawarcia umowy

@@ -9,6 +9,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import Link from "next/link";
+import { OrderLegalNotice } from "@/components/order-legal-notice";
 import { PosterHero } from "@/components/poster-hero";
 import { radioTabIndex, useRadioGroupKeys } from "@/components/use-radio-group";
 import { type FormEvent, use, useState } from "react";
@@ -226,6 +227,8 @@ export default function AgreedProjectPaymentPage({
                 {message}
               </p>
             ) : null}
+
+            <OrderLegalNotice actionLabel={`Zapłać ${formatAmount(parsedAmount)}`} />
 
             <button
               type="submit"

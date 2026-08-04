@@ -16,10 +16,12 @@ Aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost
 ## Migracje bazy
 
 Pliki z `supabase/migrations/` uruchamiaj w kolejności dat w SQL Editorze
-Supabase. Najnowsza, `20260801_add_rug_photos.sql`, dodaje tabelę
-`rug_photos` i publiczny bucket `rug-catalog-photos` — bez niej panel
-`/admin/dywany` działa, ale nie pozwala wgrywać zdjęć kategorii, a strona
-zamówienia korzysta wyłącznie ze zdjęć z `lib/gallery.ts` i `public/ruggy`.
+Supabase. Migracja `20260801_add_rug_photos.sql` dodaje tabelę `rug_photos`
+i publiczny bucket `rug-catalog-photos`, a
+`20260803_add_variant_rug_photos.sql` rozszerza je o zdjęcia podrodzajów.
+Migracja `20260802_security_hardening.sql` włącza RLS dla danych prywatnych
+i ustawia bucket `booking-reference-images` jako prywatny. Wszystkie te
+migracje muszą być zastosowane przed wdrożeniem aplikacji.
 
 ## Zdjęcia kategorii
 
@@ -35,6 +37,7 @@ Na Vercelu ustaw zmienną:
 
 ```env
 NEXT_PUBLIC_SITE_URL=https://twoja-domena.pl
+NEXT_PUBLIC_APP_URL=https://twoja-domena.pl
 ```
 
 Adres jest używany w canonicalach, Open Graph, danych strukturalnych,
@@ -112,3 +115,11 @@ WHATSAPP_TEMPLATE_LANGUAGE=pl
 Numer odbiorcy podaj z kodem kraju, bez znaku `+`. Wersję Graph API wpisz
 zgodnie z wersją wybraną w aplikacji Meta. `NEXT_PUBLIC_SITE_URL` musi
 wskazywać publiczną domenę, ponieważ jest używany w linku do zamówienia.
+
+## Pozostałe integracje
+
+Kompletny zestaw zmiennych produkcyjnych znajduje się w `.env.example`.
+Obejmuje również produkcyjny token InPost, osobny
+`RUGGY_UPLOAD_SIGNING_SECRET` oraz `OPENAI_API_KEY` używany do generowania
+poglądowych projektów w panelu administratora. Nie kopiuj lokalnego `.env`
+do produkcji bez sprawdzenia trybu każdego klucza, w szczególności Stripe.

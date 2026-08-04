@@ -64,21 +64,21 @@ export async function fulfillCheckout(
   const bookingDate = metadata.pickupDate?.slice(0, 10);
   const customerEmail =
     session.customer_details?.email ?? session.customer_email;
+  const invalidFields = [
+    !Number.isInteger(rugTypeId) ? "rugTypeId" : null,
+    !isCustomSize && !Number.isInteger(rugSizeId) ? "rugSizeId" : null,
+    !metadata.rugTypeName ? "rugTypeName" : null,
+    !metadata.rugSizeLabel ? "rugSizeLabel" : null,
+    !metadata.customerName ? "customerName" : null,
+    !customerEmail ? "customerEmail" : null,
+    !bookingDate || !isValidDateKey(bookingDate) ? "bookingDate" : null,
+    session.amount_total == null ? "amountTotal" : null,
+  ].filter((field): field is string => field != null);
 
-  if (
-    !Number.isInteger(rugTypeId) ||
-    (!isCustomSize && !Number.isInteger(rugSizeId)) ||
-    !metadata.rugTypeName ||
-    !metadata.rugSizeLabel ||
-    !metadata.customerName ||
-    !customerEmail ||
-    !bookingDate ||
-    !isValidDateKey(bookingDate) ||
-    session.amount_total == null
-  ) {
+  if (invalidFields.length > 0) {
     console.error("Sesja Stripe nie zawiera kompletnych danych zamówienia:", {
       sessionId: session.id,
-      metadata,
+      invalidFields,
     });
     return {
       success: false,
@@ -145,7 +145,7 @@ export async function fulfillCheckout(
     return {
       success: false,
       reason: "database_error",
-      message: error?.message ?? "Supabase nie zwrócił numeru zamówienia.",
+      message: "Nie udało się zapisać opłaconego zamówienia.",
     };
   }
 

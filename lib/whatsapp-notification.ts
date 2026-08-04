@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  createOutboundRequestSignal,
+  formatOutboundRequestError,
+  OUTBOUND_REQUEST_TIMEOUT_MS,
+} from "@/lib/outbound-request";
 import { absoluteUrl } from "@/lib/site-config";
 
 type WhatsAppNotificationResult =
@@ -84,15 +89,17 @@ export async function sendQuoteRequestWhatsAppNotification(
           },
         }),
         cache: "no-store",
+        signal: createOutboundRequestSignal(
+          OUTBOUND_REQUEST_TIMEOUT_MS.notification,
+        ),
       },
     );
 
     if (!response.ok) {
-      const responseBody = await response.text();
       return {
         success: false,
         reason: "request_failed",
-        message: `WhatsApp API zwróciło ${response.status}: ${responseBody.slice(0, 500)}`,
+        message: `WhatsApp API zwróciło status ${response.status}.`,
       };
     }
 
@@ -101,10 +108,7 @@ export async function sendQuoteRequestWhatsAppNotification(
     return {
       success: false,
       reason: "request_failed",
-      message:
-        error instanceof Error
-          ? error.message
-          : "Nie udało się połączyć z WhatsApp API.",
+      message: formatOutboundRequestError("WhatsApp API", error),
     };
   }
 }

@@ -87,6 +87,17 @@ export const ReferenceImageUpload = ({
         <p className="mt-2 text-xs font-bold text-[var(--ruggy-muted)]">
           JPG, PNG lub WEBP, maksymalnie 5 MB.
         </p>
+        <p className="mt-2 text-xs leading-5 text-[var(--ruggy-body)]">
+          Zdjęcie może zostać użyte przez administratora do przygotowania
+          poglądowego projektu z pomocą usługi AI. Szczegóły znajdziesz w{" "}
+          <a
+            href="/polityka-prywatnosci"
+            className="font-black text-[var(--ruggy-ink)] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ruggy-blue)]"
+          >
+            Polityce prywatności
+          </a>
+          .
+        </p>
 
         {error ? (
           <p className="mt-2 text-xs font-black text-[var(--ruggy-error)]">

@@ -1,6 +1,7 @@
 "use client";
 
 import { CategoryRealizations } from "@/components/category-realizations";
+import { OrderLegalNotice } from "@/components/order-legal-notice";
 import type { GalleryPhoto } from "@/lib/gallery";
 import {
   mapRugPhotos,
@@ -730,6 +731,15 @@ export default function ProductPage({
                   </>
                 )}
               </p>
+              <div className="mt-3 max-w-2xl">
+                <OrderLegalNotice
+                  actionLabel={
+                    isDirectCheckout
+                      ? "Zapłać i zarezerwuj"
+                      : "Skontaktuj się ze mną"
+                  }
+                />
+              </div>
             </div>
 
             <button

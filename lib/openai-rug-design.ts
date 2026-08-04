@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  createOutboundRequestSignal,
+  OUTBOUND_REQUEST_TIMEOUT_MS,
+} from "@/lib/outbound-request";
+
 const OPENAI_IMAGE_EDIT_URL = "https://api.openai.com/v1/images/edits";
 
 type OpenAiImageResponse = {
@@ -68,6 +73,9 @@ export async function createRugDesign(
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}` },
     body: formData,
+    signal: createOutboundRequestSignal(
+      OUTBOUND_REQUEST_TIMEOUT_MS.imageGeneration,
+    ),
   });
 
   const payload = (await response.json()) as OpenAiImageResponse;

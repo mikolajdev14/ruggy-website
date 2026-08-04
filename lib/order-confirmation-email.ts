@@ -2,6 +2,11 @@ import "server-only";
 
 import { formatPriceCents } from "@/lib/custom-rug-price";
 import { DELIVERY_LABEL } from "@/lib/delivery-pricing";
+import {
+  createOutboundRequestSignal,
+  formatOutboundRequestError,
+  OUTBOUND_REQUEST_TIMEOUT_MS,
+} from "@/lib/outbound-request";
 import { siteConfig } from "@/lib/site-config";
 
 export type OrderConfirmationEmailInput = {
@@ -233,15 +238,14 @@ export async function sendOrderConfirmationEmail(
         tags: [{ name: "email_type", value: "order_confirmation" }],
       }),
       cache: "no-store",
+      signal: createOutboundRequestSignal(OUTBOUND_REQUEST_TIMEOUT_MS.email),
     });
 
     if (!response.ok) {
-      const responseBody = await response.text();
-
       return {
         success: false,
         reason: "request_failed",
-        message: `Resend API zwróciło ${response.status}: ${responseBody.slice(0, 500)}`,
+        message: `Resend API zwróciło status ${response.status}.`,
       };
     }
 
@@ -257,10 +261,7 @@ export async function sendOrderConfirmationEmail(
     return {
       success: false,
       reason: "request_failed",
-      message:
-        error instanceof Error
-          ? error.message
-          : "Nie udało się połączyć z Resend API.",
+      message: formatOutboundRequestError("Resend API", error),
     };
   }
 }
